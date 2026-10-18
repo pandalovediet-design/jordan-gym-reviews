@@ -15,7 +15,10 @@ alter default privileges in schema public grant all on sequences to anon, authen
 create table auth.users (
   id uuid primary key default gen_random_uuid(),
   email text,
-  raw_user_meta_data jsonb default '{}'::jsonb
+  raw_user_meta_data jsonb default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  email_confirmed_at timestamptz,
+  last_sign_in_at timestamptz
 );
 
 create function auth.uid() returns uuid language sql stable as $$
