@@ -1,7 +1,7 @@
 // Local database tests (PGlite = real Postgres in WASM). Run: npm run test:db
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 
@@ -36,12 +36,10 @@ async function rejects(fn, pattern) {
 before(async () => {
   db = new PGlite({ extensions: { pg_trgm } });
   await db.exec(readFileSync(new URL("./stubs.sql", import.meta.url), "utf8"));
-  await db.exec(
-    readFileSync(
-      new URL("../migrations/20261018100000_phase1_core.sql", import.meta.url),
-      "utf8",
-    ),
-  );
+  const dir = new URL("../migrations/", import.meta.url);
+  for (const file of readdirSync(dir).filter((f) => f.endsWith(".sql")).sort()) {
+    await db.exec(readFileSync(new URL(file, dir), "utf8"));
+  }
   await db.exec(`
     insert into auth.users (id, email, raw_user_meta_data) values
       ('${ALICE}', 'alice@test.invalid', '{"display_name":"Alice"}'),
