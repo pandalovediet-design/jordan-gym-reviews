@@ -1,0 +1,73 @@
+import Link from "next/link";
+import type { Metadata } from "next";
+import { OrgCard } from "@/components/OrgCard";
+import { PAGE_SIZE, searchOrgs, searchProducts } from "@/lib/queries";
+import { ORG_TYPE_LABEL, jod, AVAILABILITY_LABEL } from "@/lib/format";
+
+export const metadata: Metadata = { title: "البحث" };
+
+export default async function SearchPage({ searchParams }: PageProps<"/search">) {
+  const sp = await searchParams;
+  const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+  const q = one(sp.q) ?? "";
+  const type = one(sp.type) ?? "";
+  const city = one(sp.city) ?? "";
+  const mode = one(sp.in) === "products" ? "products" : "orgs";
+  const page = Math.max(1, Number.parseInt(one(sp.page) ?? "1", 10) || 1);
+
+  let error = false;
+  const orgs = mode === "orgs" ? await searchOrgs({ q, type, city, page }).catch(() => (error = true, null)) : null;
+  const prods = mode === "products" ? await searchProducts({ q, page }).catch(() => (error = true, null)) : null;
+  const total = (orgs ?? prods)?.total ?? 0;
+  const pages = Math.ceil(total / PAGE_SIZE);
+  const href = (p: number) => {
+    const u = new URLSearchParams();
+    if (q) u.set("q", q); if (type) u.set("type", type); if (city) u.set("city", city);
+    if (mode === "products") u.set("in", "products"); u.set("page", String(p));
+    return `/search?${u}`;
+  };
+  const field = "rounded-xl bg-surface px-3 py-2.5 ring-1 ring-white/10 outline-none focus:ring-accent";
+
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-8">
+      <form className="mb-6 grid gap-2 sm:grid-cols-[1fr_auto_auto_auto_auto]">
+        <input name="q" defaultValue={q} placeholder="ابحث..." className={field} />
+        <select name="in" defaultValue={mode} className={field}>
+          <option value="orgs">أنشطة</option><option value="products">منتجات</option>
+        </select>
+        <select name="type" defaultValue={type} className={field}>
+          <option value="">كل الأنواع</option>
+          {Object.entries(ORG_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+        </select>
+        <input name="city" defaultValue={city} placeholder="المدينة" className={field} />
+        <button className="rounded-xl bg-accent px-6 font-bold text-accent-foreground">بحث</button>
+      </form>
+
+      {error && <p className="rounded-2xl bg-surface p-6 text-center">تعذّر تحميل النتائج حالياً، جرّب مرة ثانية بعد قليل.</p>}
+      {!error && total === 0 && <p className="rounded-2xl bg-surface p-8 text-center text-muted">ما لقينا نتائج مطابقة.</p>}
+      {!error && <p className="mb-3 text-sm text-muted">{total} نتيجة</p>}
+
+      {orgs && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{orgs.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>}
+      {prods && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {prods.items.map((p) => (
+            <Link key={p.id} href={`/p/${p.id}`} className="rounded-2xl bg-surface p-5 ring-1 ring-white/10 hover:ring-accent/60">
+              <h3 className="font-bold">{p.name_ar}</h3>
+              {p.brand && <p className="text-sm text-muted">{p.brand}</p>}
+              <p className="mt-2 text-accent">{jod(p.price_jod)}</p>
+              <p className="text-xs text-muted">{AVAILABILITY_LABEL[p.availability]} · {p.organizations?.name_ar}</p>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {pages > 1 && (
+        <nav className="mt-8 flex items-center justify-center gap-3 text-sm">
+          {page > 1 && <Link href={href(page - 1)} className="rounded-lg bg-surface px-4 py-2">السابق</Link>}
+          <span className="text-muted">{page} / {pages}</span>
+          {page < pages && <Link href={href(page + 1)} className="rounded-lg bg-surface px-4 py-2">التالي</Link>}
+        </nav>
+      )}
+    </div>
+  );
+}
