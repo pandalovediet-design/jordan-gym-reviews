@@ -73,7 +73,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           <div className="grid gap-3 sm:grid-cols-2">{offers.map((o) => (
             <div key={o.id} className={card}><h3 className="font-bold text-accent">{o.title_ar}</h3>
               {o.description_ar && <p className="text-sm">{o.description_ar}</p>}
-              <p className="mt-1 text-xs text-muted">{o.offer_price_jod != null && `${jod(o.offer_price_jod)} · `}حتى {dateAr(o.ends_at)}</p></div>))}</div></section>
+              <p className="mt-1 text-xs text-muted">{o.offer_price_jod != null && `${jod(o.offer_price_jod)} · `}{o.discount_percent != null && `خصم ${o.discount_percent}% · `}حتى {dateAr(o.ends_at)}</p></div>))}</div></section>
       )}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[2fr_1fr]">
