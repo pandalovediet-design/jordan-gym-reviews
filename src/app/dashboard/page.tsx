@@ -13,6 +13,8 @@ export default async function Dashboard() {
     .from("organization_members")
     .select("organizations(id,name_ar,type,status,city,slug)")
     .eq("user_id", user.id);
+  const { data: newInq } = await supabase.from("inquiries").select("organization_id").eq("status", "new").limit(1000);
+  const newOf = (id: string) => (newInq ?? []).filter((q) => q.organization_id === id).length;
   const orgs = (memberships ?? []).flatMap((m) => (m.organizations ? [m.organizations] : []));
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
@@ -26,7 +28,7 @@ export default async function Dashboard() {
         <ul className="space-y-3">{orgs.map((o) => (
           <li key={o.id}><Link href={`/dashboard/${o.id}/overview`} className="flex items-center justify-between rounded-2xl bg-surface p-5 ring-1 ring-white/10 hover:ring-accent/60">
             <div><p className="font-bold">{o.name_ar}</p><p className="text-sm text-muted">{ORG_TYPE_LABEL[o.type]} · {o.city}</p></div>
-            <span className="rounded-full bg-white/10 px-3 py-1 text-xs">{STATUS[o.status]}</span></Link></li>))}</ul>
+            <span className="flex items-center gap-2">{newOf(o.id) > 0 && <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">{newOf(o.id)} استفسار جديد</span>}<span className="rounded-full bg-white/10 px-3 py-1 text-xs">{STATUS[o.status]}</span></span></Link></li>))}</ul>
       )}
       <Link href="/dashboard/new" className="mt-6 inline-block rounded-xl bg-accent px-6 py-2.5 font-bold text-accent-foreground">+ إضافة نشاط</Link>
     </div>

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 export default async function DashLayout({ children, params }: LayoutProps<"/dashboard/[id]">) {
   const { id } = await params;
   let showMembers = true;
+  let newInquiries = 0;
   let adminView: { orgName: string } | null = null;
   if (/^[0-9a-f-]{36}$/i.test(id)) {
     const supabase = await createClient();
@@ -13,6 +14,8 @@ export default async function DashLayout({ children, params }: LayoutProps<"/das
       supabase.auth.getUser(),
       supabase.rpc("is_platform_admin"),
     ]);
+    const { count } = await supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("organization_id", id).eq("status", "new");
+    newInquiries = count ?? 0;
     showMembers = !!org && org.type !== "store"; // stores sell to walk-in customers; no subscriptions
     if (org && isAdmin && auth.user) {
       const { data: mine } = await supabase.from("organization_members").select("user_id").eq("organization_id", id).eq("user_id", auth.user.id).maybeSingle();
@@ -26,7 +29,7 @@ export default async function DashLayout({ children, params }: LayoutProps<"/das
           وضع الأدمن: أنت تدير حساب «{adminView.orgName}» وأي تعديل بيطبّق مباشرة عليه. <Link href="/admin/orgs" className="underline">← رجوع للوحة الإدارة</Link>
         </div>
       )}
-      <DashTabs id={id} showMembers={showMembers} />
+      <DashTabs id={id} showMembers={showMembers} newInquiries={newInquiries} />
       {children}
     </>
   );

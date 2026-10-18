@@ -6,7 +6,8 @@ const TABS = [
   { href: "/admin", label: "نظرة عامة" },
   { href: "/admin/orgs", label: "الأنشطة" },
   { href: "/admin/users", label: "المستخدمون" },
-  { href: "/admin/products", label: "المنتجات" },
+  { href: "/admin/subscriptions", label: "الاشتراكات" },
+  { href: "/admin/ads", label: "الإعلانات" },
 ];
 
 export function AdminTabs() {

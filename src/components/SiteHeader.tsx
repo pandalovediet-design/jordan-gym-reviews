@@ -19,7 +19,8 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="print:hidden mt-16 border-t border-white/10 py-8 text-center text-sm text-muted">
-      Jordan Gym Reviews — دليل الرياضة في الأردن
+      <p>Jordan Gym Reviews — دليل الرياضة في الأردن</p>
+      <p className="mt-2 flex justify-center gap-4"><Link href="/terms" className="hover:text-foreground">الشروط</Link><Link href="/privacy" className="hover:text-foreground">الخصوصية</Link></p>
     </footer>
   );
 }
