@@ -247,19 +247,8 @@ export async function deleteOffer(id: string, offerId: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------- review responses & inquiries
-export async function respondToReview(id: string, reviewId: string, _: FormState, fd: FormData): Promise<FormState> {
-  const body = String(fd.get("body") || "").trim();
-  if (body.length < 2 || body.length > 1000) return { error: "اكتب رد مناسب" };
-  const { supabase, user } = await requireUser();
-  const { error } = await supabase.from("review_responses").upsert(
-    { review_id: reviewId, organization_id: id, body, created_by: user.id }, { onConflict: "review_id" });
-  if (error) return { error: "تعذّر حفظ الرد" };
-  revalidatePath(`/dashboard/${id}/reviews`);
-  return { ok: "تم الرد" };
-}
-
 export async function setInquiryStatus(id: string, inquiryId: string, status: "seen" | "closed"): Promise<void> {
   const { supabase } = await requireUser();
   await supabase.from("inquiries").update({ status }).eq("id", inquiryId).eq("organization_id", id);
-  revalidatePath(`/dashboard/${id}/reviews`);
+  revalidatePath(`/dashboard/${id}/inquiries`);
 }

@@ -23,9 +23,6 @@ export async function searchOrgs(opts: { q?: string; type?: string; city?: strin
   const { data, count, error } = await query;
   if (error) throw new Error(error.message);
   const ids = (data ?? []).map((o) => o.id);
-  const ratings = ids.length
-    ? (await db.from("organization_ratings").select("*").in("organization_id", ids)).data ?? []
-    : [];
   const covers = ids.length
     ? (await db.from("organization_media").select("organization_id,storage_path,alt_text,is_cover,sort_order").in("organization_id", ids).order("is_cover", { ascending: false }).order("sort_order")).data ?? []
     : [];
@@ -33,7 +30,6 @@ export async function searchOrgs(opts: { q?: string; type?: string; city?: strin
     total: count ?? 0,
     items: (data ?? []).map((o) => ({
       ...o,
-      rating: ratings.find((r) => r.organization_id === o.id) ?? null,
       cover: covers.find((c) => c.organization_id === o.id) ?? null,
     })),
   };
@@ -59,7 +55,7 @@ export async function getOrgBySlug(slug: string) {
     .from("organizations").select("*").eq("slug", slug).eq("status", "published").maybeSingle();
   if (!org) return null;
   const now = new Date().toISOString();
-  const [hours, services, media, offers, products, reviews, rating] = await Promise.all([
+  const [hours, services, media, offers, products] = await Promise.all([
     db.from("organization_hours").select("*").eq("organization_id", org.id).order("weekday"),
     db.from("organization_services").select("*").eq("organization_id", org.id).eq("is_active", true).order("sort_order"),
     db.from("organization_media").select("*").eq("organization_id", org.id).order("sort_order"),
@@ -67,8 +63,6 @@ export async function getOrgBySlug(slug: string) {
     org.type === "store"
       ? db.from("products").select("id,name_ar,brand,price_jod,availability,description_ar,image_path").eq("organization_id", org.id).order("created_at", { ascending: false }).limit(48)
       : Promise.resolve({ data: [] }),
-    db.from("reviews").select("id,author_name,rating,body,created_at,review_responses(body)").eq("organization_id", org.id).eq("status", "published").order("created_at", { ascending: false }).limit(20),
-    db.from("organization_ratings").select("*").eq("organization_id", org.id).maybeSingle(),
   ]);
   return {
     org,
@@ -77,8 +71,6 @@ export async function getOrgBySlug(slug: string) {
     media: media.data ?? [],
     offers: offers.data ?? [],
     products: products.data ?? [],
-    reviews: reviews.data ?? [],
-    rating: rating.data,
   };
 }
 

@@ -27,9 +27,3 @@ export async function moderateProduct(id: string, status: "approved" | "rejected
   await supabase.from("products").update({ moderation_status: status }).eq("id", id);
   revalidatePath("/admin");
 }
-
-export async function hideReview(id: string): Promise<void> {
-  const { supabase } = await requireAdmin();
-  await supabase.from("reviews").update({ status: "hidden" }).eq("id", id);
-  revalidatePath("/admin");
-}

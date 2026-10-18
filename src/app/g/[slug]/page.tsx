@@ -1,12 +1,10 @@
 import { cache } from "react";
-import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/ProductCard";
-import { Stars } from "@/components/OrgCard";
 import { PageView, TrackedLink } from "@/components/Track";
-import { InquiryForm, ReviewForm } from "@/components/PublicForms";
-import { reportReview, sendInquiry, submitReview } from "./actions";
+import { InquiryForm } from "@/components/PublicForms";
+import { sendInquiry } from "./actions";
 import { getOrgBySlug } from "@/lib/queries";
 import { BILLING_LABEL, ORG_TYPE_LABEL, WEEKDAYS, dateAr, hhmm, jod, publicMediaUrl, waNumber } from "@/lib/format";
 
@@ -28,7 +26,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   const { slug } = await params;
   const d = await load(decodeURIComponent(slug));
   if (!d) notFound();
-  const { org, hours, services, media, offers, products, reviews, rating } = d;
+  const { org, hours, services, media, offers, products } = d;
   const wa = waNumber(org.whatsapp);
   const msg = encodeURIComponent(`مرحبا، شفت ${org.name_ar} على Jordan Gym Reviews وبدي أستفسر.`);
   const card = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
@@ -38,7 +36,6 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
     name: org.name_ar,
     address: { "@type": "PostalAddress", addressLocality: org.city, streetAddress: org.address ?? undefined, addressCountry: "JO" },
     telephone: org.phone ?? undefined,
-    ...(rating?.review_count ? { aggregateRating: { "@type": "AggregateRating", ratingValue: rating.average_rating, reviewCount: rating.review_count } } : {}),
   };
 
   return (
@@ -48,7 +45,6 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       <p className="text-sm text-muted">{ORG_TYPE_LABEL[org.type]}{org.verified_at && <span className="text-accent"> · ✓ موثّق</span>}</p>
       <h1 className="mt-1 text-3xl font-extrabold">{org.name_ar}</h1>
       <p className="mt-1 text-muted">{[org.address, org.area, org.city].filter(Boolean).join("، ")}</p>
-      <div className="mt-2"><Stars avg={rating?.average_rating} count={rating?.review_count} /></div>
 
       <div className="mt-5 flex flex-wrap gap-3">
         {wa && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${msg}`} className="rounded-xl bg-accent px-5 py-2.5 font-bold text-accent-foreground">واتساب</TrackedLink>}
@@ -108,17 +104,6 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </section>
       )}
 
-      <section className="mt-8"><h2 className="mb-3 text-xl font-bold">التقييمات</h2>
-        {reviews.length === 0 ? <p className="text-muted">ما في تقييمات بعد.</p> : (
-          <ul className="space-y-3">{reviews.map((r) => (
-            <li key={r.id} className={card}><div className="flex justify-between text-sm"><span className="font-semibold">{r.author_name || "مستخدم"}</span>
-              <span className="text-accent">{"★".repeat(r.rating)}<span className="text-white/20">{"★".repeat(5 - r.rating)}</span></span></div>
-              {r.body && <p className="mt-2 text-sm">{r.body}</p>}
-              {r.review_responses?.[0] && <p className="mt-3 border-s-2 border-accent ps-3 text-sm text-muted">رد النشاط: {r.review_responses[0].body}</p>}
-              <div className="mt-2 flex items-center justify-between text-xs text-muted"><span>{dateAr(r.created_at)}</span>
-                <form action={reportReview.bind(null, org.slug, r.id)} className="flex gap-1"><input type="hidden" name="reason" value="محتوى مسيء أو غير صحيح" /><button className="underline">إبلاغ</button></form></div></li>))}</ul>)}
-        <ReviewForm action={submitReview.bind(null, org.id, org.slug)} />
-      </section>
       <section className="mt-8"><InquiryForm action={sendInquiry.bind(null, org.id, org.slug)} /></section>
     </div>
   );
