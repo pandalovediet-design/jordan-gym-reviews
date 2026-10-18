@@ -2,19 +2,8 @@ import Link from "next/link";
 import { ORG_TYPE_LABEL, publicMediaUrl } from "@/lib/format";
 import type { Enums } from "@/lib/database.types";
 
-export function Stars({ avg, count }: { avg: number | null | undefined; count?: number | null }) {
-  if (!count) return <span className="text-xs text-muted">لا توجد تقييمات بعد</span>;
-  return (
-    <span className="text-sm">
-      <span className="text-accent">★</span> {Number(avg).toFixed(1)}{" "}
-      <span className="text-muted">({count})</span>
-    </span>
-  );
-}
-
 export function OrgCard({ org }: {
   org: { slug: string; name_ar: string; type: Enums<"org_type">; city: string; area: string | null; description_ar: string | null; verified_at: string | null;
-    rating: { average_rating: number | null; review_count: number | null } | null;
     cover?: { storage_path: string; alt_text: string | null } | null };
 }) {
   return (
@@ -33,7 +22,6 @@ export function OrgCard({ org }: {
       <h3 className="text-lg font-bold">{org.name_ar}</h3>
       <p className="mt-1 text-sm text-muted">{[org.area, org.city].filter(Boolean).join("، ")}</p>
       {org.description_ar && <p className="mt-2 line-clamp-2 text-sm">{org.description_ar}</p>}
-      <div className="mt-3"><Stars avg={org.rating?.average_rating} count={org.rating?.review_count} /></div>
       </div>
     </Link>
   );

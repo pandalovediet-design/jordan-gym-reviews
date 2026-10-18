@@ -2,21 +2,19 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import { ActionForm, field } from "@/components/Form";
 import { dateAr } from "@/lib/format";
-import { respondToReview, setInquiryStatus } from "../../actions";
+import { setInquiryStatus } from "../../actions";
 
-export const metadata: Metadata = { title: "التقييمات والاستفسارات", robots: { index: false } };
+export const metadata: Metadata = { title: "الاستفسارات والإحصاءات", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
 
-export default async function ReviewsAndInquiries({ params }: PageProps<"/dashboard/[id]/reviews">) {
+export default async function InquiriesAndStats({ params }: PageProps<"/dashboard/[id]/inquiries">) {
   const { id } = await params;
   if (!UUID.test(id)) notFound();
   const { supabase } = await requireUser();
   const { data: org } = await supabase.from("organizations").select("id,name_ar").eq("id", id).maybeSingle();
   if (!org) notFound();
-  const [{ data: reviews }, { data: inquiries }, { data: stats }] = await Promise.all([
-    supabase.from("reviews").select("id,author_name,rating,body,created_at,review_responses(body)").eq("organization_id", id).order("created_at", { ascending: false }).limit(50),
+  const [{ data: inquiries }, { data: stats }] = await Promise.all([
     supabase.from("inquiries").select("*").eq("organization_id", id).order("created_at", { ascending: false }).limit(50),
     supabase.from("analytics_events").select("event_type").eq("organization_id", id).limit(5000),
   ]);
@@ -37,13 +35,6 @@ export default async function ReviewsAndInquiries({ params }: PageProps<"/dashbo
               {q.status === "new" && <form action={setInquiryStatus.bind(null, id, q.id, "seen")}><button className="underline">تم الاطلاع</button></form>}
               {q.status !== "closed" && <form action={setInquiryStatus.bind(null, id, q.id, "closed")}><button className="underline">إغلاق</button></form>}</div></li>))}
           {(inquiries ?? []).length === 0 && <li className="text-sm text-muted">لا توجد استفسارات.</li>}</ul></section>
-      <section><h2 className="mb-3 text-lg font-bold">التقييمات</h2>
-        <ul className="space-y-3">{(reviews ?? []).map((r) => (
-          <li key={r.id} className={box}><div className="flex justify-between text-sm"><span className="font-semibold">{r.author_name || "مستخدم"}</span><span className="text-accent">{"★".repeat(r.rating)}</span></div>
-            {r.body && <p className="mt-2 text-sm">{r.body}</p>}
-            <div className="mt-3"><ActionForm action={respondToReview.bind(null, id, r.id)} submit={r.review_responses?.length ? "تعديل الرد" : "رد"}>
-              <textarea name="body" rows={2} defaultValue={r.review_responses?.[0]?.body ?? ""} placeholder="اكتب ردك العلني" className={field} /></ActionForm></div></li>))}
-          {(reviews ?? []).length === 0 && <li className="text-sm text-muted">لا توجد تقييمات.</li>}</ul></section>
     </div>
   );
 }

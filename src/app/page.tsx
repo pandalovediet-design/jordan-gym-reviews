@@ -14,7 +14,7 @@ export default async function Home() {
           دليلك للرياضة في الأردن، <span className="text-accent">أسعار حقيقية</span> وتواصل مباشر
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-muted">
-          نوادي، مدربين، منشآت ومتاجر رياضية: الأسعار، الدوام، الموقع والتقييمات في مكان واحد.
+          نوادي، مدربين، منشآت ومتاجر رياضية: الأسعار، الدوام، الموقع والتواصل المباشر في مكان واحد.
         </p>
         <form action="/search" className="mx-auto mt-8 flex max-w-xl gap-2">
           <input name="q" placeholder="ابحث عن نادي أو مدرب أو منتج..." className="flex-1 rounded-xl bg-surface px-4 py-3 ring-1 ring-white/10 outline-none focus:ring-accent" />

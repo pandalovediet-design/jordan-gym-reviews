@@ -9,7 +9,7 @@ export function SiteHeader() {
         </Link>
         <nav className="flex gap-4 text-sm text-muted">
           <Link href="/search" className="hover:text-foreground">البحث</Link>
-          <Link href="/login" className="hover:text-foreground">تسجيل الدخول</Link>
+          <Link href="/login" className="hover:text-foreground">دخول الأنشطة</Link>
         </nav>
       </div>
     </header>
