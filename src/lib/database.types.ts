@@ -862,6 +862,32 @@ export type Database = {
       }
     }
     Functions: {
+      admin_list_users: {
+        Args: never
+        Returns: {
+          created_at: string
+          display_name: string | null
+          email: string
+          email_confirmed: boolean
+          id: string
+          is_admin: boolean
+          last_sign_in_at: string | null
+          org_count: number
+        }[]
+      }
+      admin_stats: { Args: never; Returns: Json }
+      admin_top_orgs: {
+        Args: { p_days?: number }
+        Returns: {
+          name_ar: string
+          organization_id: string
+          phone: number
+          qr: number
+          slug: string
+          views: number
+          whatsapp: number
+        }[]
+      }
       get_program_by_token: {
         Args: { p_token: string }
         Returns: {

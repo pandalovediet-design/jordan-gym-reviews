@@ -12,20 +12,20 @@ async function requireAdmin() {
 export async function setOrgStatus(id: string, status: "published" | "suspended" | "draft"): Promise<void> {
   const { supabase } = await requireAdmin();
   await supabase.from("organizations").update({ status }).eq("id", id);
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   revalidatePath("/");
 }
 
 export async function setVerified(id: string, verified: boolean): Promise<void> {
   const { supabase } = await requireAdmin();
   await supabase.from("organizations").update({ verified_at: verified ? new Date().toISOString() : null }).eq("id", id);
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 export async function moderateProduct(id: string, status: "approved" | "rejected"): Promise<void> {
   const { supabase } = await requireAdmin();
   await supabase.from("products").update({ moderation_status: status }).eq("id", id);
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 export async function setFeatured(id: string, fd: FormData): Promise<void> {
@@ -38,7 +38,7 @@ export async function setFeatured(id: string, fd: FormData): Promise<void> {
     const until = new Date(Date.now() + days * 86_400_000).toISOString();
     await supabase.from("org_promotions").upsert({ organization_id: id, featured_until: until, featured_rank: rank });
   }
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   revalidatePath("/");
   revalidatePath("/search");
 }

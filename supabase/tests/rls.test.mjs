@@ -473,3 +473,22 @@ test("members, plans and programs are private to the business; token page expose
     assert.equal(none.rows.length, 0);
   });
 });
+
+test("admin dashboard functions work for the admin only", async () => {
+  await asAdmin(async () => {
+    const users = await db.query(`select email, is_admin from public.admin_list_users()`);
+    assert.ok(users.rows.some((u) => u.email === 'alice@test.invalid'));
+    assert.equal(users.rows.find((u) => u.email === 'admin@test.invalid').is_admin, true);
+    const stats = (await db.query(`select public.admin_stats() as s`)).rows[0].s;
+    assert.ok(stats.users_total >= 3);
+    assert.ok(stats.orgs_by_status);
+    await db.query(`select * from public.admin_top_orgs(30)`);
+  });
+  for (const run of [asAlice, asAnon]) {
+    await run(async () => {
+      await rejects(() => db.query(`select * from public.admin_list_users()`));
+      await rejects(() => db.query(`select public.admin_stats()`));
+      await rejects(() => db.query(`select * from public.admin_top_orgs(30)`));
+    });
+  }
+});
