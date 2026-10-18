@@ -136,6 +136,132 @@ export type Database = {
           },
         ]
       }
+      org_promotions: {
+        Row: {
+          created_at: string
+          featured_rank: number
+          featured_until: string | null
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          featured_rank?: number
+          featured_until?: string | null
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          featured_rank?: number
+          featured_until?: string | null
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      membership_plans: {
+        Row: {
+          created_at: string
+          duration_days: number
+          id: string
+          is_active: boolean
+          name_ar: string
+          organization_id: string
+          price_jod: number | null
+        }
+        Insert: {
+          created_at?: string
+          duration_days: number
+          id?: string
+          is_active?: boolean
+          name_ar: string
+          organization_id: string
+          price_jod?: number | null
+        }
+        Update: {
+          created_at?: string
+          duration_days?: number
+          id?: string
+          is_active?: boolean
+          name_ar?: string
+          organization_id?: string
+          price_jod?: number | null
+        }
+        Relationships: []
+      }
+      org_members: {
+        Row: {
+          created_at: string
+          ends_on: string
+          full_name: string
+          id: string
+          notes: string | null
+          organization_id: string
+          phone: string
+          plan_id: string | null
+          starts_on: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          ends_on: string
+          full_name: string
+          id?: string
+          notes?: string | null
+          organization_id: string
+          phone: string
+          plan_id?: string | null
+          starts_on?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          ends_on?: string
+          full_name?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          phone?: string
+          plan_id?: string | null
+          starts_on?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      member_programs: {
+        Row: {
+          access_token: string
+          body: string
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["program_kind"]
+          member_id: string
+          organization_id: string
+          title: string
+        }
+        Insert: {
+          access_token?: string
+          body: string
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["program_kind"]
+          member_id: string
+          organization_id: string
+          title: string
+        }
+        Update: {
+          access_token?: string
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["program_kind"]
+          member_id?: string
+          organization_id?: string
+          title?: string
+        }
+        Relationships: []
+      }
       offers: {
         Row: {
           created_at: string
@@ -144,6 +270,7 @@ export type Database = {
           ends_at: string
           id: string
           is_active: boolean
+          kind: string
           offer_price_jod: number | null
           organization_id: string
           product_id: string | null
@@ -158,6 +285,7 @@ export type Database = {
           ends_at: string
           id?: string
           is_active?: boolean
+          kind?: string
           offer_price_jod?: number | null
           organization_id: string
           product_id?: string | null
@@ -172,6 +300,7 @@ export type Database = {
           ends_at?: string
           id?: string
           is_active?: boolean
+          kind?: string
           offer_price_jod?: number | null
           organization_id?: string
           product_id?: string | null
@@ -698,6 +827,23 @@ export type Database = {
       }
     }
     Views: {
+      organizations_listing: {
+        Row: {
+          area: string | null
+          city: string | null
+          created_at: string | null
+          description_ar: string | null
+          featured_rank: number | null
+          id: string | null
+          is_featured: boolean | null
+          name_ar: string | null
+          name_en: string | null
+          slug: string | null
+          type: Database["public"]["Enums"]["org_type"] | null
+          verified_at: string | null
+        }
+        Relationships: []
+      }
       organization_ratings: {
         Row: {
           average_rating: number | null
@@ -716,6 +862,17 @@ export type Database = {
       }
     }
     Functions: {
+      get_program_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          body: string
+          created_at: string
+          kind: Database["public"]["Enums"]["program_kind"]
+          member_name: string
+          org_name: string
+          title: string
+        }[]
+      }
       is_org_member: {
         Args: {
           p_org: string
@@ -732,7 +889,9 @@ export type Database = {
       storage_org_id: { Args: { p_name: string }; Returns: string }
     }
     Enums: {
+      program_kind: "workout" | "nutrition"
       analytics_event_type:
+        | "qr_scan"
         | "page_view"
         | "product_view"
         | "whatsapp_click"

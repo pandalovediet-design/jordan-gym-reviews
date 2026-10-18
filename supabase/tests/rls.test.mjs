@@ -422,3 +422,54 @@ test("product image path must live inside the product's own organization folder"
        values ($1, $2, 'منتج2', 5, $3)`, [store, cat, `${org.rows[0].id}/stolen.webp`]));
   });
 });
+
+test("featured placement is admin-only and expires; listing view sorts featured first", async () => {
+  const { rows } = await db.query(`select id from public.organizations where slug = 'nutri-test'`);
+  const id = rows[0].id;
+  await asAlice(async () => {
+    await rejects(() => db.query(
+      `insert into public.org_promotions (organization_id, featured_until) values ($1, now() + interval '30 days')`, [id]));
+  });
+  await asAdmin(() => db.query(
+    `insert into public.org_promotions (organization_id, featured_until, featured_rank) values ($1, now() + interval '30 days', 5)`, [id]));
+  await asAnon(async () => {
+    const r = await db.query(`select slug, is_featured from public.organizations_listing order by is_featured desc, featured_rank desc limit 1`);
+    assert.equal(r.rows[0].slug, 'nutri-test');
+    assert.equal(r.rows[0].is_featured, true);
+  });
+  await asAdmin(() => db.query(`update public.org_promotions set featured_until = now() - interval '1 day' where organization_id = $1`, [id]));
+  await asAnon(async () => {
+    const r = await db.query(`select is_featured from public.organizations_listing where slug = 'nutri-test'`);
+    assert.equal(r.rows[0].is_featured, false);
+  });
+});
+
+test("members, plans and programs are private to the business; token page exposes only that program", async () => {
+  const org = (await db.query(`select id from public.organizations where slug = 'nutri-test'`)).rows[0].id;
+  let plan, member, token;
+  await asAlice(async () => {
+    plan = (await db.query(
+      `insert into public.membership_plans (organization_id, name_ar, duration_days, price_jod) values ($1, 'شهري', 30, 25) returning id`, [org])).rows[0].id;
+    member = (await db.query(
+      `insert into public.org_members (organization_id, full_name, phone, plan_id, ends_on)
+       values ($1, 'سامر', '+962791234567', $2, current_date + 30) returning id`, [org, plan])).rows[0].id;
+    token = (await db.query(
+      `insert into public.member_programs (organization_id, member_id, kind, title, body)
+       values ($1, $2, 'workout', 'برنامج صدر', 'اليوم 1: ضغط') returning access_token`, [org, member])).rows[0].access_token;
+  });
+  await asBob(async () => {
+    assert.equal((await db.query(`select id from public.org_members`)).rows.length, 0);
+    assert.equal((await db.query(`select id from public.member_programs`)).rows.length, 0);
+    assert.equal((await db.query(`select id from public.membership_plans`)).rows.length, 0);
+    await rejects(() => db.query(
+      `insert into public.org_members (organization_id, full_name, phone, ends_on) values ($1, 'دخيل', '+962790000000', current_date)`, [org]));
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select id from public.org_members`).catch(() => ({ rows: [] }))).rows.length, 0);
+    const r = await db.query(`select title, body, member_name from public.get_program_by_token($1)`, [token]);
+    assert.equal(r.rows.length, 1);
+    assert.equal(r.rows[0].title, 'برنامج صدر');
+    const none = await db.query(`select * from public.get_program_by_token('00000000-0000-4000-8000-000000000000')`);
+    assert.equal(none.rows.length, 0);
+  });
+});

@@ -27,3 +27,18 @@ export async function moderateProduct(id: string, status: "approved" | "rejected
   await supabase.from("products").update({ moderation_status: status }).eq("id", id);
   revalidatePath("/admin");
 }
+
+export async function setFeatured(id: string, fd: FormData): Promise<void> {
+  const { supabase } = await requireAdmin();
+  const days = Math.max(0, Math.min(366, Number(fd.get("days")) || 0));
+  const rank = Math.max(0, Math.min(100, Number(fd.get("rank")) || 0));
+  if (days === 0) {
+    await supabase.from("org_promotions").delete().eq("organization_id", id);
+  } else {
+    const until = new Date(Date.now() + days * 86_400_000).toISOString();
+    await supabase.from("org_promotions").upsert({ organization_id: id, featured_until: until, featured_rank: rank });
+  }
+  revalidatePath("/admin");
+  revalidatePath("/");
+  revalidatePath("/search");
+}

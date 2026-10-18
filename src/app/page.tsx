@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { OrgCard } from "@/components/OrgCard";
-import { searchOrgs } from "@/lib/queries";
+import { listActiveOffers, searchOrgs } from "@/lib/queries";
 import { ORG_TYPE_LABEL } from "@/lib/format";
 
 export const revalidate = 300;
 
 export default async function Home() {
-  const { items } = await searchOrgs({ page: 1 }).catch(() => ({ items: [], total: 0 }));
+  const [{ items }, offers] = await Promise.all([
+    searchOrgs({ page: 1 }).catch(() => ({ items: [], total: 0 })),
+    listActiveOffers(6).catch(() => []),
+  ]);
   return (
     <div className="mx-auto max-w-5xl px-4">
       <section className="py-16 text-center">
@@ -26,6 +29,20 @@ export default async function Home() {
           ))}
         </div>
       </section>
+      {offers.length > 0 && (
+        <section className="mb-12">
+          <h2 className="mb-4 text-xl font-bold">عروض ودورات حالية</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {offers.map((o) => (
+              <Link key={o.id} href={`/g/${o.organizations!.slug}`} className="rounded-2xl bg-surface p-5 ring-1 ring-white/10 hover:ring-accent/60">
+                <p className="text-xs text-accent">{o.kind === "course" ? "دورة" : o.discount_percent ? `خصم ${o.discount_percent}%` : "عرض"}</p>
+                <h3 className="mt-1 font-bold">{o.title_ar}</h3>
+                <p className="mt-1 text-sm text-muted">{o.organizations!.name_ar} · {o.organizations!.city}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
       <section>
         <h2 className="mb-4 text-xl font-bold">أحدث الأنشطة</h2>
         {items.length === 0 ? (
