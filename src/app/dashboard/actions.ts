@@ -161,18 +161,59 @@ const productSchema = z.object({
   ingredients: opt(2000),
 });
 
+type Sb = Awaited<ReturnType<typeof requireUser>>["supabase"];
+
+async function uploadImage(supabase: Sb, id: string, file: File): Promise<{ path?: string; error?: string }> {
+  const ext = EXT[file.type];
+  if (!ext) return { error: "الصيغ المسموحة: JPG أو PNG أو WebP" };
+  if (file.size > MAX_IMG) return { error: "حجم الصورة أكبر من 4MB" };
+  const path = `${id}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from("org-media").upload(path, file, { contentType: file.type, upsert: false });
+  return error ? { error: "تعذّر رفع الصورة" } : { path };
+}
+
 export async function addProduct(id: string, _: FormState, fd: FormData): Promise<FormState> {
-  const p = productSchema.safeParse(Object.fromEntries(fd));
+  const { image, ...rest } = Object.fromEntries(fd);
+  const p = productSchema.safeParse(rest);
   if (!p.success) return { error: p.error.issues[0].message };
   const { supabase } = await requireUser();
-  const { error } = await supabase.from("products").insert({ ...p.data, organization_id: id });
-  if (error) return { error: "تعذّرت الإضافة (المنتجات للمتاجر فقط)" };
+  let image_path: string | null = null;
+  if (image instanceof File && image.size > 0) {
+    const up = await uploadImage(supabase, id, image);
+    if (up.error) return { error: up.error };
+    image_path = up.path!;
+  }
+  const { error } = await supabase.from("products").insert({ ...p.data, organization_id: id, image_path });
+  if (error) {
+    if (image_path) await supabase.storage.from("org-media").remove([image_path]);
+    return { error: "تعذّرت الإضافة (المنتجات للمتاجر فقط)" };
+  }
   revalidatePath(`/dashboard/${id}`);
   return { ok: "تمت الإضافة. المكملات بتظهر بعد موافقة الإدارة." };
 }
 
+export async function setProductImage(id: string, productId: string, _: FormState, fd: FormData): Promise<FormState> {
+  const file = fd.get("image");
+  if (!(file instanceof File) || file.size === 0) return { error: "اختر صورة" };
+  const { supabase } = await requireUser();
+  const { data: old } = await supabase.from("products").select("image_path").eq("id", productId).eq("organization_id", id).maybeSingle();
+  if (!old) return { error: "المنتج غير موجود" };
+  const up = await uploadImage(supabase, id, file);
+  if (up.error) return { error: up.error };
+  const { error } = await supabase.from("products").update({ image_path: up.path! }).eq("id", productId).eq("organization_id", id);
+  if (error) {
+    await supabase.storage.from("org-media").remove([up.path!]);
+    return { error: "تعذّر حفظ الصورة" };
+  }
+  if (old.image_path && !old.image_path.split("/").pop()?.startsWith("demo-")) await supabase.storage.from("org-media").remove([old.image_path]);
+  revalidatePath(`/dashboard/${id}`);
+  return { ok: "تم تحديث الصورة" };
+}
+
 export async function deleteProduct(id: string, productId: string): Promise<void> {
   const { supabase } = await requireUser();
+  const { data: old } = await supabase.from("products").select("image_path").eq("id", productId).eq("organization_id", id).maybeSingle();
+  if (old?.image_path && !old.image_path.split("/").pop()?.startsWith("demo-")) await supabase.storage.from("org-media").remove([old.image_path]);
   await supabase.from("products").delete().eq("id", productId).eq("organization_id", id);
   revalidatePath(`/dashboard/${id}`);
 }

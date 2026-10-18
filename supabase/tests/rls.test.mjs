@@ -404,3 +404,21 @@ test("nutritionist type: owner can set license fields but cannot self-verify; pr
     assert.equal(r.rows[0].v, true);
   });
 });
+
+test("product image path must live inside the product's own organization folder", async () => {
+  const org = await db.query(`select id from public.organizations where slug = 'nutri-test'`);
+  const store = await asAlice(async () => {
+    const r = await db.query(
+      `insert into public.organizations (type, slug, name_ar, created_by) values ('store', 'img-store', 'متجر صور', $1) returning id`, [ALICE]);
+    return r.rows[0].id;
+  });
+  const cat = (await db.query(`select id from public.product_categories where requires_review = false limit 1`)).rows[0].id;
+  await asAlice(async () => {
+    await db.query(
+      `insert into public.products (organization_id, category_id, name_ar, price_jod, image_path)
+       values ($1, $2, 'منتج', 5, $3)`, [store, cat, `${store}/p1.webp`]);
+    await rejects(() => db.query(
+      `insert into public.products (organization_id, category_id, name_ar, price_jod, image_path)
+       values ($1, $2, 'منتج2', 5, $3)`, [store, cat, `${org.rows[0].id}/stolen.webp`]));
+  });
+});

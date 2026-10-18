@@ -43,7 +43,7 @@ export async function searchProducts(opts: { q?: string; page: number }) {
   const db = createPublicClient();
   let query = db
     .from("products")
-    .select("id,name_ar,brand,price_jod,availability,organization_id,organizations(slug,name_ar,city)", { count: "exact" })
+    .select("id,name_ar,brand,price_jod,availability,description_ar,image_path,organization_id,organizations(slug,name_ar,city)", { count: "exact" })
     .order("created_at", { ascending: false })
     .range((opts.page - 1) * PAGE_SIZE, opts.page * PAGE_SIZE - 1);
   const q = cleanQuery(opts.q ?? "");
@@ -65,7 +65,7 @@ export async function getOrgBySlug(slug: string) {
     db.from("organization_media").select("*").eq("organization_id", org.id).order("sort_order"),
     db.from("offers").select("*").eq("organization_id", org.id).eq("is_active", true).lte("starts_at", now).gte("ends_at", now),
     org.type === "store"
-      ? db.from("products").select("id,name_ar,brand,price_jod,availability").eq("organization_id", org.id).order("created_at", { ascending: false }).limit(48)
+      ? db.from("products").select("id,name_ar,brand,price_jod,availability,description_ar,image_path").eq("organization_id", org.id).order("created_at", { ascending: false }).limit(48)
       : Promise.resolve({ data: [] }),
     db.from("reviews").select("id,author_name,rating,body,created_at,review_responses(body)").eq("organization_id", org.id).eq("status", "published").order("created_at", { ascending: false }).limit(20),
     db.from("organization_ratings").select("*").eq("organization_id", org.id).maybeSingle(),

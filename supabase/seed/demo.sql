@@ -79,3 +79,9 @@ from (values
   ('e0000000-0000-4000-8000-000000000004'::uuid, 'store')) o(id, k),
   generate_series(1, 3) n
 on conflict (storage_path) do nothing;
+
+-- Product images (run after migration 20261018130000_product_image.sql)
+update public.products p set image_path = p.organization_id::text || '/demo-prod-' || x.n || '.webp'
+from (select id, row_number() over (order by name_ar, id) n from public.products
+      where organization_id = 'e0000000-0000-4000-8000-000000000004') x
+where p.id = x.id;

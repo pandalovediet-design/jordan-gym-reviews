@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProduct } from "@/lib/queries";
-import { AVAILABILITY_LABEL, dateAr, jod } from "@/lib/format";
+import { AVAILABILITY_LABEL, dateAr, jod, publicMediaUrl } from "@/lib/format";
 
 export const revalidate = 120;
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -20,6 +20,10 @@ export default async function ProductPage({ params }: PageProps<"/p/[id]">) {
   const row = (k: string, v: string | null) => v && <div className="flex justify-between border-b border-white/10 py-2 text-sm"><dt className="text-muted">{k}</dt><dd>{v}</dd></div>;
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
+      {p.image_path && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={publicMediaUrl(p.image_path)} alt={p.name_ar} className="mb-5 max-h-[28rem] w-full rounded-2xl object-cover" />
+      )}
       <p className="text-sm text-muted">{p.product_categories?.name_ar}</p>
       <h1 className="mt-1 text-3xl font-extrabold">{p.name_ar}</h1>
       <p className="mt-3 text-2xl text-accent">{jod(p.price_jod)}</p>

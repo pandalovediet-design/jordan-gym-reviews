@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { ActionForm, field } from "@/components/Form";
 import { AVAILABILITY_LABEL, BILLING_LABEL, publicMediaUrl, WEEKDAYS, hhmm, jod } from "@/lib/format";
-import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile } from "../actions";
+import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile } from "../actions";
 
 export const metadata: Metadata = { title: "تعديل النشاط", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -20,7 +20,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
     supabase.from("organization_hours").select("*").eq("organization_id", id),
     supabase.from("organization_media").select("*").eq("organization_id", id).order("sort_order"),
     supabase.from("offers").select("*").eq("organization_id", id).order("ends_at", { ascending: false }),
-    supabase.from("products").select("id,name_ar,price_jod,availability,moderation_status").eq("organization_id", id).order("created_at", { ascending: false }),
+    supabase.from("products").select("id,name_ar,price_jod,availability,moderation_status,image_path").eq("organization_id", id).order("created_at", { ascending: false }),
     supabase.from("product_categories").select("id,name_ar").order("sort_order"),
   ]);
   if (!org) notFound();
@@ -113,9 +113,18 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
 
       {org.type === "store" && (
         <section className={box}><h2 className="mb-3 text-lg font-bold">المنتجات</h2>
-          <ul className="mb-4 space-y-2">{(products ?? []).map((p) => (
-            <li key={p.id} className="flex items-center justify-between gap-3 text-sm">
-              <span>{p.name_ar} — <span className="text-accent">{jod(p.price_jod)}</span> · {AVAILABILITY_LABEL[p.availability]}{p.moderation_status !== "approved" && <span className="text-muted"> · {p.moderation_status === "pending" ? "بانتظار الموافقة" : "مرفوض"}</span>}</span>
+          <ul className="mb-4 space-y-3">{(products ?? []).map((p) => (
+            <li key={p.id} className="flex items-start gap-3 text-sm">
+              {p.image_path ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={publicMediaUrl(p.image_path)} alt="" className="size-16 shrink-0 rounded-lg object-cover" />
+              ) : <div className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-background/40 text-xs text-muted">بلا صورة</div>}
+              <div className="flex-1 space-y-1">
+                <p>{p.name_ar} — <span className="text-accent">{jod(p.price_jod)}</span> · {AVAILABILITY_LABEL[p.availability]}{p.moderation_status !== "approved" && <span className="text-muted"> · {p.moderation_status === "pending" ? "بانتظار الموافقة" : "مرفوض"}</span>}</p>
+                <ActionForm action={setProductImage.bind(null, id, p.id)} submit={p.image_path ? "تغيير الصورة" : "رفع صورة"} className="flex flex-wrap items-center gap-2">
+                  <input name="image" type="file" accept="image/jpeg,image/png,image/webp" required className="text-xs" />
+                </ActionForm>
+              </div>
               <form action={deleteProduct.bind(null, id, p.id)}><button className="text-red-300 underline">حذف</button></form></li>))}
             {(products ?? []).length === 0 && <li className="text-sm text-muted">ما أضفت منتجات بعد.</li>}</ul>
           <ActionForm action={addProduct.bind(null, id)} submit="إضافة منتج">
@@ -126,7 +135,8 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
               <input name="price_jod" type="number" step="0.01" min="0" required placeholder="السعر (د.أ)" className={field} />
               <select name="availability" className={field}>{Object.entries(AVAILABILITY_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
             </div>
-            <textarea name="description_ar" rows={2} placeholder="وصف" className={field} />
+            <label className={lbl}>صورة المنتج<input name="image" type="file" accept="image/jpeg,image/png,image/webp" className="text-sm" /></label>
+            <textarea name="description_ar" rows={3} placeholder="شرح المنتج (يظهر تحت الصورة)" className={field} />
             <textarea name="ingredients" rows={2} placeholder="المكونات (للمكملات)" className={field} />
           </ActionForm>
         </section>

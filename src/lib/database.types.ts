@@ -474,6 +474,7 @@ export type Database = {
           created_at: string
           description_ar: string | null
           id: string
+          image_path: string | null
           ingredients: string | null
           is_published: boolean
           manufacturer: string | null
@@ -496,6 +497,7 @@ export type Database = {
           created_at?: string
           description_ar?: string | null
           id?: string
+          image_path?: string | null
           ingredients?: string | null
           is_published?: boolean
           manufacturer?: string | null
@@ -518,6 +520,7 @@ export type Database = {
           created_at?: string
           description_ar?: string | null
           id?: string
+          image_path?: string | null
           ingredients?: string | null
           is_published?: boolean
           manufacturer?: string | null
