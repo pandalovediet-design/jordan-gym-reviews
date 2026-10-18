@@ -33,7 +33,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   const card = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": org.type === "store" ? "SportingGoodsStore" : "SportsActivityLocation",
+    "@type": org.type === "store" ? "SportingGoodsStore" : org.type === "nutritionist" ? "HealthAndBeautyBusiness" : "SportsActivityLocation",
     name: org.name_ar,
     address: { "@type": "PostalAddress", addressLocality: org.city, streetAddress: org.address ?? undefined, addressCountry: "JO" },
     telephone: org.phone ?? undefined,
@@ -63,6 +63,13 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
             // eslint-disable-next-line @next/next/no-img-element
             <img key={m.id} src={publicMediaUrl(m.storage_path)} alt={m.alt_text ?? org.name_ar} loading="lazy" className="aspect-[4/3] w-full rounded-xl object-cover" />
           ))}
+        </div>
+      )}
+
+      {org.type === "nutritionist" && (
+        <div className="mt-6 rounded-2xl bg-surface p-4 text-sm ring-1 ring-white/10">
+          {org.license_number && <p>الترخيص: <span dir="ltr">{org.license_number}</span>{org.license_authority && ` — ${org.license_authority}`}{!org.verified_at && <span className="text-muted"> (لم تتم مراجعته بعد)</span>}</p>}
+          <p className="mt-1 text-muted">المعلومات المعروضة لأغراض التعريف فقط وليست بديلاً عن الاستشارة الطبية.</p>
         </div>
       )}
 

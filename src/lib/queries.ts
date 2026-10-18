@@ -3,7 +3,7 @@ import { cleanQuery } from "@/lib/format";
 import type { Enums } from "@/lib/database.types";
 
 export const PAGE_SIZE = 12;
-const ORG_TYPES = ["gym", "independent_coach", "sports_facility", "store"] as const;
+const ORG_TYPES = ["gym", "independent_coach", "sports_facility", "store", "nutritionist"] as const;
 export const isOrgType = (v: string | undefined): v is Enums<"org_type"> =>
   !!v && (ORG_TYPES as readonly string[]).includes(v);
 

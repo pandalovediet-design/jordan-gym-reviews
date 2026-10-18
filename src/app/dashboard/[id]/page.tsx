@@ -62,6 +62,13 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             <label className={lbl}>خط العرض<input name="latitude" type="number" step="any" defaultValue={org.latitude ?? ""} dir="ltr" className={field} /></label>
             <label className={lbl}>خط الطول<input name="longitude" type="number" step="any" defaultValue={org.longitude ?? ""} dir="ltr" className={field} /></label>
           </div>
+          {org.type === "nutritionist" && (
+            <div className="grid gap-3 rounded-xl border border-white/10 p-3 sm:grid-cols-2">
+              <label className={lbl}>رقم الترخيص<input name="license_number" defaultValue={org.license_number ?? ""} dir="ltr" className={field} /></label>
+              <label className={lbl}>الجهة المرخِّصة<input name="license_authority" defaultValue={org.license_authority ?? ""} className={field} /></label>
+              <p className="text-xs text-muted sm:col-span-2">بنراجع الترخيص قبل ما نعطي علامة «موثّق». كتابة الترخيص لحاله ما بتعني توثيق.</p>
+            </div>
+          )}
         </ActionForm>
       </section>
 
