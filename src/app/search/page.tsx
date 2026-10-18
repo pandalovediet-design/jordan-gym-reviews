@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { ProductCard } from "@/components/ProductCard";
 import { OrgCard } from "@/components/OrgCard";
 import { PAGE_SIZE, searchOrgs, searchProducts } from "@/lib/queries";
-import { ORG_TYPE_LABEL, jod, AVAILABILITY_LABEL } from "@/lib/format";
+import { ORG_TYPE_LABEL } from "@/lib/format";
 
 export const metadata: Metadata = { title: "البحث" };
 
@@ -49,15 +50,8 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
 
       {orgs && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{orgs.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>}
       {prods && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {prods.items.map((p) => (
-            <Link key={p.id} href={`/p/${p.id}`} className="rounded-2xl bg-surface p-5 ring-1 ring-white/10 hover:ring-accent/60">
-              <h3 className="font-bold">{p.name_ar}</h3>
-              {p.brand && <p className="text-sm text-muted">{p.brand}</p>}
-              <p className="mt-2 text-accent">{jod(p.price_jod)}</p>
-              <p className="text-xs text-muted">{AVAILABILITY_LABEL[p.availability]} · {p.organizations?.name_ar}</p>
-            </Link>
-          ))}
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+          {prods.items.map((p) => <ProductCard key={p.id} p={p} store={p.organizations?.name_ar} />)}
         </div>
       )}
 

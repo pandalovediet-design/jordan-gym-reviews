@@ -2,12 +2,13 @@ import { cache } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ProductCard } from "@/components/ProductCard";
 import { Stars } from "@/components/OrgCard";
 import { PageView, TrackedLink } from "@/components/Track";
 import { InquiryForm, ReviewForm } from "@/components/PublicForms";
 import { reportReview, sendInquiry, submitReview } from "./actions";
 import { getOrgBySlug } from "@/lib/queries";
-import { AVAILABILITY_LABEL, BILLING_LABEL, ORG_TYPE_LABEL, WEEKDAYS, dateAr, hhmm, jod, publicMediaUrl, waNumber } from "@/lib/format";
+import { BILLING_LABEL, ORG_TYPE_LABEL, WEEKDAYS, dateAr, hhmm, jod, publicMediaUrl, waNumber } from "@/lib/format";
 
 export const revalidate = 120;
 const load = cache(getOrgBySlug);
@@ -103,10 +104,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {org.type === "store" && (
         <section className="mt-8"><h2 className="mb-3 text-xl font-bold">المنتجات</h2>
           {products.length === 0 ? <p className="text-muted">لا توجد منتجات منشورة.</p> : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{products.map((p) => (
-              <Link key={p.id} href={`/p/${p.id}`} className={`${card} hover:ring-accent/60`}>
-                <p className="font-semibold">{p.name_ar}</p>{p.brand && <p className="text-sm text-muted">{p.brand}</p>}
-                <p className="mt-1 text-accent">{jod(p.price_jod)}</p><p className="text-xs text-muted">{AVAILABILITY_LABEL[p.availability]}</p></Link>))}</div>)}
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">{products.map((p) => <ProductCard key={p.id} p={p} />)}</div>)}
         </section>
       )}
 
