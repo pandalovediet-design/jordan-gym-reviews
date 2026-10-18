@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
+import Link from "next/link";
 import { dateAr } from "@/lib/format";
 
 export const metadata: Metadata = { title: "المستخدمون", robots: { index: false } };
@@ -8,7 +9,11 @@ export default async function Users({ searchParams }: PageProps<"/admin/users">)
   const sp = await searchParams;
   const q = (Array.isArray(sp.q) ? sp.q[0] : sp.q)?.toLowerCase().trim() ?? "";
   const { supabase } = await requireUser();
-  const { data, error } = await supabase.rpc("admin_list_users");
+  const [{ data, error }, memberships] = await Promise.all([
+    supabase.rpc("admin_list_users"),
+    supabase.from("organization_members").select("user_id,organizations(id,name_ar,status)"),
+  ]);
+  const orgsOf = (uid: string) => (memberships.data ?? []).filter((m) => m.user_id === uid).flatMap((m) => (m.organizations ? [m.organizations] : []));
   const all = data ?? [];
   const users = q ? all.filter((u) => u.email.toLowerCase().includes(q) || (u.display_name ?? "").toLowerCase().includes(q)) : all;
   const box = "rounded-2xl bg-surface ring-1 ring-white/10";
@@ -27,7 +32,8 @@ export default async function Users({ searchParams }: PageProps<"/admin/users">)
             <tr key={u.id} className="border-t border-white/10">
               <td className="p-3" dir="ltr">{u.email}</td><td className="p-3">{u.display_name ?? "—"}</td>
               <td className="p-3">{dateAr(u.created_at)}</td><td className="p-3">{u.last_sign_in_at ? dateAr(u.last_sign_in_at) : "—"}</td>
-              <td className="p-3">{u.org_count}</td>
+              <td className="p-3">{orgsOf(u.id).length === 0 ? "—" : (
+                <ul className="space-y-1">{orgsOf(u.id).map((o) => <li key={o.id}><Link href={`/dashboard/${o.id}/overview`} className="text-accent underline">{o.name_ar}</Link></li>)}</ul>)}</td>
               <td className="p-3">{u.is_admin && <span className="ml-1 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">أدمن</span>}
                 {u.email_confirmed ? <span className="text-xs text-accent">مؤكد</span> : <span className="text-xs text-yellow-300">غير مؤكد</span>}</td>
             </tr>))}

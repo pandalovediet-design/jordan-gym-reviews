@@ -21,7 +21,16 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
   if (q) query = query.or(`name_ar.ilike.%${q}%,name_en.ilike.%${q}%,city.ilike.%${q}%`);
   if ((STATUSES as readonly string[]).includes(status)) query = query.eq("status", status as (typeof STATUSES)[number]);
   if (isOrgType(type)) query = query.eq("type", type);
-  const [orgs, promos] = await Promise.all([query, supabase.from("org_promotions").select("organization_id,featured_until,featured_rank")]);
+  const [orgs, promos, owners, users] = await Promise.all([
+    query,
+    supabase.from("org_promotions").select("organization_id,featured_until,featured_rank"),
+    supabase.from("organization_members").select("organization_id,user_id,role").eq("role", "owner"),
+    supabase.rpc("admin_list_users"),
+  ]);
+  const emailOf = (orgId: string) => {
+    const m = (owners.data ?? []).find((x) => x.organization_id === orgId);
+    return (users.data ?? []).find((u) => u.id === m?.user_id)?.email ?? null;
+  };
   const promoOf = (id: string) => (promos.data ?? []).find((p) => p.organization_id === id);
   const isLive = (id: string) => { const p = promoOf(id); return !!p?.featured_until && new Date(p.featured_until) > new Date(); };
   const box = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
@@ -40,8 +49,11 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
           <li key={o.id} className={`${box} space-y-3`}>
             <div className="flex flex-wrap items-center justify-between gap-3">
             <div><p className="font-semibold">{o.name_ar} {o.verified_at && <span className="text-accent">✓</span>} {isLive(o.id) && <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">مميّز</span>}</p>
-              <p className="text-xs text-muted">{ORG_TYPE_LABEL[o.type]} · {o.city} · {STATUS_LABEL[o.status]}</p></div>
+              <p className="text-xs text-muted">{ORG_TYPE_LABEL[o.type]} · {o.city} · {STATUS_LABEL[o.status]}</p>
+              {emailOf(o.id) && <p className="text-xs text-muted">المالك: <span dir="ltr">{emailOf(o.id)}</span></p>}</div>
             <div className="flex flex-wrap gap-2">
+              <Link href={`/dashboard/${o.id}/overview`} className={`${btn} !bg-accent text-accent-foreground`}>إدارة الحساب</Link>
+              {o.status === "published" ? <Link href={`/g/${o.slug}`} className={btn}>الصفحة العامة</Link> : <span className="px-2 py-1 text-xs text-muted">الصفحة العامة بعد النشر</span>}
               <Link href={`/admin/qr/${o.id}/sticker`} className={btn}>ستكر QR</Link>
               {o.status !== "published" && <form action={setOrgStatus.bind(null, o.id, "published")}><button className={`${btn} !bg-accent text-accent-foreground`}>نشر</button></form>}
               {o.status === "published" && <form action={setOrgStatus.bind(null, o.id, "suspended")}><button className={btn}>إيقاف</button></form>}
