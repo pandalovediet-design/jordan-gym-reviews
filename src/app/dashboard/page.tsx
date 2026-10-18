@@ -21,7 +21,7 @@ export default async function Dashboard() {
         <p className="rounded-2xl bg-surface p-8 text-center text-muted">ما عندك أنشطة بعد.</p>
       ) : (
         <ul className="space-y-3">{orgs!.map((o) => (
-          <li key={o.id}><Link href={`/dashboard/${o.id}`} className="flex items-center justify-between rounded-2xl bg-surface p-5 ring-1 ring-white/10 hover:ring-accent/60">
+          <li key={o.id}><Link href={`/dashboard/${o.id}/overview`} className="flex items-center justify-between rounded-2xl bg-surface p-5 ring-1 ring-white/10 hover:ring-accent/60">
             <div><p className="font-bold">{o.name_ar}</p><p className="text-sm text-muted">{ORG_TYPE_LABEL[o.type]} · {o.city}</p></div>
             <span className="rounded-full bg-white/10 px-3 py-1 text-xs">{STATUS[o.status]}</span></Link></li>))}</ul>
       )}

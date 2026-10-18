@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function SiteHeader() {
   return (
-    <header className="border-b border-white/10">
+    <header className="border-b border-white/10 print:hidden">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
         <Link href="/" className="text-lg font-extrabold">
           Jordan <span className="text-accent">Gym</span> Reviews
@@ -18,7 +18,7 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   return (
-    <footer className="mt-16 border-t border-white/10 py-8 text-center text-sm text-muted">
+    <footer className="print:hidden mt-16 border-t border-white/10 py-8 text-center text-sm text-muted">
       Jordan Gym Reviews — دليل الرياضة في الأردن
     </footer>
   );

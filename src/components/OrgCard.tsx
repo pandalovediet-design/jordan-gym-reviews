@@ -3,7 +3,7 @@ import { ORG_TYPE_LABEL, publicMediaUrl } from "@/lib/format";
 import type { Enums } from "@/lib/database.types";
 
 export function OrgCard({ org }: {
-  org: { slug: string; name_ar: string; type: Enums<"org_type">; city: string; area: string | null; description_ar: string | null; verified_at: string | null;
+  org: { slug: string; name_ar: string; type: Enums<"org_type">; city: string; area: string | null; description_ar: string | null; verified_at: string | null; is_featured?: boolean;
     cover?: { storage_path: string; alt_text: string | null } | null };
 }) {
   return (
@@ -17,7 +17,10 @@ export function OrgCard({ org }: {
       <div className="p-5">
       <div className="mb-2 flex items-center justify-between text-xs text-muted">
         <span>{ORG_TYPE_LABEL[org.type]}</span>
-        {org.verified_at && <span className="text-accent">✓ موثّق</span>}
+        <span className="flex gap-2">
+          {org.is_featured && <span className="rounded-full bg-accent px-2 py-0.5 font-bold text-accent-foreground">مميّز</span>}
+          {org.verified_at && <span className="text-accent">✓ موثّق</span>}
+        </span>
       </div>
       <h3 className="text-lg font-bold">{org.name_ar}</h3>
       <p className="mt-1 text-sm text-muted">{[org.area, org.city].filter(Boolean).join("، ")}</p>

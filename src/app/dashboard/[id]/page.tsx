@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { ActionForm, field } from "@/components/Form";
 import { AVAILABILITY_LABEL, BILLING_LABEL, publicMediaUrl, WEEKDAYS, hhmm, jod } from "@/lib/format";
+import { missingForPublish } from "@/lib/completeness";
 import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile } from "../actions";
 
 export const metadata: Metadata = { title: "تعديل النشاط", robots: { index: false } };
@@ -24,12 +25,12 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
     supabase.from("product_categories").select("id,name_ar").order("sort_order"),
   ]);
   if (!org) notFound();
+  const missing = org.status === "draft" ? await missingForPublish(supabase, id) : [];
   const box = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
   const lbl = "block space-y-1 text-sm text-muted";
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
-      <Link href="/dashboard" className="text-sm text-muted underline">← أنشطتي</Link>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-extrabold">{org.name_ar}</h1>
         <span className="rounded-full bg-white/10 px-3 py-1 text-xs">{STATUS[org.status]}</span>
@@ -38,10 +39,10 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
       {org.status === "draft" && (
         <form action={submitForReview.bind(null, id)} className={`${box} flex items-center justify-between gap-3`}>
           <p className="text-sm">لما تخلص البيانات، أرسله للمراجعة عشان يظهر للعامة.</p>
-          <button className="rounded-xl bg-accent px-5 py-2 font-bold text-accent-foreground">إرسال للمراجعة</button>
+          <button disabled={missing.length > 0} className="rounded-xl bg-accent px-5 py-2 font-bold text-accent-foreground disabled:opacity-40">إرسال للمراجعة</button>
         </form>
       )}
-      <Link href={`/dashboard/${id}/inquiries`} className="inline-block rounded-xl bg-surface px-4 py-2 text-sm ring-1 ring-white/10 hover:ring-accent">الاستفسارات والإحصاءات</Link>
+      {org.status === "draft" && missing.length > 0 && <p className="rounded-xl bg-yellow-400/10 p-3 text-sm text-yellow-200">ناقص قبل الإرسال: {missing.join("، ")}.</p>}
       {org.status === "published" && <Link href={`/g/${org.slug}`} className="text-accent underline">عرض الصفحة العامة</Link>}
 
       <section className={box}><h2 className="mb-3 text-lg font-bold">البيانات الأساسية</h2>
@@ -144,13 +145,15 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
 
       <section className={box}><h2 className="mb-3 text-lg font-bold">العروض</h2>
         <ul className="mb-4 space-y-2">{(offers ?? []).map((o) => (
-          <li key={o.id} className="flex items-center justify-between gap-3 text-sm"><span>{o.title_ar} <span className="text-muted">حتى {o.ends_at.slice(0, 10)}</span></span>
+          <li key={o.id} className="flex items-center justify-between gap-3 text-sm"><span>{o.kind === "course" ? "🎓 " : ""}{o.title_ar} <span className="text-muted">حتى {o.ends_at.slice(0, 10)}</span></span>
             <form action={deleteOffer.bind(null, id, o.id)}><button className="text-red-300 underline">حذف</button></form></li>))}
           {(offers ?? []).length === 0 && <li className="text-sm text-muted">لا توجد عروض.</li>}</ul>
         <ActionForm action={addOffer.bind(null, id)} submit="إضافة عرض">
           <input name="title_ar" required placeholder="عنوان العرض" className={field} />
           <textarea name="description_ar" rows={2} placeholder="تفاصيل" className={field} />
-          <div className="grid gap-3 sm:grid-cols-3">
+          <select name="kind" className={field}><option value="offer">عرض</option><option value="course">دورة / برنامج</option></select>
+          <div className="grid gap-3 sm:grid-cols-4">
+            <input name="discount_percent" type="number" min="1" max="90" placeholder="نسبة الخصم %" className={field} />
             <input name="offer_price_jod" type="number" step="0.01" min="0" placeholder="سعر العرض" className={field} />
             <input name="starts_at" type="date" required className={field} dir="ltr" />
             <input name="ends_at" type="date" required className={field} dir="ltr" />

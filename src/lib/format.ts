@@ -53,3 +53,30 @@ export function publicMediaUrl(path: string) {
   if (file.startsWith("demo-")) return `/demo/${file}`;
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/org-media/${path}`;
 }
+
+export const ORG_TYPE_PLURAL: Record<Enums<"org_type">, string> = {
+  gym: "نوادي رياضية",
+  independent_coach: "مدربون مستقلون",
+  sports_facility: "منشآت رياضية",
+  store: "متاجر رياضية",
+  nutritionist: "أخصائيو تغذية",
+};
+
+/** Normalize a Jordanian/international phone to +<digits> (07xxxxxxxx -> +9627xxxxxxxx). */
+export function toIntl(v: string | null | undefined) {
+  if (!v) return null;
+  let d = v.replace(/[^\d+]/g, "");
+  if (d.startsWith("00")) d = "+" + d.slice(2);
+  if (d.startsWith("0")) d = "+962" + d.slice(1);
+  if (/^962/.test(d)) d = "+" + d;
+  return d;
+}
+
+export const addDays = (iso: string, days: number) => {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+};
+
+export const isoDaysFromNow = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString();
+export const msAgo = (days: number) => Date.now() - days * 86_400_000;

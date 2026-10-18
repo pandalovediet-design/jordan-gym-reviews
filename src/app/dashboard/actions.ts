@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
+import { missingForPublish } from "@/lib/completeness";
 
 export type FormState = { error?: string; ok?: string } | undefined;
 const opt = (max: number) => z.string().trim().max(max).optional().transform((v) => v || null);
@@ -72,6 +73,7 @@ export async function updateProfile(id: string, _: FormState, fd: FormData): Pro
 
 export async function submitForReview(id: string): Promise<void> {
   const { supabase } = await requireUser();
+  if ((await missingForPublish(supabase, id)).length > 0) return;
   await supabase.from("organizations").update({ status: "pending" }).eq("id", id).eq("status", "draft");
   revalidatePath(`/dashboard/${id}`);
 }
@@ -223,6 +225,8 @@ const offerSchema = z.object({
   title_ar: z.string().trim().min(2, "اكتب عنوان العرض").max(120),
   description_ar: opt(500),
   offer_price_jod: num,
+  discount_percent: z.string().optional().transform((v) => (v ? Number(v) : null)).pipe(z.number().int().min(1, "الخصم من 1 إلى 90").max(90, "الخصم من 1 إلى 90").nullable()),
+  kind: z.enum(["offer", "course"]).default("offer"),
   starts_at: z.string().min(1, "اكتب تاريخ البداية"),
   ends_at: z.string().min(1, "اكتب تاريخ النهاية"),
 });
@@ -233,6 +237,7 @@ export async function addOffer(id: string, _: FormState, fd: FormData): Promise<
   const s = new Date(p.data.starts_at), e = new Date(p.data.ends_at);
   e.setHours(23, 59, 59);
   if (e <= s) return { error: "تاريخ النهاية لازم يكون بعد البداية" };
+  if (p.data.offer_price_jod == null && p.data.discount_percent == null) return { error: "اكتب سعر العرض أو نسبة الخصم" };
   const { supabase } = await requireUser();
   const { error } = await supabase.from("offers").insert({ ...p.data, starts_at: s.toISOString(), ends_at: e.toISOString(), organization_id: id });
   if (error) return { error: "تعذّرت إضافة العرض" };

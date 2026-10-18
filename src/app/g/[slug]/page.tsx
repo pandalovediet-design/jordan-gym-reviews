@@ -1,3 +1,4 @@
+import { baseUrl } from "@/lib/base-url";
 import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -19,6 +20,13 @@ export async function generateMetadata({ params }: PageProps<"/g/[slug]">): Prom
     title: d.org.name_ar,
     description: d.org.description_ar?.slice(0, 160) ?? `${ORG_TYPE_LABEL[d.org.type]} في ${d.org.city}`,
     alternates: { canonical: `/g/${d.org.slug}` },
+    openGraph: {
+      type: "website",
+      locale: "ar_JO",
+      title: d.org.name_ar,
+      description: d.org.description_ar?.slice(0, 160) ?? `${ORG_TYPE_LABEL[d.org.type]} في ${d.org.city}`,
+      images: [d.media[0] ? publicMediaUrl(d.media[0].storage_path) : "/og-default.png"],
+    },
   };
 }
 
@@ -36,12 +44,35 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
     name: org.name_ar,
     address: { "@type": "PostalAddress", addressLocality: org.city, streetAddress: org.address ?? undefined, addressCountry: "JO" },
     telephone: org.phone ?? undefined,
+    description: org.description_ar?.slice(0, 300) ?? undefined,
+    url: `${baseUrl()}/g/${org.slug}`,
+    image: media.slice(0, 5).map((m) => publicMediaUrl(m.storage_path)),
+    geo: org.latitude != null && org.longitude != null ? { "@type": "GeoCoordinates", latitude: org.latitude, longitude: org.longitude } : undefined,
+    sameAs: [org.website, org.instagram ? `https://instagram.com/${org.instagram}` : null].filter(Boolean),
+    openingHoursSpecification: hours.filter((h) => !h.is_closed && h.opens_at && h.closes_at).map((h) => ({
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][h.weekday],
+      opens: hhmm(h.opens_at), closes: hhmm(h.closes_at),
+    })),
+    makesOffer: services.filter((s) => s.price_jod != null).slice(0, 20).map((s) => ({
+      "@type": "Offer", name: s.name_ar, price: s.price_jod, priceCurrency: "JOD",
+    })),
+  };
+  const crumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "الرئيسية", item: baseUrl() },
+      { "@type": "ListItem", position: 2, name: ORG_TYPE_LABEL[org.type] },
+      { "@type": "ListItem", position: 3, name: org.name_ar },
+    ],
   };
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <PageView orgId={org.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs).replace(/</g, "\\u003c") }} />
       <p className="text-sm text-muted">{ORG_TYPE_LABEL[org.type]}{org.verified_at && <span className="text-accent"> · ✓ موثّق</span>}</p>
       <h1 className="mt-1 text-3xl font-extrabold">{org.name_ar}</h1>
       <p className="mt-1 text-muted">{[org.address, org.area, org.city].filter(Boolean).join("، ")}</p>
@@ -75,7 +106,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {offers.length > 0 && (
         <section className="mt-8"><h2 className="mb-3 text-xl font-bold">العروض</h2>
           <div className="grid gap-3 sm:grid-cols-2">{offers.map((o) => (
-            <div key={o.id} className={card}><h3 className="font-bold text-accent">{o.title_ar}</h3>
+            <div key={o.id} className={card}><h3 className="font-bold text-accent">{o.kind === "course" ? "🎓 " : ""}{o.title_ar}</h3>
               {o.description_ar && <p className="text-sm">{o.description_ar}</p>}
               <p className="mt-1 text-xs text-muted">{o.offer_price_jod != null && `${jod(o.offer_price_jod)} · `}{o.discount_percent != null && `خصم ${o.discount_percent}% · `}حتى {dateAr(o.ends_at)}</p></div>))}</div></section>
       )}
