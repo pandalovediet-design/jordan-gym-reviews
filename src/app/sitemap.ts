@@ -1,3 +1,4 @@
+import { baseUrl } from "@/lib/base-url";
 import type { MetadataRoute } from "next";
 import { listCities, listSitemapEntries } from "@/lib/queries";
 import { ORG_TYPE_PLURAL } from "@/lib/format";
@@ -5,7 +6,7 @@ import type { Enums } from "@/lib/database.types";
 
 export const revalidate = 3600;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const base = baseUrl();
   const { orgs, products } = await listSitemapEntries().catch(() => ({ orgs: [], products: [] }));
   const types = Object.keys(ORG_TYPE_PLURAL) as Enums<"org_type">[];
   const dirs = (

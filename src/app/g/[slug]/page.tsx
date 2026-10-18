@@ -1,3 +1,4 @@
+import { baseUrl } from "@/lib/base-url";
 import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -44,7 +45,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
     address: { "@type": "PostalAddress", addressLocality: org.city, streetAddress: org.address ?? undefined, addressCountry: "JO" },
     telephone: org.phone ?? undefined,
     description: org.description_ar?.slice(0, 300) ?? undefined,
-    url: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/g/${org.slug}`,
+    url: `${baseUrl()}/g/${org.slug}`,
     image: media.slice(0, 5).map((m) => publicMediaUrl(m.storage_path)),
     geo: org.latitude != null && org.longitude != null ? { "@type": "GeoCoordinates", latitude: org.latitude, longitude: org.longitude } : undefined,
     sameAs: [org.website, org.instagram ? `https://instagram.com/${org.instagram}` : null].filter(Boolean),
@@ -61,7 +62,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "الرئيسية", item: process.env.NEXT_PUBLIC_SITE_URL ?? "/" },
+      { "@type": "ListItem", position: 1, name: "الرئيسية", item: baseUrl() },
       { "@type": "ListItem", position: 2, name: ORG_TYPE_LABEL[org.type] },
       { "@type": "ListItem", position: 3, name: org.name_ar },
     ],
