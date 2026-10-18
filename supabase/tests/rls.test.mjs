@@ -506,3 +506,48 @@ test("platform admin can manage members and media of any business; strangers sti
     await rejects(() => db.query(`insert into storage.objects (bucket_id, name) values ('org-media', $1)`, [`${org}/bob.webp`]));
   });
 });
+
+test("ads: public sees only live ads without accounting data; only admin writes", async () => {
+  await asAdmin(async () => {
+    const a = (await db.query(
+      `insert into public.ads (placement, title, link_url, starts_at, ends_at)
+       values ('banner', 'إعلان حي', 'https://example.com', now() - interval '1 day', now() + interval '5 days') returning id`)).rows[0].id;
+    await db.query(`insert into public.ads (placement, title, link_url, starts_at, ends_at)
+       values ('banner', 'إعلان منتهي', 'https://example.com', now() - interval '9 days', now() - interval '2 days')`);
+    await db.query(`insert into public.ad_accounting (ad_id, advertiser_name, price_jod) values ($1, 'شركة', 150)`, [a]);
+  });
+  await asAnon(async () => {
+    const r = await db.query(`select title from public.ads`);
+    assert.deepEqual(r.rows.map((x) => x.title), ['إعلان حي']);
+    assert.equal((await db.query(`select * from public.ad_accounting`)).rows.length, 0);
+    await rejects(() => db.query(`insert into public.ads (placement, title, link_url, starts_at, ends_at) values ('banner', 'x1', 'https://a.co', now(), now() + interval '1 day')`));
+  });
+  await asAlice(async () => {
+    assert.equal((await db.query(`select * from public.ad_accounting`)).rows.length, 0);
+    await rejects(() => db.query(`insert into public.ads (placement, title, link_url, starts_at, ends_at) values ('banner', 'x2', 'https://a.co', now(), now() + interval '1 day')`));
+    await rejects(() => db.query(`insert into public.ads (placement, title, link_url, starts_at, ends_at) values ('banner', 'x3', 'javascript:alert(1)', now(), now() + interval '1 day')`));
+  });
+});
+
+test("subscriptions: owner reads own record, strangers don't, only admin writes; domains: verified only is public", async () => {
+  const org = (await db.query(`select id from public.organizations where slug = 'nutri-test'`)).rows[0].id;
+  await asAdmin(() => db.query(
+    `insert into public.org_subscriptions (organization_id, plan_name, amount_jod, period_end) values ($1, 'شهري', 20, current_date + 30)`, [org]));
+  await asAlice(async () => {
+    assert.equal((await db.query(`select * from public.org_subscriptions`)).rows.length, 1);
+    await rejects(() => db.query(`insert into public.org_subscriptions (organization_id, plan_name, amount_jod, period_end) values ($1, 'ذاتي', 0, current_date)`, [org]));
+    await db.query(`insert into public.org_domains (organization_id, domain) values ($1, 'nutri-example.com')`, [org]);
+    await rejects(() => db.query(`insert into public.org_domains (organization_id, domain, status) values ($1, 'other-example.com', 'verified')`, [org]));
+  });
+  await asBob(async () => {
+    assert.equal((await db.query(`select * from public.org_subscriptions`)).rows.length, 0);
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select * from public.org_domains`)).rows.length, 0);
+  });
+  await asAdmin(() => db.query(`update public.org_domains set status = 'verified' where organization_id = $1`, [org]));
+  await asAnon(async () => {
+    const r = await db.query(`select domain from public.org_domains`);
+    assert.equal(r.rows[0].domain, 'nutri-example.com');
+  });
+});

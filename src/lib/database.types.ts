@@ -262,6 +262,144 @@ export type Database = {
         }
         Relationships: []
       }
+      ads: {
+        Row: {
+          clicks: number
+          created_at: string
+          ends_at: string
+          id: string
+          image_path: string | null
+          is_active: boolean
+          link_url: string
+          organization_id: string | null
+          placement: string
+          starts_at: string
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          clicks?: number
+          created_at?: string
+          ends_at: string
+          id?: string
+          image_path?: string | null
+          is_active?: boolean
+          link_url: string
+          organization_id?: string | null
+          placement: string
+          starts_at: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          clicks?: number
+          created_at?: string
+          ends_at?: string
+          id?: string
+          image_path?: string | null
+          is_active?: boolean
+          link_url?: string
+          organization_id?: string | null
+          placement?: string
+          starts_at?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ad_accounting: {
+        Row: {
+          ad_id: string
+          advertiser_name: string | null
+          advertiser_phone: string | null
+          notes: string | null
+          price_jod: number | null
+        }
+        Insert: {
+          ad_id: string
+          advertiser_name?: string | null
+          advertiser_phone?: string | null
+          notes?: string | null
+          price_jod?: number | null
+        }
+        Update: {
+          ad_id?: string
+          advertiser_name?: string | null
+          advertiser_phone?: string | null
+          notes?: string | null
+          price_jod?: number | null
+        }
+        Relationships: []
+      }
+      org_subscriptions: {
+        Row: {
+          amount_jod: number
+          created_at: string
+          id: string
+          notes: string | null
+          organization_id: string
+          paid_at: string
+          period_end: string
+          period_start: string
+          plan_name: string
+        }
+        Insert: {
+          amount_jod: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          organization_id: string
+          paid_at?: string
+          period_end: string
+          period_start?: string
+          plan_name: string
+        }
+        Update: {
+          amount_jod?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          paid_at?: string
+          period_end?: string
+          period_start?: string
+          plan_name?: string
+        }
+        Relationships: []
+      }
+      org_domains: {
+        Row: {
+          created_at: string
+          domain: string
+          id: string
+          organization_id: string
+          status: string
+          verification: Json | null
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          id?: string
+          organization_id: string
+          status?: string
+          verification?: Json | null
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          id?: string
+          organization_id?: string
+          status?: string
+          verification?: Json | null
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       offers: {
         Row: {
           created_at: string
