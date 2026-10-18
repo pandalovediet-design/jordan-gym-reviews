@@ -41,6 +41,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
           <button className="rounded-xl bg-accent px-5 py-2 font-bold text-accent-foreground">إرسال للمراجعة</button>
         </form>
       )}
+      <Link href={`/dashboard/${id}/reviews`} className="inline-block rounded-xl bg-surface px-4 py-2 text-sm ring-1 ring-white/10 hover:ring-accent">التقييمات والاستفسارات والإحصاءات</Link>
       {org.status === "published" && <Link href={`/g/${org.slug}`} className="text-accent underline">عرض الصفحة العامة</Link>}
 
       <section className={box}><h2 className="mb-3 text-lg font-bold">البيانات الأساسية</h2>

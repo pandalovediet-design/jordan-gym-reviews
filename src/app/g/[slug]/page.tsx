@@ -3,6 +3,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Stars } from "@/components/OrgCard";
+import { InquiryForm, ReviewForm } from "@/components/PublicForms";
+import { reportReview, sendInquiry, submitReview } from "./actions";
 import { getOrgBySlug } from "@/lib/queries";
 import { AVAILABILITY_LABEL, BILLING_LABEL, ORG_TYPE_LABEL, WEEKDAYS, dateAr, hhmm, jod, publicMediaUrl, waNumber } from "@/lib/format";
 
@@ -106,8 +108,11 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
               <span className="text-accent">{"★".repeat(r.rating)}<span className="text-white/20">{"★".repeat(5 - r.rating)}</span></span></div>
               {r.body && <p className="mt-2 text-sm">{r.body}</p>}
               {r.review_responses?.[0] && <p className="mt-3 border-s-2 border-accent ps-3 text-sm text-muted">رد النشاط: {r.review_responses[0].body}</p>}
-              <p className="mt-2 text-xs text-muted">{dateAr(r.created_at)}</p></li>))}</ul>)}
+              <div className="mt-2 flex items-center justify-between text-xs text-muted"><span>{dateAr(r.created_at)}</span>
+                <form action={reportReview.bind(null, org.slug, r.id)} className="flex gap-1"><input type="hidden" name="reason" value="محتوى مسيء أو غير صحيح" /><button className="underline">إبلاغ</button></form></div></li>))}</ul>)}
+        <ReviewForm action={submitReview.bind(null, org.id, org.slug)} />
       </section>
+      <section className="mt-8"><InquiryForm action={sendInquiry.bind(null, org.id, org.slug)} /></section>
     </div>
   );
 }
