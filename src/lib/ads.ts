@@ -12,5 +12,7 @@ export async function listLiveAds(): Promise<LiveAd[]> {
 }
 
 export function adImageUrl(path: string | null) {
+  // Demo images ship with the app (public/demo) instead of living in Storage.
+  if (path?.startsWith("demo-")) return `/demo/${path}`;
   return path ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/ads/${path}` : null;
 }
