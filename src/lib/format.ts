@@ -45,7 +45,7 @@ export function waNumber(raw: string | null): string | null {
 
 /** Keep user text safe inside a PostgREST .or() filter. */
 export const cleanQuery = (q: string) =>
-  q.replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim().slice(0, 60);
+  q.replace(/[^\p{L}\p{M}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim().slice(0, 60);
 
 export function publicMediaUrl(path: string) {
   // Demo images ship with the app (public/demo) instead of living in Storage.
