@@ -68,3 +68,14 @@ insert into public.reviews (organization_id, user_id, rating, body) values
  ('e0000000-0000-4000-8000-000000000004','d0000000-0000-4000-8000-000000000003',4,'توفر منتجات وأسعار حلوة (تقييم تجريبي).');
 
 commit;
+
+-- Demo images (files live in public/demo, served by publicMediaUrl for "demo-*" names)
+insert into public.organization_media (organization_id, storage_path, alt_text, sort_order, is_cover)
+select o.id, o.id::text || '/demo-' || o.k || '-' || n || '.webp', 'صورة تجريبية ' || n, n - 1, n = 1
+from (values
+  ('e0000000-0000-4000-8000-000000000001'::uuid, 'gym'),
+  ('e0000000-0000-4000-8000-000000000002'::uuid, 'coach'),
+  ('e0000000-0000-4000-8000-000000000003'::uuid, 'arena'),
+  ('e0000000-0000-4000-8000-000000000004'::uuid, 'store')) o(id, k),
+  generate_series(1, 3) n
+on conflict (storage_path) do nothing;

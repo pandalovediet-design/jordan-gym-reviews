@@ -47,5 +47,8 @@ export const cleanQuery = (q: string) =>
   q.replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim().slice(0, 60);
 
 export function publicMediaUrl(path: string) {
+  // Demo images ship with the app (public/demo) instead of living in Storage.
+  const file = path.split("/").pop() ?? "";
+  if (file.startsWith("demo-")) return `/demo/${file}`;
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/org-media/${path}`;
 }
