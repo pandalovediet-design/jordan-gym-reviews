@@ -109,3 +109,96 @@ export async function saveHours(id: string, _: FormState, fd: FormData): Promise
   revalidatePath(`/dashboard/${id}`);
   return { ok: "تم حفظ الدوام" };
 }
+
+// ---------------------------------------------------------------- media
+const MAX_IMG = 4 * 1024 * 1024;
+const EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+
+export async function uploadMedia(id: string, _: FormState, fd: FormData): Promise<FormState> {
+  const file = fd.get("file");
+  if (!(file instanceof File) || file.size === 0) return { error: "اختر صورة" };
+  const ext = EXT[file.type];
+  if (!ext) return { error: "الصيغ المسموحة: JPG أو PNG أو WebP" };
+  if (file.size > MAX_IMG) return { error: "حجم الصورة أكبر من 4MB" };
+  const { supabase } = await requireUser();
+  const path = `${id}/${crypto.randomUUID()}.${ext}`;
+  const { error: upErr } = await supabase.storage.from("org-media").upload(path, file, { contentType: file.type, upsert: false });
+  if (upErr) return { error: "تعذّر رفع الصورة" };
+  const { count } = await supabase.from("organization_media").select("id", { count: "exact", head: true }).eq("organization_id", id);
+  if ((count ?? 0) >= 12) {
+    await supabase.storage.from("org-media").remove([path]);
+    return { error: "الحد الأقصى 12 صورة" };
+  }
+  const alt = String(fd.get("alt_text") || "").trim().slice(0, 150) || null;
+  const { error } = await supabase.from("organization_media").insert({ organization_id: id, storage_path: path, alt_text: alt, is_cover: (count ?? 0) === 0, sort_order: count ?? 0 });
+  if (error) {
+    await supabase.storage.from("org-media").remove([path]);
+    return { error: "تعذّر حفظ الصورة" };
+  }
+  revalidatePath(`/dashboard/${id}`);
+  return { ok: "تم رفع الصورة" };
+}
+
+export async function deleteMedia(id: string, mediaId: string): Promise<void> {
+  const { supabase } = await requireUser();
+  const { data } = await supabase.from("organization_media").select("storage_path").eq("id", mediaId).eq("organization_id", id).maybeSingle();
+  if (!data) return;
+  await supabase.from("organization_media").delete().eq("id", mediaId).eq("organization_id", id);
+  await supabase.storage.from("org-media").remove([data.storage_path]);
+  revalidatePath(`/dashboard/${id}`);
+}
+
+// ---------------------------------------------------------------- products
+const productSchema = z.object({
+  name_ar: z.string().trim().min(2, "اكتب اسم المنتج").max(120),
+  brand: opt(80),
+  category_id: z.string().uuid("اختر الفئة"),
+  price_jod: z.coerce.number({ message: "اكتب السعر" }).min(0).max(100000),
+  availability: z.enum(["available", "limited", "out_of_stock", "unknown"]),
+  description_ar: opt(2000),
+  ingredients: opt(2000),
+});
+
+export async function addProduct(id: string, _: FormState, fd: FormData): Promise<FormState> {
+  const p = productSchema.safeParse(Object.fromEntries(fd));
+  if (!p.success) return { error: p.error.issues[0].message };
+  const { supabase } = await requireUser();
+  const { error } = await supabase.from("products").insert({ ...p.data, organization_id: id });
+  if (error) return { error: "تعذّرت الإضافة (المنتجات للمتاجر فقط)" };
+  revalidatePath(`/dashboard/${id}`);
+  return { ok: "تمت الإضافة. المكملات بتظهر بعد موافقة الإدارة." };
+}
+
+export async function deleteProduct(id: string, productId: string): Promise<void> {
+  const { supabase } = await requireUser();
+  await supabase.from("products").delete().eq("id", productId).eq("organization_id", id);
+  revalidatePath(`/dashboard/${id}`);
+}
+
+// ---------------------------------------------------------------- offers
+const offerSchema = z.object({
+  title_ar: z.string().trim().min(2, "اكتب عنوان العرض").max(120),
+  description_ar: opt(500),
+  offer_price_jod: num,
+  starts_at: z.string().min(1, "اكتب تاريخ البداية"),
+  ends_at: z.string().min(1, "اكتب تاريخ النهاية"),
+});
+
+export async function addOffer(id: string, _: FormState, fd: FormData): Promise<FormState> {
+  const p = offerSchema.safeParse(Object.fromEntries(fd));
+  if (!p.success) return { error: p.error.issues[0].message };
+  const s = new Date(p.data.starts_at), e = new Date(p.data.ends_at);
+  e.setHours(23, 59, 59);
+  if (e <= s) return { error: "تاريخ النهاية لازم يكون بعد البداية" };
+  const { supabase } = await requireUser();
+  const { error } = await supabase.from("offers").insert({ ...p.data, starts_at: s.toISOString(), ends_at: e.toISOString(), organization_id: id });
+  if (error) return { error: "تعذّرت إضافة العرض" };
+  revalidatePath(`/dashboard/${id}`);
+  return { ok: "تمت إضافة العرض" };
+}
+
+export async function deleteOffer(id: string, offerId: string): Promise<void> {
+  const { supabase } = await requireUser();
+  await supabase.from("offers").delete().eq("id", offerId).eq("organization_id", id);
+  revalidatePath(`/dashboard/${id}`);
+}
