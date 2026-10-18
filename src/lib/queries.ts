@@ -26,11 +26,15 @@ export async function searchOrgs(opts: { q?: string; type?: string; city?: strin
   const ratings = ids.length
     ? (await db.from("organization_ratings").select("*").in("organization_id", ids)).data ?? []
     : [];
+  const covers = ids.length
+    ? (await db.from("organization_media").select("organization_id,storage_path,alt_text,is_cover,sort_order").in("organization_id", ids).order("is_cover", { ascending: false }).order("sort_order")).data ?? []
+    : [];
   return {
     total: count ?? 0,
     items: (data ?? []).map((o) => ({
       ...o,
       rating: ratings.find((r) => r.organization_id === o.id) ?? null,
+      cover: covers.find((c) => c.organization_id === o.id) ?? null,
     })),
   };
 }
