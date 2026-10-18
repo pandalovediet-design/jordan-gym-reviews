@@ -40,3 +40,11 @@ npm run test:db
 - `platform_admins` بلا سياسات: مقصود، الجدول غير قابل للقراءة من المتصفح.
 - `is_org_member`, `is_platform_admin`, `org_is_published` قابلة للتنفيذ من `anon`/`authenticated`: سياسات RLS تستدعيها بصلاحية المستخدم، وهي ترجع true/false فقط عن عضوية المستخدم نفسه أو عن حالة نشاط منشور أصلاً. دوال الـtriggers سُحب منها EXECUTE (migration `hardening`).
 - تنبيهات "multiple permissive policies" ناتجة عن سياسة الأدمن بجانب سياسات الأعضاء. لا أثر يُذكر بحجم البيانات الحالي؛ نعيد النظر بعد وجود حركة فعلية.
+
+## التطبيق (المرحلة الأولى)
+
+- الصفحات العامة: `/`, `/search`, `/g/[slug]`, `/p/[id]` تقرأ بمفتاح anon فقط وRLS يحصرها بالمنشور.
+- الحساب واللوحة: `/login`, `/dashboard`, `/dashboard/[id]`, `/dashboard/[id]/reviews` بجلسة المستخدم (RLS).
+- الإدارة: `/admin` (تتحقق من `is_platform_admin()`). لإضافة أدمن: insert لـ `platform_admins` بالـuser id (يدوياً بعد موافقة المالك).
+- الاستفسارات والإحصاءات (`sendInquiry`, `/api/track`) تكتب بمفتاح service role على الخادم فقط. بدون `SUPABASE_SERVICE_ROLE_KEY` تتعطل بأمان (رسالة للزائر، وبدون تسجيل).
+- متغيرات البيئة المطلوبة: انظر `.env.example`. مفتاح service role يُضاف يدوياً على Vercel ولا يُكتب بالمستودع.

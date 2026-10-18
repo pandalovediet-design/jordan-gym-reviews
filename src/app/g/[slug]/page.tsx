@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Stars } from "@/components/OrgCard";
+import { PageView, TrackedLink } from "@/components/Track";
 import { InquiryForm, ReviewForm } from "@/components/PublicForms";
 import { reportReview, sendInquiry, submitReview } from "./actions";
 import { getOrgBySlug } from "@/lib/queries";
@@ -41,6 +42,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
+      <PageView orgId={org.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <p className="text-sm text-muted">{ORG_TYPE_LABEL[org.type]}{org.verified_at && <span className="text-accent"> · ✓ موثّق</span>}</p>
       <h1 className="mt-1 text-3xl font-extrabold">{org.name_ar}</h1>
@@ -48,8 +50,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       <div className="mt-2"><Stars avg={rating?.average_rating} count={rating?.review_count} /></div>
 
       <div className="mt-5 flex flex-wrap gap-3">
-        {wa && <a href={`https://wa.me/${wa}?text=${msg}`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-accent px-5 py-2.5 font-bold text-accent-foreground">واتساب</a>}
-        {org.phone && <a href={`tel:${org.phone}`} className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">اتصال</a>}
+        {wa && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${msg}`} className="rounded-xl bg-accent px-5 py-2.5 font-bold text-accent-foreground">واتساب</TrackedLink>}
+        {org.phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${org.phone}`} className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">اتصال</TrackedLink>}
         {org.latitude != null && org.longitude != null && (
           <a href={`https://www.google.com/maps?q=${org.latitude},${org.longitude}`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">الموقع على الخريطة</a>
         )}
