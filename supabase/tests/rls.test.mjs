@@ -378,3 +378,29 @@ test("deleting an organization (admin) cascades cleanly", async () => {
     assert.equal(r.rows.length, 0);
   });
 });
+
+test("nutritionist type: owner can set license fields but cannot self-verify; products stay store-only", async () => {
+  const id = await asAlice(async () => {
+    const r = await db.query(
+      `insert into public.organizations (type, slug, name_ar, created_by, license_number, license_authority)
+       values ('nutritionist', 'nutri-test', 'أخصائي اختبار', $1, 'L-123', 'جهة الاختبار') returning id`, [ALICE]);
+    return r.rows[0].id;
+  });
+  await asAlice(async () => {
+    await db.query(`update public.organizations set license_number = 'L-456' where id = $1`, [id]);
+    await db.query(`update public.organizations set verified_at = now() where id = $1`, [id]);
+    const v = await db.query(`select verified_at from public.organizations where id = $1`, [id]);
+    assert.equal(v.rows[0].verified_at, null); // guard silently locks it
+    await rejects(() => db.query(
+      `insert into public.products (organization_id, category_id, name_ar, price_jod)
+       values ($1, (select id from public.product_categories limit 1), 'x', 1)`, [id]));
+  });
+  await asAdmin(async () => {
+    await db.query(`update public.organizations set status = 'published', verified_at = now() where id = $1`, [id]);
+  });
+  await asAnon(async () => {
+    const r = await db.query(`select license_number, verified_at is not null as v from public.organizations where id = $1`, [id]);
+    assert.equal(r.rows[0].license_number, "L-456");
+    assert.equal(r.rows[0].v, true);
+  });
+});

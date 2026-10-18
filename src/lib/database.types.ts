@@ -358,6 +358,8 @@ export type Database = {
           description_ar: string | null
           id: string
           instagram: string | null
+          license_authority: string | null
+          license_number: string | null
           latitude: number | null
           longitude: number | null
           name_ar: string
@@ -380,6 +382,8 @@ export type Database = {
           description_ar?: string | null
           id?: string
           instagram?: string | null
+          license_authority?: string | null
+          license_number?: string | null
           latitude?: number | null
           longitude?: number | null
           name_ar: string
@@ -402,6 +406,8 @@ export type Database = {
           description_ar?: string | null
           id?: string
           instagram?: string | null
+          license_authority?: string | null
+          license_number?: string | null
           latitude?: number | null
           longitude?: number | null
           name_ar?: string
@@ -735,7 +741,7 @@ export type Database = {
       member_role: "owner" | "manager" | "staff"
       moderation_status: "pending" | "approved" | "rejected"
       org_status: "draft" | "pending" | "published" | "suspended"
-      org_type: "gym" | "independent_coach" | "sports_facility" | "store"
+      org_type: "gym" | "independent_coach" | "sports_facility" | "store" | "nutritionist"
       review_status: "published" | "hidden"
     }
     CompositeTypes: {

@@ -13,7 +13,7 @@ const slugify = (s: string) =>
 
 const createSchema = z.object({
   name_ar: z.string().trim().min(2, "اكتب اسم النشاط").max(80),
-  type: z.enum(["gym", "independent_coach", "sports_facility", "store"]),
+  type: z.enum(["gym", "independent_coach", "sports_facility", "store", "nutritionist"]),
   city: z.string().trim().min(2, "اكتب المدينة").max(40),
 });
 
@@ -21,7 +21,7 @@ export async function createOrg(_: FormState, fd: FormData): Promise<FormState> 
   const p = createSchema.safeParse(Object.fromEntries(fd));
   if (!p.success) return { error: p.error.issues[0].message };
   const { supabase, user } = await requireUser();
-  const base = slugify(p.data.name_ar) || (p.data.type === "store" ? "store" : p.data.type === "independent_coach" ? "coach" : "gym");
+  const base = slugify(p.data.name_ar) || (p.data.type === "store" ? "store" : p.data.type === "independent_coach" ? "coach" : p.data.type === "nutritionist" ? "nutritionist" : "gym");
   const slug = `${base}-${Math.random().toString(36).slice(2, 6)}`;
   const { data, error } = await supabase
     .from("organizations")
@@ -53,6 +53,8 @@ const profileSchema = z.object({
   website: opt(200),
   latitude: num,
   longitude: num,
+  license_number: opt(60),
+  license_authority: opt(120),
 });
 
 export async function updateProfile(id: string, _: FormState, fd: FormData): Promise<FormState> {

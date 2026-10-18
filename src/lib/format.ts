@@ -5,6 +5,7 @@ export const ORG_TYPE_LABEL: Record<Enums<"org_type">, string> = {
   independent_coach: "مدرب مستقل",
   sports_facility: "منشأة رياضية",
   store: "متجر رياضي",
+  nutritionist: "أخصائي تغذية",
 };
 
 export const BILLING_LABEL: Record<Enums<"billing_period">, string> = {
