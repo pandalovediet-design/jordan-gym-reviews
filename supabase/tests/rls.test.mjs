@@ -492,3 +492,17 @@ test("admin dashboard functions work for the admin only", async () => {
     });
   }
 });
+
+test("platform admin can manage members and media of any business; strangers still cannot", async () => {
+  const org = (await db.query(`select id from public.organizations where slug = 'nutri-test'`)).rows[0].id;
+  await asAdmin(async () => {
+    assert.ok((await db.query(`select id from public.org_members where organization_id = $1`, [org])).rows.length >= 1);
+    const plan = (await db.query(
+      `insert into public.membership_plans (organization_id, name_ar, duration_days) values ($1, 'أدمن', 7) returning id`, [org])).rows[0].id;
+    assert.ok(plan);
+    await db.query(`insert into storage.objects (bucket_id, name) values ('org-media', $1)`, [`${org}/admin-upload.webp`]);
+  });
+  await asBob(async () => {
+    await rejects(() => db.query(`insert into storage.objects (bucket_id, name) values ('org-media', $1)`, [`${org}/bob.webp`]));
+  });
+});
