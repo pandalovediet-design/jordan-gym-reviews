@@ -4,7 +4,7 @@ import { requireUser } from "@/lib/auth";
 import { ORG_TYPE_LABEL } from "@/lib/format";
 import { cleanQuery } from "@/lib/format";
 import { isOrgType } from "@/lib/queries";
-import { setFeatured, setOrgStatus, setVerified } from "../actions";
+import { clearWomenAccess, setFeatured, setOrgStatus, setVerified } from "../actions";
 
 export const metadata: Metadata = { title: "الأنشطة", robots: { index: false } };
 const STATUSES = ["draft", "pending", "published", "suspended"] as const;
@@ -17,7 +17,7 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
   const status = one(sp.status);
   const type = one(sp.type);
   const { supabase } = await requireUser();
-  let query = supabase.from("organizations").select("id,name_ar,type,city,status,verified_at,slug").order("created_at", { ascending: false }).limit(200);
+  let query = supabase.from("organizations").select("id,name_ar,type,city,status,verified_at,slug,women_access").order("created_at", { ascending: false }).limit(200);
   if (q) query = query.or(`name_ar.ilike.%${q}%,name_en.ilike.%${q}%,city.ilike.%${q}%`);
   if ((STATUSES as readonly string[]).includes(status)) query = query.eq("status", status as (typeof STATUSES)[number]);
   if (isOrgType(type)) query = query.eq("type", type);
@@ -57,6 +57,7 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
               <Link href={`/admin/qr/${o.id}/sticker`} className={btn}>ستكر QR</Link>
               {o.status !== "published" && <form action={setOrgStatus.bind(null, o.id, "published")}><button className={`${btn} !bg-accent text-accent-foreground`}>نشر</button></form>}
               {o.status === "published" && <form action={setOrgStatus.bind(null, o.id, "suspended")}><button className={btn}>إيقاف</button></form>}
+              {o.women_access !== "none" && <form action={clearWomenAccess.bind(null, o.id)}><button className={btn}>💗 إزالة {o.women_access === "women_only" ? "Pink Zone" : "الأوقات النسائية"}</button></form>}
               <form action={setVerified.bind(null, o.id, !o.verified_at)}><button className={btn}>{o.verified_at ? "إلغاء التوثيق" : "توثيق"}</button></form>
             </div></div>
             <form action={setFeatured.bind(null, o.id)} className="flex flex-wrap items-center gap-2 text-xs">

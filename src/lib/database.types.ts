@@ -615,10 +615,44 @@ export type Database = {
           },
         ]
       }
+      org_categories: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name_ar: string
+          org_type: Database["public"]["Enums"]["org_type"]
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name_ar: string
+          org_type: Database["public"]["Enums"]["org_type"]
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name_ar?: string
+          org_type?: Database["public"]["Enums"]["org_type"]
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       organizations: {
         Row: {
+          maps_url: string | null
+          women_access: string
+          women_hours_note: string | null
           address: string | null
           area: string | null
+          category_id: string | null
           city: string
           created_at: string
           created_by: string
@@ -641,6 +675,10 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
+          category_id?: string | null
+          maps_url?: string | null
+          women_access?: string
+          women_hours_note?: string | null
           address?: string | null
           area?: string | null
           city?: string
@@ -665,6 +703,10 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
+          category_id?: string | null
+          maps_url?: string | null
+          women_access?: string
+          women_hours_note?: string | null
           address?: string | null
           area?: string | null
           city?: string
@@ -968,6 +1010,9 @@ export type Database = {
       organizations_listing: {
         Row: {
           area: string | null
+          category_id: string | null
+          category_name: string | null
+          category_slug: string | null
           city: string | null
           created_at: string | null
           description_ar: string | null
@@ -979,6 +1024,8 @@ export type Database = {
           slug: string | null
           type: Database["public"]["Enums"]["org_type"] | null
           verified_at: string | null
+          women_access: string | null
+          women_hours_note: string | null
         }
         Relationships: []
       }

@@ -8,6 +8,7 @@ const TABS = [
   { href: "/admin/users", label: "المستخدمون" },
   { href: "/admin/subscriptions", label: "الاشتراكات" },
   { href: "/admin/ads", label: "الإعلانات" },
+  { href: "/admin/categories", label: "التصنيفات" },
 ];
 
 export function AdminTabs() {

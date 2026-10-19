@@ -80,3 +80,5 @@ export const addDays = (iso: string, days: number) => {
 
 export const isoDaysFromNow = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString();
 export const msAgo = (days: number) => Date.now() - days * 86_400_000;
+
+export const WOMEN_LABEL = { women_only: "Pink Zone", women_hours: "أوقات نسائية" } as const;

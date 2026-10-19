@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { OrgCard } from "@/components/OrgCard";
 import { adImageUrl, listLiveAds } from "@/lib/ads";
-import { listActiveOffers, searchOrgs } from "@/lib/queries";
+import { listActiveOffers, listHomeSections } from "@/lib/queries";
 import { ORG_TYPE_LABEL } from "@/lib/format";
 
 export const revalidate = 300;
 
 export default async function Home() {
-  const [{ items }, offers, ads] = await Promise.all([
-    searchOrgs({ page: 1 }).catch(() => ({ items: [], total: 0 })),
+  const [home, offers, ads] = await Promise.all([
+    listHomeSections().catch(() => ({ sections: [], pink: { total: 0, items: [] } })),
     listActiveOffers(6).catch(() => []),
     listLiveAds().catch(() => []),
   ]);
@@ -74,14 +74,28 @@ export default async function Home() {
           </div>
         </section>
       )}
-      <section>
-        <h2 className="mb-4 text-xl font-bold">أحدث الأنشطة</h2>
-        {items.length === 0 ? (
-          <p className="rounded-2xl bg-surface p-8 text-center text-muted">لا توجد أنشطة منشورة بعد. كن أول من يضيف نشاطه!</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{items.map((o) => <OrgCard key={o.id} org={o} />)}</div>
-        )}
-      </section>
+      {home.pink.items.length > 0 && (
+        <section className="mb-12 rounded-3xl bg-pink-500/10 p-5 ring-1 ring-pink-400/30">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-pink-200">💗 Pink Zone — خاص بالنساء</h2>
+            <Link href="/search?women=only" className="text-sm text-pink-200 underline">عرض الكل ({home.pink.total})</Link>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{home.pink.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>
+        </section>
+      )}
+      {home.sections.length === 0 ? (
+        <p className="rounded-2xl bg-surface p-8 text-center text-muted">لا توجد أنشطة منشورة بعد. كن أول من يضيف نشاطه!</p>
+      ) : (
+        home.sections.map((s) => (
+          <section key={s.key} className="mb-12">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold">{s.title}</h2>
+              <Link href={s.href} className="text-sm text-accent underline">عرض الكل ({s.total})</Link>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{s.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>
+          </section>
+        ))
+      )}
     </div>
   );
 }

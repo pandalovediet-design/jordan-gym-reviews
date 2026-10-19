@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ProductCard } from "@/components/ProductCard";
 import { OrgCard } from "@/components/OrgCard";
-import { PAGE_SIZE, searchOrgs, searchProducts } from "@/lib/queries";
+import { PAGE_SIZE, listCategories, searchOrgs, searchProducts } from "@/lib/queries";
 import { ORG_TYPE_LABEL } from "@/lib/format";
 
 export const metadata: Metadata = { title: "البحث" };
@@ -13,17 +13,21 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
   const q = one(sp.q) ?? "";
   const type = one(sp.type) ?? "";
   const city = one(sp.city) ?? "";
+  const category = one(sp.category) ?? "";
+  const women = one(sp.women) === "only" || one(sp.women) === "any" ? one(sp.women)! : "";
   const mode = one(sp.in) === "products" ? "products" : "orgs";
   const page = Math.max(1, Number.parseInt(one(sp.page) ?? "1", 10) || 1);
 
   let error = false;
-  const orgs = mode === "orgs" ? await searchOrgs({ q, type, city, page }).catch(() => (error = true, null)) : null;
+  const categories = await listCategories().catch(() => []);
+  const orgs = mode === "orgs" ? await searchOrgs({ q, type, city, category, women, page }).catch(() => (error = true, null)) : null;
   const prods = mode === "products" ? await searchProducts({ q, page }).catch(() => (error = true, null)) : null;
   const total = (orgs ?? prods)?.total ?? 0;
   const pages = Math.ceil(total / PAGE_SIZE);
   const href = (p: number) => {
     const u = new URLSearchParams();
     if (q) u.set("q", q); if (type) u.set("type", type); if (city) u.set("city", city);
+    if (category) u.set("category", category); if (women) u.set("women", women);
     if (mode === "products") u.set("in", "products"); u.set("page", String(p));
     return `/search?${u}`;
   };
@@ -31,7 +35,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <form className="mb-6 grid gap-2 sm:grid-cols-[1fr_auto_auto_auto_auto]">
+      <form className="mb-6 grid gap-2 sm:grid-cols-3 lg:grid-cols-[1fr_auto_auto_auto_auto_auto_auto]">
         <input name="q" defaultValue={q} placeholder="ابحث..." className={field} />
         <select name="in" defaultValue={mode} className={field}>
           <option value="orgs">أنشطة</option><option value="products">منتجات</option>
@@ -39,6 +43,15 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
         <select name="type" defaultValue={type} className={field}>
           <option value="">كل الأنواع</option>
           {Object.entries(ORG_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+        </select>
+        <select name="category" defaultValue={category} className={field}>
+          <option value="">كل التصنيفات</option>
+          {categories.map((c) => <option key={c.id} value={c.slug}>{c.name_ar}</option>)}
+        </select>
+        <select name="women" defaultValue={women} className={field}>
+          <option value="">للجميع</option>
+          <option value="only">💗 Pink Zone فقط</option>
+          <option value="any">يشمل أوقات نسائية</option>
         </select>
         <input name="city" defaultValue={city} placeholder="المدينة" className={field} />
         <button className="rounded-xl bg-accent px-6 font-bold text-accent-foreground">بحث</button>

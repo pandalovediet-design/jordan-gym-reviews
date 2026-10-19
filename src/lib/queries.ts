@@ -7,11 +7,42 @@ const ORG_TYPES = ["gym", "independent_coach", "sports_facility", "store", "nutr
 export const isOrgType = (v: string | undefined): v is Enums<"org_type"> =>
   !!v && (ORG_TYPES as readonly string[]).includes(v);
 
-export async function searchOrgs(opts: { q?: string; type?: string; city?: string; page: number }) {
+export const WOMEN_FILTERS = ["only", "any"] as const;
+
+const LISTING_COLS = "id,slug,name_ar,type,city,area,description_ar,verified_at,is_featured,category_id,category_slug,category_name,women_access,women_hours_note";
+
+type ListingRow = {
+  id: string | null; slug: string | null; name_ar: string | null; type: Enums<"org_type"> | null; city: string | null; area: string | null;
+  description_ar: string | null; verified_at: string | null; is_featured: boolean | null;
+  category_id: string | null; category_slug: string | null; category_name: string | null;
+  women_access: string | null; women_hours_note: string | null;
+};
+function mapListing(data: ListingRow[]) {
+  return data.flatMap((o) =>
+    o.id && o.slug && o.name_ar && o.type && o.city
+      ? [{
+          id: o.id, slug: o.slug, name_ar: o.name_ar, type: o.type, city: o.city, area: o.area, description_ar: o.description_ar,
+          verified_at: o.verified_at, is_featured: !!o.is_featured,
+          category_id: o.category_id, category_slug: o.category_slug, category_name: o.category_name,
+          women_access: (o.women_access === "women_only" || o.women_access === "women_hours" ? o.women_access : "none") as "none" | "women_only" | "women_hours",
+          women_hours_note: o.women_hours_note,
+        }]
+      : [],
+  );
+}
+async function withCovers<T extends { id: string }>(db: ReturnType<typeof createPublicClient>, rows: T[]) {
+  const ids = rows.map((o) => o.id);
+  const covers = ids.length
+    ? (await db.from("organization_media").select("organization_id,storage_path,alt_text,is_cover,sort_order").in("organization_id", ids).order("is_cover", { ascending: false }).order("sort_order")).data ?? []
+    : [];
+  return rows.map((o) => ({ ...o, cover: covers.find((c) => c.organization_id === o.id) ?? null }));
+}
+
+export async function searchOrgs(opts: { q?: string; type?: string; city?: string; category?: string; women?: string; page: number }) {
   const db = createPublicClient();
   let query = db
     .from("organizations_listing")
-    .select("id,slug,name_ar,type,city,area,description_ar,verified_at,is_featured", { count: "exact" })
+    .select(LISTING_COLS, { count: "exact" })
     .order("is_featured", { ascending: false })
     .order("featured_rank", { ascending: false })
     .order("created_at", { ascending: false })
@@ -21,23 +52,42 @@ export async function searchOrgs(opts: { q?: string; type?: string; city?: strin
   if (isOrgType(opts.type)) query = query.eq("type", opts.type);
   const city = cleanQuery(opts.city ?? "");
   if (city) query = query.eq("city", city);
+  if (opts.category) query = query.eq("category_slug", /^[a-z0-9-]{2,40}$/.test(opts.category) ? opts.category : "-");
+  if (opts.women === "only") query = query.eq("women_access", "women_only");
+  else if (opts.women === "any") query = query.in("women_access", ["women_only", "women_hours"]);
   const { data, count, error } = await query;
   if (error) throw new Error(error.message);
-  const rows = (data ?? []).flatMap((o) =>
-    o.id && o.slug && o.name_ar && o.type && o.city
-      ? [{ id: o.id, slug: o.slug, name_ar: o.name_ar, type: o.type, city: o.city, area: o.area, description_ar: o.description_ar, verified_at: o.verified_at, is_featured: !!o.is_featured }]
-      : [],
-  );
-  const ids = rows.map((o) => o.id);
-  const covers = ids.length
-    ? (await db.from("organization_media").select("organization_id,storage_path,alt_text,is_cover,sort_order").in("organization_id", ids).order("is_cover", { ascending: false }).order("sort_order")).data ?? []
-    : [];
+  return { total: count ?? 0, items: await withCovers(db, mapListing(data ?? [])) };
+}
+
+export async function listCategories() {
+  const { data } = await createPublicClient().from("org_categories").select("id,slug,org_type,name_ar,sort_order").eq("is_active", true).order("sort_order");
+  return data ?? [];
+}
+
+/** Homepage: one section per category (latest/featured first), plus the Pink Zone row. */
+export async function listHomeSections(perSection = 6) {
+  const db = createPublicClient();
+  const [cats, listing] = await Promise.all([
+    listCategories(),
+    db.from("organizations_listing").select(LISTING_COLS)
+      .order("is_featured", { ascending: false }).order("featured_rank", { ascending: false }).order("created_at", { ascending: false }).limit(400),
+  ]);
+  if (listing.error) throw new Error(listing.error.message);
+  const rows = mapListing(listing.data ?? []);
+  const sections = cats
+    .map((c) => ({ key: c.slug, title: c.name_ar, href: `/search?category=${c.slug}`, items: rows.filter((o) => o.category_id === c.id) }))
+    .filter((s) => s.items.length > 0)
+    .map((s) => ({ ...s, total: s.items.length, items: s.items.slice(0, perSection) }));
+  const uncategorized = rows.filter((o) => !o.category_id);
+  if (uncategorized.length) sections.push({ key: "other", title: "أنشطة أخرى", href: "/search", items: uncategorized.slice(0, perSection), total: uncategorized.length });
+  const pink = rows.filter((o) => o.women_access === "women_only");
+  const shown = new Set([...sections.flatMap((s) => s.items), ...pink.slice(0, perSection)].map((o) => o.id));
+  const withCover = await withCovers(db, rows.filter((o) => shown.has(o.id)));
+  const byId = new Map(withCover.map((o) => [o.id, o]));
   return {
-    total: count ?? 0,
-    items: rows.map((o) => ({
-      ...o,
-      cover: covers.find((c) => c.organization_id === o.id) ?? null,
-    })),
+    sections: sections.map((s) => ({ ...s, items: s.items.map((o) => byId.get(o.id)!) })),
+    pink: { total: pink.length, items: pink.slice(0, perSection).map((o) => byId.get(o.id)!) },
   };
 }
 

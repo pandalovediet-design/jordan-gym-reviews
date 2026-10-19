@@ -1,13 +1,15 @@
 import Link from "next/link";
-import { ORG_TYPE_LABEL, publicMediaUrl } from "@/lib/format";
+import { ORG_TYPE_LABEL, WOMEN_LABEL, publicMediaUrl } from "@/lib/format";
 import type { Enums } from "@/lib/database.types";
 
 export function OrgCard({ org }: {
   org: { slug: string; name_ar: string; type: Enums<"org_type">; city: string; area: string | null; description_ar: string | null; verified_at: string | null; is_featured?: boolean;
+    category_name?: string | null; women_access?: "none" | "women_only" | "women_hours";
     cover?: { storage_path: string; alt_text: string | null } | null };
 }) {
   return (
-    <Link href={`/g/${org.slug}`} className="block overflow-hidden rounded-2xl bg-surface ring-1 ring-white/10 transition hover:ring-accent/60">
+    <Link href={`/g/${org.slug}`} className={`block overflow-hidden rounded-2xl bg-surface ring-1 transition hover:ring-accent/60 ${org.women_access === "women_only" ? "ring-pink-400/60" : "ring-white/10"}`}>
+      {org.women_access === "women_only" && <div className="bg-pink-500 px-4 py-1 text-center text-xs font-bold tracking-wide text-white">💗 {WOMEN_LABEL.women_only}</div>}
       {org.cover ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={publicMediaUrl(org.cover.storage_path)} alt={org.cover.alt_text ?? org.name_ar} loading="lazy" className="aspect-[4/3] w-full object-cover" />
@@ -16,8 +18,9 @@ export function OrgCard({ org }: {
       )}
       <div className="p-5">
       <div className="mb-2 flex items-center justify-between text-xs text-muted">
-        <span>{ORG_TYPE_LABEL[org.type]}</span>
+        <span>{org.category_name ?? ORG_TYPE_LABEL[org.type]}</span>
         <span className="flex gap-2">
+          {org.women_access === "women_hours" && <span className="rounded-full bg-pink-500/20 px-2 py-0.5 font-bold text-pink-300 ring-1 ring-pink-400/40">{WOMEN_LABEL.women_hours}</span>}
           {org.is_featured && <span className="rounded-full bg-accent px-2 py-0.5 font-bold text-accent-foreground">مميّز</span>}
           {org.verified_at && <span className="text-accent">✓ موثّق</span>}
         </span>

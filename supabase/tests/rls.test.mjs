@@ -551,3 +551,35 @@ test("subscriptions: owner reads own record, strangers don't, only admin writes;
     assert.equal(r.rows[0].domain, 'nutri-example.com');
   });
 });
+
+test("categories: public read, admin-only write; type mismatch rejected; Pink Zone + maps link validated", async () => {
+  const org = (await db.query(`select id from public.organizations where slug = 'nutri-test'`)).rows[0].id;
+  await asAnon(async () => {
+    assert.ok((await db.query(`select * from public.org_categories`)).rows.length >= 10);
+    await rejects(() => db.query(`insert into public.org_categories (slug, org_type, name_ar) values ('hack', 'gym', 'اختراق')`));
+  });
+  await asAlice(async () => {
+    await rejects(() => db.query(`insert into public.org_categories (slug, org_type, name_ar) values ('mine', 'gym', 'تصنيفي')`));
+    // wrong type
+    await rejects(() => db.query(`update public.organizations set category_id = (select id from public.org_categories where slug = 'pools') where id = $1`, [org]), "category does not match organization type");
+    // right type
+    await db.query(`update public.organizations set category_id = (select id from public.org_categories where slug = 'nutritionists') where id = $1`, [org]);
+    // Pink Zone and hours note are owner-editable
+    await db.query(`update public.organizations set women_access = 'women_hours', women_hours_note = 'الأحد والثلاثاء 4-8م' where id = $1`, [org]);
+    await rejects(() => db.query(`update public.organizations set women_access = 'everyone' where id = $1`, [org]));
+    // maps link: only Google Maps links
+    await db.query(`update public.organizations set maps_url = 'https://maps.app.goo.gl/abc123' where id = $1`, [org]);
+    await db.query(`update public.organizations set maps_url = 'https://www.google.com/maps/place/Amman' where id = $1`, [org]);
+    await rejects(() => db.query(`update public.organizations set maps_url = 'https://evil.example.com/maps' where id = $1`, [org]));
+    await rejects(() => db.query(`update public.organizations set maps_url = 'javascript:alert(1)' where id = $1`, [org]));
+  });
+  await asAdmin(async () => {
+    await db.query(`update public.organizations set status = 'published' where id = $1`, [org]);
+    await db.query(`update public.organizations set women_access = 'none' where id = $1`, [org]);
+  });
+  await asAnon(async () => {
+    const r = (await db.query(`select category_slug, category_name, women_access from public.organizations_listing where id = $1`, [org])).rows[0];
+    assert.equal(r.category_slug, 'nutritionists');
+    assert.equal(r.women_access, 'none');
+  });
+});

@@ -7,6 +7,7 @@ import { PageView, TrackedLink } from "@/components/Track";
 import { InquiryForm } from "@/components/PublicForms";
 import { sendInquiry } from "./actions";
 import { getOrgBySlug } from "@/lib/queries";
+import { createPublicClient } from "@/lib/supabase/public";
 import { BILLING_LABEL, ORG_TYPE_LABEL, WEEKDAYS, dateAr, hhmm, jod, publicMediaUrl, waNumber } from "@/lib/format";
 
 export const revalidate = 120;
@@ -38,6 +39,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   const wa = waNumber(org.whatsapp);
   const msg = encodeURIComponent(`مرحبا، شفت ${org.name_ar} على Jordan Gym Reviews وبدي أستفسر.`);
   const card = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
+  const mapsHref = org.maps_url ?? (org.latitude != null && org.longitude != null ? `https://www.google.com/maps?q=${org.latitude},${org.longitude}` : null);
+  const category = org.category_id ? (await createPublicClient().from("org_categories").select("name_ar").eq("id", org.category_id).maybeSingle()).data?.name_ar : null;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": org.type === "store" ? "SportingGoodsStore" : org.type === "nutritionist" ? "HealthAndBeautyBusiness" : "SportsActivityLocation",
@@ -73,23 +76,30 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       <PageView orgId={org.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs).replace(/</g, "\\u003c") }} />
-      <p className="text-sm text-muted">{ORG_TYPE_LABEL[org.type]}{org.verified_at && <span className="text-accent"> · ✓ موثّق</span>}</p>
+      {org.women_access === "women_only" && <div className="mb-3 rounded-xl bg-pink-500 px-4 py-2 text-center font-bold text-white">💗 Pink Zone — خاص بالنساء</div>}
+      {org.women_access === "women_hours" && (
+        <div className="mb-3 rounded-xl bg-pink-500/15 px-4 py-2 text-sm text-pink-200 ring-1 ring-pink-400/40">💗 أوقات نسائية{org.women_hours_note ? `: ${org.women_hours_note}` : ""}</div>
+      )}
+      <p className="text-sm text-muted">{category ?? ORG_TYPE_LABEL[org.type]}{org.verified_at && <span className="text-accent"> · ✓ موثّق</span>}</p>
       <h1 className="mt-1 text-3xl font-extrabold">{org.name_ar}</h1>
       <p className="mt-1 text-muted">{[org.address, org.area, org.city].filter(Boolean).join("، ")}</p>
 
       <div className="mt-5 flex flex-wrap gap-3">
         {wa && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${msg}`} className="rounded-xl bg-accent px-5 py-2.5 font-bold text-accent-foreground">واتساب</TrackedLink>}
         {org.phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${org.phone}`} className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">اتصال</TrackedLink>}
-        {org.latitude != null && org.longitude != null && (
-          <a href={`https://www.google.com/maps?q=${org.latitude},${org.longitude}`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">الموقع على الخريطة</a>
+        {mapsHref && (
+          <a href={mapsHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">الموقع على الخريطة</a>
         )}
       </div>
 
       {media.length > 0 && (
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {media.map((m) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={m.id} src={publicMediaUrl(m.storage_path)} alt={m.alt_text ?? org.name_ar} loading="lazy" className="aspect-[4/3] w-full rounded-xl object-cover" />
+            <figure key={m.id}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={publicMediaUrl(m.storage_path)} alt={m.alt_text ?? org.name_ar} loading="lazy" className="aspect-[4/3] w-full rounded-xl object-cover" />
+              {m.alt_text && <figcaption className="mt-1 px-1 text-sm text-muted">{m.alt_text}</figcaption>}
+            </figure>
           ))}
         </div>
       )}

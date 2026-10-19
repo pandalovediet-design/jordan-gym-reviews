@@ -150,3 +150,53 @@ export async function deleteSubscription(id: string): Promise<void> {
   await supabase.from("org_subscriptions").delete().eq("id", id);
   revalidatePath("/admin/subscriptions");
 }
+
+// ---------------------------------------------------------------- categories & Pink Zone
+const catSchema = z.object({
+  org_type: z.enum(["gym", "independent_coach", "sports_facility", "store", "nutritionist"]),
+  name_ar: z.string().trim().min(2, "اكتب اسم التصنيف").max(60),
+  slug: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "الرمز بالإنجليزي صغير وأرقام وشرطات فقط").min(2).max(40),
+  sort_order: z.coerce.number().int().min(0).max(10000).default(0),
+});
+
+export async function addCategory(_: FormState, fd: FormData): Promise<FormState> {
+  const { supabase } = await requireAdmin();
+  const p = catSchema.safeParse(Object.fromEntries(fd));
+  if (!p.success) return { error: p.error.issues[0].message };
+  const { error } = await supabase.from("org_categories").insert(p.data);
+  if (error) return { error: error.code === "23505" ? "هاد الرمز مستخدم." : "تعذّرت الإضافة" };
+  revalidatePath("/admin/categories");
+  revalidatePath("/");
+  return { ok: "تمت الإضافة" };
+}
+
+export async function updateCategory(id: string, fd: FormData): Promise<void> {
+  const { supabase } = await requireAdmin();
+  const name = String(fd.get("name_ar") ?? "").trim();
+  const order = Math.max(0, Math.min(10000, Number(fd.get("sort_order")) || 0));
+  if (name.length < 2 || name.length > 60) return;
+  await supabase.from("org_categories").update({ name_ar: name, sort_order: order }).eq("id", id);
+  revalidatePath("/admin/categories");
+  revalidatePath("/");
+}
+
+export async function setCategoryActive(id: string, active: boolean): Promise<void> {
+  const { supabase } = await requireAdmin();
+  await supabase.from("org_categories").update({ is_active: active }).eq("id", id);
+  revalidatePath("/admin/categories");
+  revalidatePath("/");
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  const { supabase } = await requireAdmin();
+  await supabase.from("org_categories").delete().eq("id", id);
+  revalidatePath("/admin/categories");
+  revalidatePath("/");
+}
+
+export async function clearWomenAccess(orgId: string): Promise<void> {
+  const { supabase } = await requireAdmin();
+  await supabase.from("organizations").update({ women_access: "none", women_hours_note: null }).eq("id", orgId);
+  revalidatePath("/admin", "layout");
+  revalidatePath("/");
+}

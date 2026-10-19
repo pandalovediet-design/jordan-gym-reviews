@@ -15,7 +15,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
   const { id } = await params;
   if (!UUID.test(id)) notFound();
   const { supabase } = await requireUser();
-  const [{ data: org }, { data: services }, { data: hours }, { data: media }, { data: offers }, { data: products }, { data: cats }] = await Promise.all([
+  const [{ data: org }, { data: services }, { data: hours }, { data: media }, { data: offers }, { data: products }, { data: cats }, { data: orgCats }] = await Promise.all([
     supabase.from("organizations").select("*").eq("id", id).maybeSingle(),
     supabase.from("organization_services").select("*").eq("organization_id", id).order("sort_order").order("created_at"),
     supabase.from("organization_hours").select("*").eq("organization_id", id),
@@ -23,6 +23,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
     supabase.from("offers").select("*").eq("organization_id", id).order("ends_at", { ascending: false }),
     supabase.from("products").select("id,name_ar,price_jod,availability,moderation_status,image_path").eq("organization_id", id).order("created_at", { ascending: false }),
     supabase.from("product_categories").select("id,name_ar").order("sort_order"),
+    supabase.from("org_categories").select("id,org_type,name_ar").eq("is_active", true).order("sort_order"),
   ]);
   if (!org) notFound();
   const missing = org.status === "draft" ? await missingForPublish(supabase, id) : [];
@@ -50,6 +51,12 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
           <label className={lbl}>الاسم<input name="name_ar" required defaultValue={org.name_ar} className={field} /></label>
           <label className={lbl}>الاسم بالإنجليزي<input name="name_en" defaultValue={org.name_en ?? ""} dir="ltr" className={field} /></label>
           <label className={lbl}>الوصف<textarea name="description_ar" rows={4} defaultValue={org.description_ar ?? ""} className={field} /></label>
+          <label className={lbl}>التصنيف
+            <select name="category_id" defaultValue={org.category_id ?? ""} className={field}>
+              <option value="">بدون تصنيف</option>
+              {(orgCats ?? []).filter((c) => c.org_type === org.type).map((c) => <option key={c.id} value={c.id}>{c.name_ar}</option>)}
+            </select>
+          </label>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className={lbl}>المدينة<input name="city" required defaultValue={org.city} className={field} /></label>
             <label className={lbl}>المنطقة<input name="area" defaultValue={org.area ?? ""} className={field} /></label>
@@ -60,8 +67,23 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             <label className={lbl}>واتساب<input name="whatsapp" defaultValue={org.whatsapp ?? ""} dir="ltr" placeholder="0791234567" className={field} /></label>
             <label className={lbl}>انستغرام (بدون @)<input name="instagram" defaultValue={org.instagram ?? ""} dir="ltr" className={field} /></label>
             <label className={lbl}>الموقع الإلكتروني<input name="website" defaultValue={org.website ?? ""} dir="ltr" placeholder="https://" className={field} /></label>
-            <label className={lbl}>خط العرض<input name="latitude" type="number" step="any" defaultValue={org.latitude ?? ""} dir="ltr" className={field} /></label>
-            <label className={lbl}>خط الطول<input name="longitude" type="number" step="any" defaultValue={org.longitude ?? ""} dir="ltr" className={field} /></label>
+          </div>
+          <label className={lbl}>رابط الموقع على قوقل ماب (اختياري)
+            <input name="maps_url" defaultValue={org.maps_url ?? ""} dir="ltr" placeholder="https://maps.app.goo.gl/..." className={field} />
+            <span className="block text-xs">افتح قوقل ماب، دوّر على مكانك، اضغط «مشاركة» ثم «نسخ الرابط» والصقه هون.</span>
+          </label>
+          <div className="space-y-2 rounded-xl border border-pink-400/30 bg-pink-500/5 p-3">
+            <label className={lbl}>💗 Pink Zone (للنساء)
+              <select name="women_access" defaultValue={org.women_access} className={field}>
+                <option value="none">عادي (للجميع)</option>
+                <option value="women_only">خاص بالنساء بالكامل — Pink Zone</option>
+                <option value="women_hours">فيه أوقات أو قسم نسائي</option>
+              </select>
+            </label>
+            <label className={lbl}>أوقات القسم النسائي (إذا اخترت «أوقات نسائية»)
+              <input name="women_hours_note" defaultValue={org.women_hours_note ?? ""} maxLength={200} placeholder="مثال: الأحد والثلاثاء من 4 إلى 8 مساءً" className={field} />
+            </label>
+            <p className="text-xs text-muted">اختار «خاص بالنساء بالكامل» فقط إذا النشاط كله للنساء. الإدارة بتراجع وبتقدر تشيل الشارة عند أي إساءة.</p>
           </div>
           {org.type === "nutritionist" && (
             <div className="grid gap-3 rounded-xl border border-white/10 p-3 sm:grid-cols-2">

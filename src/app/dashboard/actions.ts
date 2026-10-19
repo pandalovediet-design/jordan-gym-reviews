@@ -16,6 +16,7 @@ const createSchema = z.object({
   name_ar: z.string().trim().min(2, "اكتب اسم النشاط").max(80),
   type: z.enum(["gym", "independent_coach", "sports_facility", "store", "nutritionist"]),
   city: z.string().trim().min(2, "اكتب المدينة").max(40),
+  category_id: z.string().uuid("اختر التصنيف"),
 });
 
 export async function createOrg(_: FormState, fd: FormData): Promise<FormState> {
@@ -28,7 +29,7 @@ export async function createOrg(_: FormState, fd: FormData): Promise<FormState> 
     .from("organizations")
     .insert({ ...p.data, slug, created_by: user.id })
     .select("id").single();
-  if (error) return { error: error.message.includes("max") || error.message.includes("limit") ? "وصلت الحد الأقصى من الأنشطة." : "تعذّر إنشاء النشاط." };
+  if (error) return { error: error.message.includes("category") ? "التصنيف لا يناسب نوع النشاط." : error.message.includes("max") || error.message.includes("limit") ? "وصلت الحد الأقصى من الأنشطة." : "تعذّر إنشاء النشاط." };
   redirect(`/dashboard/${data.id}`);
 }
 
@@ -52,8 +53,10 @@ const profileSchema = z.object({
   whatsapp: opt(20),
   instagram: opt(60),
   website: opt(200),
-  latitude: num,
-  longitude: num,
+  category_id: z.string().uuid().optional().transform((v) => v || null),
+  women_access: z.enum(["none", "women_only", "women_hours"]).default("none"),
+  women_hours_note: opt(200),
+  maps_url: opt(500),
   license_number: opt(60),
   license_authority: opt(120),
 });
@@ -63,10 +66,10 @@ export async function updateProfile(id: string, _: FormState, fd: FormData): Pro
   if (!p.success) return { error: "تأكد من البيانات المدخلة" };
   const { supabase } = await requireUser();
   const data = { ...p.data, phone: intl(p.data.phone), whatsapp: intl(p.data.whatsapp), instagram: p.data.instagram?.replace(/^@/, "") ?? null };
-  const lat = data.latitude, lng = data.longitude;
-  if ((lat == null) !== (lng == null)) return { error: "اكتب خط العرض والطول معاً أو اتركهم فاضيين" };
+  if (data.maps_url && !/^https:\/\/(maps\.app\.goo\.gl\/|goo\.gl\/maps\/|(www\.|maps\.)?google\.[a-z.]+\/maps)/i.test(data.maps_url)) return { error: "رابط الموقع لازم يكون من قوقل ماب (maps.app.goo.gl أو google.com/maps)." };
+  if (data.women_access !== "women_hours") data.women_hours_note = null;
   const { error } = await supabase.from("organizations").update(data).eq("id", id);
-  if (error) return { error: "تعذّر الحفظ. تأكد من صيغة الهاتف والواتساب والموقع (يبدأ بـ https://)." };
+  if (error) return { error: error.message.includes("category") ? "التصنيف لا يناسب نوع النشاط." : "تعذّر الحفظ. تأكد من صيغة الهاتف والواتساب والموقع (يبدأ بـ https://)." };
   revalidatePath(`/dashboard/${id}`);
   return { ok: "تم الحفظ" };
 }
