@@ -615,6 +615,48 @@ export type Database = {
           },
         ]
       }
+      org_classes: {
+        Row: {
+          created_at: string
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          note: string | null
+          organization_id: string
+          starts_at: string
+          title_ar: string
+          updated_at: string
+          weekday: number
+          women_only: boolean
+        }
+        Insert: {
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          note?: string | null
+          organization_id: string
+          starts_at: string
+          title_ar: string
+          updated_at?: string
+          weekday: number
+          women_only?: boolean
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          note?: string | null
+          organization_id?: string
+          starts_at?: string
+          title_ar?: string
+          updated_at?: string
+          weekday?: number
+          women_only?: boolean
+        }
+        Relationships: []
+      }
       org_categories: {
         Row: {
           created_at: string
@@ -650,6 +692,7 @@ export type Database = {
           maps_url: string | null
           women_access: string
           women_hours_note: string | null
+          free_trial_note: string | null
           address: string | null
           area: string | null
           category_id: string | null
@@ -679,6 +722,7 @@ export type Database = {
           maps_url?: string | null
           women_access?: string
           women_hours_note?: string | null
+          free_trial_note?: string | null
           address?: string | null
           area?: string | null
           city?: string
@@ -707,6 +751,7 @@ export type Database = {
           maps_url?: string | null
           women_access?: string
           women_hours_note?: string | null
+          free_trial_note?: string | null
           address?: string | null
           area?: string | null
           city?: string
@@ -1026,6 +1071,8 @@ export type Database = {
           verified_at: string | null
           women_access: string | null
           women_hours_note: string | null
+          free_trial_note: string | null
+          min_price_jod: number | null
         }
         Relationships: []
       }

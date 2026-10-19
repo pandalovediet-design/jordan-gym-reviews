@@ -57,6 +57,7 @@ const profileSchema = z.object({
   women_access: z.enum(["none", "women_only", "women_hours"]).default("none"),
   women_hours_note: opt(200),
   maps_url: opt(500),
+  free_trial_note: opt(120),
   license_number: opt(60),
   license_authority: opt(120),
 });
@@ -72,6 +73,31 @@ export async function updateProfile(id: string, _: FormState, fd: FormData): Pro
   if (error) return { error: error.message.includes("category") ? "التصنيف لا يناسب نوع النشاط." : "تعذّر الحفظ. تأكد من صيغة الهاتف والواتساب والموقع (يبدأ بـ https://)." };
   revalidatePath(`/dashboard/${id}`);
   return { ok: "تم الحفظ" };
+}
+
+const classSchema = z.object({
+  title_ar: z.string().trim().min(2, "اكتب اسم الحصة").max(80),
+  weekday: z.coerce.number().int().min(0).max(6),
+  starts_at: z.string().regex(/^\d{2}:\d{2}$/, "اكتب وقت البداية"),
+  ends_at: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")).transform((v) => v || null),
+  women_only: z.string().optional().transform((v) => v === "on"),
+  note: opt(200),
+});
+
+export async function addClass(id: string, _: FormState, fd: FormData): Promise<FormState> {
+  const p = classSchema.safeParse(Object.fromEntries(fd));
+  if (!p.success) return { error: p.error.issues[0].message };
+  const { supabase } = await requireUser();
+  const { error } = await supabase.from("org_classes").insert({ ...p.data, organization_id: id });
+  if (error) return { error: "تعذّرت الإضافة" };
+  revalidatePath(`/dashboard/${id}`);
+  return { ok: "تمت إضافة الحصة" };
+}
+
+export async function deleteClass(id: string, classId: string): Promise<void> {
+  const { supabase } = await requireUser();
+  await supabase.from("org_classes").delete().eq("id", classId).eq("organization_id", id);
+  revalidatePath(`/dashboard/${id}`);
 }
 
 export async function submitForReview(id: string): Promise<void> {

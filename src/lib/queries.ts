@@ -9,13 +9,14 @@ export const isOrgType = (v: string | undefined): v is Enums<"org_type"> =>
 
 export const WOMEN_FILTERS = ["only", "any"] as const;
 
-const LISTING_COLS = "id,slug,name_ar,type,city,area,description_ar,verified_at,is_featured,category_id,category_slug,category_name,women_access,women_hours_note";
+const LISTING_COLS = "id,slug,name_ar,type,city,area,description_ar,verified_at,is_featured,category_id,category_slug,category_name,women_access,women_hours_note,free_trial_note,min_price_jod";
 
 type ListingRow = {
   id: string | null; slug: string | null; name_ar: string | null; type: Enums<"org_type"> | null; city: string | null; area: string | null;
   description_ar: string | null; verified_at: string | null; is_featured: boolean | null;
   category_id: string | null; category_slug: string | null; category_name: string | null;
   women_access: string | null; women_hours_note: string | null;
+  free_trial_note: string | null; min_price_jod: number | null;
 };
 function mapListing(data: ListingRow[]) {
   return data.flatMap((o) =>
@@ -26,6 +27,8 @@ function mapListing(data: ListingRow[]) {
           category_id: o.category_id, category_slug: o.category_slug, category_name: o.category_name,
           women_access: (o.women_access === "women_only" || o.women_access === "women_hours" ? o.women_access : "none") as "none" | "women_only" | "women_hours",
           women_hours_note: o.women_hours_note,
+          free_trial_note: o.free_trial_note,
+          min_price_jod: o.min_price_jod == null ? null : Number(o.min_price_jod),
         }]
       : [],
   );
@@ -38,7 +41,7 @@ async function withCovers<T extends { id: string }>(db: ReturnType<typeof create
   return rows.map((o) => ({ ...o, cover: covers.find((c) => c.organization_id === o.id) ?? null }));
 }
 
-export async function searchOrgs(opts: { q?: string; type?: string; city?: string; category?: string; women?: string; page: number }) {
+export async function searchOrgs(opts: { q?: string; type?: string; city?: string; category?: string; women?: string; maxPrice?: number; trial?: boolean; page: number }) {
   const db = createPublicClient();
   let query = db
     .from("organizations_listing")
@@ -55,6 +58,8 @@ export async function searchOrgs(opts: { q?: string; type?: string; city?: strin
   if (opts.category) query = query.eq("category_slug", /^[a-z0-9-]{2,40}$/.test(opts.category) ? opts.category : "-");
   if (opts.women === "only") query = query.eq("women_access", "women_only");
   else if (opts.women === "any") query = query.in("women_access", ["women_only", "women_hours"]);
+  if (opts.maxPrice && opts.maxPrice > 0 && opts.maxPrice < 100000) query = query.lte("min_price_jod", opts.maxPrice);
+  if (opts.trial) query = query.not("free_trial_note", "is", null);
   const { data, count, error } = await query;
   if (error) throw new Error(error.message);
   return { total: count ?? 0, items: await withCovers(db, mapListing(data ?? [])) };
@@ -111,7 +116,7 @@ export async function getOrgBySlug(slug: string) {
     .from("organizations").select("*").eq("slug", slug).eq("status", "published").maybeSingle();
   if (!org) return null;
   const now = new Date().toISOString();
-  const [hours, services, media, offers, products] = await Promise.all([
+  const [hours, services, media, offers, products, classes] = await Promise.all([
     db.from("organization_hours").select("*").eq("organization_id", org.id).order("weekday"),
     db.from("organization_services").select("*").eq("organization_id", org.id).eq("is_active", true).order("sort_order"),
     db.from("organization_media").select("*").eq("organization_id", org.id).order("sort_order"),
@@ -119,6 +124,7 @@ export async function getOrgBySlug(slug: string) {
     org.type === "store"
       ? db.from("products").select("id,name_ar,brand,price_jod,availability,description_ar,image_path").eq("organization_id", org.id).order("created_at", { ascending: false }).limit(48)
       : Promise.resolve({ data: [] }),
+    db.from("org_classes").select("*").eq("organization_id", org.id).eq("is_active", true).order("weekday").order("starts_at"),
   ]);
   return {
     org,
@@ -127,6 +133,7 @@ export async function getOrgBySlug(slug: string) {
     media: media.data ?? [],
     offers: offers.data ?? [],
     products: products.data ?? [],
+    classes: classes.data ?? [],
   };
 }
 
@@ -167,4 +174,14 @@ export async function listCities(type?: Enums<"org_type">) {
   const counts = new Map<string, number>();
   for (const r of data ?? []) if (r.city) counts.set(r.city, (counts.get(r.city) ?? 0) + 1);
   return [...counts.entries()].map(([city, n]) => ({ city, n })).sort((a, b) => b.n - a.n);
+}
+
+export async function listBySlugs(slugs: string[]) {
+  const clean = slugs.filter((s) => /^[a-z0-9-]{2,60}$/i.test(s)).slice(0, 100);
+  if (!clean.length) return [];
+  const db = createPublicClient();
+  const { data, error } = await db.from("organizations_listing").select(LISTING_COLS).in("slug", clean);
+  if (error) throw new Error(error.message);
+  const rows = mapListing(data ?? []).sort((a, b) => clean.indexOf(a.slug) - clean.indexOf(b.slug));
+  return withCovers(db, rows);
 }

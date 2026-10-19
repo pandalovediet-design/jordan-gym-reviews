@@ -15,12 +15,15 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
   const city = one(sp.city) ?? "";
   const category = one(sp.category) ?? "";
   const women = one(sp.women) === "only" || one(sp.women) === "any" ? one(sp.women)! : "";
+  const maxPriceRaw = Number.parseFloat(one(sp.max) ?? "");
+  const maxPrice = Number.isFinite(maxPriceRaw) && maxPriceRaw > 0 ? maxPriceRaw : 0;
+  const trial = one(sp.trial) === "1";
   const mode = one(sp.in) === "products" ? "products" : "orgs";
   const page = Math.max(1, Number.parseInt(one(sp.page) ?? "1", 10) || 1);
 
   let error = false;
   const categories = await listCategories().catch(() => []);
-  const orgs = mode === "orgs" ? await searchOrgs({ q, type, city, category, women, page }).catch(() => (error = true, null)) : null;
+  const orgs = mode === "orgs" ? await searchOrgs({ q, type, city, category, women, maxPrice, trial, page }).catch(() => (error = true, null)) : null;
   const prods = mode === "products" ? await searchProducts({ q, page }).catch(() => (error = true, null)) : null;
   const total = (orgs ?? prods)?.total ?? 0;
   const pages = Math.ceil(total / PAGE_SIZE);
@@ -28,6 +31,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
     const u = new URLSearchParams();
     if (q) u.set("q", q); if (type) u.set("type", type); if (city) u.set("city", city);
     if (category) u.set("category", category); if (women) u.set("women", women);
+    if (maxPrice) u.set("max", String(maxPrice)); if (trial) u.set("trial", "1");
     if (mode === "products") u.set("in", "products"); u.set("page", String(p));
     return `/search?${u}`;
   };
@@ -35,7 +39,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <form className="mb-6 grid gap-2 sm:grid-cols-3 lg:grid-cols-[1fr_auto_auto_auto_auto_auto_auto]">
+      <form className="mb-6 grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
         <input name="q" defaultValue={q} placeholder="ابحث..." className={field} />
         <select name="in" defaultValue={mode} className={field}>
           <option value="orgs">أنشطة</option><option value="products">منتجات</option>
@@ -54,6 +58,8 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
           <option value="any">يشمل أوقات نسائية</option>
         </select>
         <input name="city" defaultValue={city} placeholder="المدينة" className={field} />
+        <input name="max" type="number" min="1" step="1" defaultValue={maxPrice || ""} placeholder="أقصى سعر شهري (د.أ)" className={field} />
+        <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="trial" value="1" defaultChecked={trial} /> 🎟 يوم تجريبي مجاني</label>
         <button className="rounded-xl bg-accent px-6 font-bold text-accent-foreground">بحث</button>
       </form>
 

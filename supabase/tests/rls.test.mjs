@@ -583,3 +583,23 @@ test("categories: public read, admin-only write; type mismatch rejected; Pink Zo
     assert.equal(r.women_access, 'none');
   });
 });
+
+test("free trial note, min price in listing, class schedule RLS", async () => {
+  const org = (await db.query(`select id from public.organizations where slug = 'nutri-test'`)).rows[0].id;
+  await asAlice(async () => {
+    await db.query(`update public.organizations set free_trial_note = 'يوم تجريبي مجاني' where id = $1`, [org]);
+    await rejects(() => db.query(`update public.organizations set free_trial_note = 'x' where id = $1`, [org]));
+    await db.query(`insert into public.organization_services (organization_id, name_ar, price_jod, billing_period) values ($1, 'شهري', 30, 'month'), ($1, 'يومي', 5, 'session')`, [org]);
+    await db.query(`insert into public.org_classes (organization_id, title_ar, weekday, starts_at) values ($1, 'يوغا', 0, '18:00')`, [org]);
+    await rejects(() => db.query(`insert into public.org_classes (organization_id, title_ar, weekday, starts_at) values ($1, 'يوغا', 9, '18:00')`, [org]));
+  });
+  await asBob(async () => {
+    await rejects(() => db.query(`insert into public.org_classes (organization_id, title_ar, weekday, starts_at) values ($1, 'اختراق', 1, '10:00')`, [org]));
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select * from public.org_classes where organization_id = $1`, [org])).rows.length, 1);
+    const r = (await db.query(`select free_trial_note, min_price_jod from public.organizations_listing where id = $1`, [org])).rows[0];
+    assert.equal(r.free_trial_note, 'يوم تجريبي مجاني');
+    assert.equal(Number(r.min_price_jod), 30); // monthly plan wins over the cheaper day pass
+  });
+});

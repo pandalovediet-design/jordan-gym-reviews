@@ -35,9 +35,11 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   const { slug } = await params;
   const d = await load(decodeURIComponent(slug));
   if (!d) notFound();
-  const { org, hours, services, media, offers, products } = d;
+  const { org, hours, services, media, offers, products, classes } = d;
   const wa = waNumber(org.whatsapp);
   const msg = encodeURIComponent(`مرحبا، شفت ${org.name_ar} على Jordan Gym Reviews وبدي أستفسر.`);
+  const trialMsg = encodeURIComponent(`مرحبا، شفت ${org.name_ar} على Jordan Gym Reviews وبدي أحجز يوم تجريبي.`);
+  const shareHref = `https://wa.me/?text=${encodeURIComponent(`${org.name_ar} — ${baseUrl()}/g/${org.slug}`)}`;
   const card = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
   const mapsHref = org.maps_url ?? (org.latitude != null && org.longitude != null ? `https://www.google.com/maps?q=${org.latitude},${org.longitude}` : null);
   const category = org.category_id ? (await createPublicClient().from("org_categories").select("name_ar").eq("id", org.category_id).maybeSingle()).data?.name_ar : null;
@@ -87,6 +89,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       <div className="mt-5 flex flex-wrap gap-3">
         {wa && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${msg}`} className="rounded-xl bg-accent px-5 py-2.5 font-bold text-accent-foreground">واتساب</TrackedLink>}
         {org.phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${org.phone}`} className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">اتصال</TrackedLink>}
+        {wa && org.free_trial_note && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${trialMsg}`} className="rounded-xl bg-accent/15 px-5 py-2.5 font-bold text-accent ring-1 ring-accent/50">🎟 {org.free_trial_note}</TrackedLink>}
+        <a href={shareHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">شارك على واتساب</a>
         {mapsHref && (
           <a href={mapsHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">الموقع على الخريطة</a>
         )}
@@ -137,6 +141,18 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
                 <span className="text-muted">{h.is_closed ? "مغلق" : `${hhmm(h.opens_at)} – ${hhmm(h.closes_at)}`}</span></li>))}</ul>)}
         </section>
       </div>
+
+      {classes.length > 0 && (
+        <section className="mt-8"><h2 className="mb-3 text-xl font-bold">جدول الحصص</h2>
+          <div className="grid gap-3 sm:grid-cols-2">{WEEKDAYS.map((day, i) => {
+            const list = classes.filter((c) => c.weekday === i);
+            return list.length === 0 ? null : (
+              <div key={day} className={card}><h3 className="mb-2 font-bold text-accent">{day}</h3>
+                <ul className="space-y-1 text-sm">{list.map((c) => (
+                  <li key={c.id} className="flex justify-between gap-3"><span>{c.title_ar}{c.women_only && " 💗"}{c.note && <span className="text-muted"> · {c.note}</span>}</span>
+                    <span className="shrink-0 text-muted" dir="ltr">{hhmm(c.starts_at)}{c.ends_at ? `–${hhmm(c.ends_at)}` : ""}</span></li>))}</ul></div>);
+          })}</div></section>
+      )}
 
       {org.type === "store" && (
         <section className="mt-8"><h2 className="mb-3 text-xl font-bold">المنتجات</h2>

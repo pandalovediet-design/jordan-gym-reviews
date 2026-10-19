@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth";
 import { ActionForm, field } from "@/components/Form";
 import { AVAILABILITY_LABEL, BILLING_LABEL, publicMediaUrl, WEEKDAYS, hhmm, jod } from "@/lib/format";
 import { missingForPublish } from "@/lib/completeness";
-import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile } from "../actions";
+import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass } from "../actions";
 
 export const metadata: Metadata = { title: "تعديل النشاط", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -15,7 +15,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
   const { id } = await params;
   if (!UUID.test(id)) notFound();
   const { supabase } = await requireUser();
-  const [{ data: org }, { data: services }, { data: hours }, { data: media }, { data: offers }, { data: products }, { data: cats }, { data: orgCats }] = await Promise.all([
+  const [{ data: org }, { data: services }, { data: hours }, { data: media }, { data: offers }, { data: products }, { data: cats }, { data: orgCats }, { data: classes }] = await Promise.all([
     supabase.from("organizations").select("*").eq("id", id).maybeSingle(),
     supabase.from("organization_services").select("*").eq("organization_id", id).order("sort_order").order("created_at"),
     supabase.from("organization_hours").select("*").eq("organization_id", id),
@@ -24,6 +24,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
     supabase.from("products").select("id,name_ar,price_jod,availability,moderation_status,image_path").eq("organization_id", id).order("created_at", { ascending: false }),
     supabase.from("product_categories").select("id,name_ar").order("sort_order"),
     supabase.from("org_categories").select("id,org_type,name_ar").eq("is_active", true).order("sort_order"),
+    supabase.from("org_classes").select("*").eq("organization_id", id).order("weekday").order("starts_at"),
   ]);
   if (!org) notFound();
   const missing = org.status === "draft" ? await missingForPublish(supabase, id) : [];
@@ -72,6 +73,10 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             <input name="maps_url" defaultValue={org.maps_url ?? ""} dir="ltr" placeholder="https://maps.app.goo.gl/..." className={field} />
             <span className="block text-xs">افتح قوقل ماب، دوّر على مكانك، اضغط «مشاركة» ثم «نسخ الرابط» والصقه هون.</span>
           </label>
+          <label className={lbl}>🎟 عرض يوم تجريبي (اختياري)
+            <input name="free_trial_note" defaultValue={org.free_trial_note ?? ""} maxLength={120} placeholder="مثال: يوم تجريبي مجاني" className={field} />
+            <span className="block text-xs">لو كتبت شي، بيظهر زر «احجز يوم تجريبي» بصفحتك وشارة على بطاقتك، وبيوصل الطلب على واتساب. اتركه فاضي لإخفائه.</span>
+          </label>
           <div className="space-y-2 rounded-xl border border-pink-400/30 bg-pink-500/5 p-3">
             <label className={lbl}>💗 Pink Zone (للنساء)
               <select name="women_access" defaultValue={org.women_access} className={field}>
@@ -107,6 +112,26 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
           <select name="billing_period" className={field}><option value="">—</option>{Object.entries(BILLING_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
         </ActionForm>
       </section>
+
+      {org.type !== "store" && (
+        <section className={box}><h2 className="mb-1 text-lg font-bold">جدول الحصص الأسبوعي</h2>
+          <p className="mb-3 text-xs text-muted">للعرض فقط (بدون حجز). بيظهر للزوار بصفحتك.</p>
+          <ul className="mb-4 space-y-2">{(classes ?? []).map((c) => (
+            <li key={c.id} className="flex items-center justify-between gap-3 text-sm">
+              <span>{WEEKDAYS[c.weekday]} {hhmm(c.starts_at)}{c.ends_at ? `–${hhmm(c.ends_at)}` : ""} — {c.title_ar}{c.women_only && " 💗"}</span>
+              <form action={deleteClass.bind(null, id, c.id)}><button className="text-red-300 underline">حذف</button></form></li>))}
+            {(classes ?? []).length === 0 && <li className="text-sm text-muted">ما أضفت حصص بعد.</li>}</ul>
+          <ActionForm action={addClass.bind(null, id)} submit="إضافة حصة" className="grid gap-3 sm:grid-cols-2">
+            <input name="title_ar" required placeholder="مثال: يوغا" className={field} />
+            <select name="weekday" className={field}>{WEEKDAYS.map((d, i) => <option key={d} value={i}>{d}</option>)}</select>
+            <label className={lbl}>من<input name="starts_at" type="time" required className={field} /></label>
+            <label className={lbl}>إلى (اختياري)<input name="ends_at" type="time" className={field} /></label>
+            <input name="note" maxLength={200} placeholder="ملاحظة (اختياري)" className={`${field} sm:col-span-2`} />
+            <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="women_only" /> 💗 للنساء فقط</label>
+          </ActionForm>
+        </section>
+      )}
+
 
       <section className={box}><h2 className="mb-3 text-lg font-bold">ساعات الدوام</h2>
         <ActionForm action={saveHours.bind(null, id)}>
