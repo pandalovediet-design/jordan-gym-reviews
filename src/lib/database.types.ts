@@ -402,6 +402,7 @@ export type Database = {
       }
       offers: {
         Row: {
+          branch_id: string | null
           created_at: string
           description_ar: string | null
           discount_percent: number | null
@@ -417,6 +418,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          branch_id?: string | null
           created_at?: string
           description_ar?: string | null
           discount_percent?: number | null
@@ -432,6 +434,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          branch_id?: string | null
           created_at?: string
           description_ar?: string | null
           discount_percent?: number | null
@@ -465,6 +468,7 @@ export type Database = {
       }
       organization_hours: {
         Row: {
+          branch_id: string
           closes_at: string | null
           id: string
           is_closed: boolean
@@ -474,6 +478,7 @@ export type Database = {
           weekday: number
         }
         Insert: {
+          branch_id?: string | null
           closes_at?: string | null
           id?: string
           is_closed?: boolean
@@ -483,6 +488,7 @@ export type Database = {
           weekday: number
         }
         Update: {
+          branch_id?: string
           closes_at?: string | null
           id?: string
           is_closed?: boolean
@@ -570,6 +576,7 @@ export type Database = {
       }
       organization_services: {
         Row: {
+          branch_id: string | null
           billing_period: Database["public"]["Enums"]["billing_period"] | null
           created_at: string
           description_ar: string | null
@@ -582,6 +589,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          branch_id?: string | null
           billing_period?: Database["public"]["Enums"]["billing_period"] | null
           created_at?: string
           description_ar?: string | null
@@ -594,6 +602,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          branch_id?: string | null
           billing_period?: Database["public"]["Enums"]["billing_period"] | null
           created_at?: string
           description_ar?: string | null
@@ -617,6 +626,7 @@ export type Database = {
       }
       org_classes: {
         Row: {
+          branch_id: string | null
           created_at: string
           ends_at: string | null
           id: string
@@ -630,6 +640,7 @@ export type Database = {
           women_only: boolean
         }
         Insert: {
+          branch_id?: string | null
           created_at?: string
           ends_at?: string | null
           id?: string
@@ -643,6 +654,7 @@ export type Database = {
           women_only?: boolean
         }
         Update: {
+          branch_id?: string | null
           created_at?: string
           ends_at?: string | null
           id?: string
@@ -654,6 +666,117 @@ export type Database = {
           updated_at?: string
           weekday?: number
           women_only?: boolean
+        }
+        Relationships: []
+      }
+      org_branches: {
+        Row: {
+          address: string | null
+          area: string | null
+          city: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          is_main: boolean
+          latitude: number | null
+          longitude: number | null
+          maps_url: string | null
+          name_ar: string
+          organization_id: string
+          phone: string | null
+          sort_order: number
+          updated_at: string
+          whatsapp: string | null
+          women_access: string
+          women_hours_note: string | null
+        }
+        Insert: {
+          address?: string | null
+          area?: string | null
+          city?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_main?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          maps_url?: string | null
+          name_ar: string
+          organization_id: string
+          phone?: string | null
+          sort_order?: number
+          updated_at?: string
+          whatsapp?: string | null
+          women_access?: string
+          women_hours_note?: string | null
+        }
+        Update: {
+          address?: string | null
+          area?: string | null
+          city?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_main?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          maps_url?: string | null
+          name_ar?: string
+          organization_id?: string
+          phone?: string | null
+          sort_order?: number
+          updated_at?: string
+          whatsapp?: string | null
+          women_access?: string
+          women_hours_note?: string | null
+        }
+        Relationships: []
+      }
+      org_trainers: {
+        Row: {
+          bio_ar: string | null
+          branch_id: string | null
+          created_at: string
+          experience_years: number | null
+          id: string
+          is_active: boolean
+          name_ar: string
+          organization_id: string
+          photo_path: string | null
+          sort_order: number
+          specialties: string | null
+          title_ar: string | null
+          updated_at: string
+        }
+        Insert: {
+          bio_ar?: string | null
+          branch_id?: string | null
+          created_at?: string
+          experience_years?: number | null
+          id?: string
+          is_active?: boolean
+          name_ar: string
+          organization_id: string
+          photo_path?: string | null
+          sort_order?: number
+          specialties?: string | null
+          title_ar?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bio_ar?: string | null
+          branch_id?: string | null
+          created_at?: string
+          experience_years?: number | null
+          id?: string
+          is_active?: boolean
+          name_ar?: string
+          organization_id?: string
+          photo_path?: string | null
+          sort_order?: number
+          specialties?: string | null
+          title_ar?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -821,6 +944,7 @@ export type Database = {
       }
       products: {
         Row: {
+          branch_id: string | null
           availability: Database["public"]["Enums"]["availability_status"]
           availability_updated_at: string
           brand: string | null
@@ -844,6 +968,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          branch_id?: string | null
           availability?: Database["public"]["Enums"]["availability_status"]
           availability_updated_at?: string
           brand?: string | null
@@ -867,6 +992,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          branch_id?: string | null
           availability?: Database["public"]["Enums"]["availability_status"]
           availability_updated_at?: string
           brand?: string | null
@@ -1075,6 +1201,11 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           min_price_jod: number | null
+          branch_count: number | null
+          branch_cities: string[] | null
+          branch_women_only: boolean | null
+          branch_women_hours: boolean | null
+          branch_points: Json | null
         }
         Relationships: []
       }

@@ -603,3 +603,43 @@ test("free trial note, min price in listing, class schedule RLS", async () => {
     assert.equal(Number(r.min_price_jod), 30); // monthly plan wins over the cheaper day pass
   });
 });
+
+test("branches: main branch auto-created, per-branch content, trainers, RLS", async () => {
+  const org = (await db.query(`select id from public.organizations where slug = 'nutri-test'`)).rows[0].id;
+  const main = (await db.query(`select id from public.org_branches where organization_id = $1 and is_main`, [org])).rows;
+  assert.equal(main.length, 1);
+  const mainId = main[0].id;
+  let branchId;
+  await asAlice(async () => {
+    // cannot create a second main, cannot delete main, extra branch needs a city
+    await rejects(() => db.query(`insert into public.org_branches (organization_id, name_ar, is_main) values ($1, 'x2', true)`, [org]));
+    await rejects(() => db.query(`insert into public.org_branches (organization_id, name_ar) values ($1, 'بدون مدينة')`, [org]));
+    const r = await db.query(`insert into public.org_branches (organization_id, name_ar, city, latitude, longitude, women_access) values ($1, 'فرع إربد', 'إربد', 32.55, 35.85, 'women_only') returning id`, [org]);
+    branchId = r.rows[0].id;
+    await db.query(`delete from public.org_branches where id = $1`, [mainId]);
+    assert.equal((await db.query(`select 1 from public.org_branches where id = $1`, [mainId])).rows.length, 1);
+    await rejects(() => db.query(`update public.org_branches set is_main = true where id = $1`, [branchId]));
+    // per-branch price / offer / hours / trainer
+    await db.query(`insert into public.organization_services (organization_id, branch_id, name_ar, price_jod, billing_period) values ($1, $2, 'شهري إربد', 20, 'month')`, [org, branchId]);
+    await db.query(`insert into public.organization_hours (organization_id, branch_id, weekday, opens_at, closes_at) values ($1, $2, 0, '08:00', '22:00')`, [org, branchId]);
+    await rejects(() => db.query(`insert into public.organization_hours (organization_id, branch_id, weekday, opens_at, closes_at) values ($1, $2, 0, '09:00', '21:00')`, [org, branchId]));
+    await db.query(`insert into public.org_trainers (organization_id, branch_id, name_ar, title_ar, experience_years) values ($1, $2, 'كابتن أحمد', 'كمال أجسام', 8)`, [org, branchId]);
+    await rejects(() => db.query(`insert into public.org_trainers (organization_id, name_ar, photo_path) values ($1, 'صورة غريبة', 'other/x.jpg')`, [org]));
+  });
+  // a branch of another organization cannot be referenced
+  const other = (await db.query(`select id from public.organizations where id <> $1 limit 1`, [org])).rows[0];
+  if (other) await asAdmin(() => rejects(() => db.query(`insert into public.organization_services (organization_id, branch_id, name_ar) values ($1, $2, 'تسلل')`, [other.id, branchId])));
+  await asBob(async () => {
+    await rejects(() => db.query(`insert into public.org_branches (organization_id, name_ar, city) values ($1, 'اختراق', 'عمّان')`, [org]));
+    await rejects(() => db.query(`insert into public.org_trainers (organization_id, name_ar) values ($1, 'مخترق')`, [org]));
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select 1 from public.org_branches where organization_id = $1`, [org])).rows.length, 2);
+    assert.equal((await db.query(`select 1 from public.org_trainers where organization_id = $1`, [org])).rows.length, 1);
+    const l = (await db.query(`select branch_count, branch_cities, branch_women_only, branch_points from public.organizations_listing where id = $1`, [org])).rows[0];
+    assert.equal(Number(l.branch_count), 2);
+    assert.deepEqual(l.branch_cities, ['إربد']);
+    assert.equal(l.branch_women_only, true);
+    assert.equal(l.branch_points.length, 1);
+  });
+});

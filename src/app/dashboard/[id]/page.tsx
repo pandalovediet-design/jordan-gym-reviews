@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth";
 import { ActionForm, field } from "@/components/Form";
 import { AVAILABILITY_LABEL, BILLING_LABEL, publicMediaUrl, WEEKDAYS, hhmm, jod } from "@/lib/format";
 import { missingForPublish } from "@/lib/completeness";
-import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass } from "../actions";
+import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setProductAvailability } from "../actions";
 
 export const metadata: Metadata = { title: "تعديل النشاط", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -15,21 +15,35 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
   const { id } = await params;
   if (!UUID.test(id)) notFound();
   const { supabase } = await requireUser();
-  const [{ data: org }, { data: services }, { data: hours }, { data: media }, { data: offers }, { data: products }, { data: cats }, { data: orgCats }, { data: classes }] = await Promise.all([
+  const [{ data: org }, { data: services }, { data: hours }, { data: media }, { data: offers }, { data: products }, { data: cats }, { data: orgCats }, { data: classes }, { data: branches }, { data: trainers }] = await Promise.all([
     supabase.from("organizations").select("*").eq("id", id).maybeSingle(),
     supabase.from("organization_services").select("*").eq("organization_id", id).order("sort_order").order("created_at"),
     supabase.from("organization_hours").select("*").eq("organization_id", id),
     supabase.from("organization_media").select("*").eq("organization_id", id).order("sort_order"),
     supabase.from("offers").select("*").eq("organization_id", id).order("ends_at", { ascending: false }),
-    supabase.from("products").select("id,name_ar,price_jod,availability,moderation_status,image_path").eq("organization_id", id).order("created_at", { ascending: false }),
+    supabase.from("products").select("id,name_ar,price_jod,availability,moderation_status,image_path,branch_id").eq("organization_id", id).order("created_at", { ascending: false }),
     supabase.from("product_categories").select("id,name_ar").order("sort_order"),
     supabase.from("org_categories").select("id,org_type,name_ar").eq("is_active", true).order("sort_order"),
     supabase.from("org_classes").select("*").eq("organization_id", id).order("weekday").order("starts_at"),
+    supabase.from("org_branches").select("*").eq("organization_id", id).order("is_main", { ascending: false }).order("sort_order"),
+    supabase.from("org_trainers").select("*").eq("organization_id", id).order("sort_order"),
   ]);
   if (!org) notFound();
   const missing = org.status === "draft" ? await missingForPublish(supabase, id) : [];
   const box = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
   const lbl = "block space-y-1 text-sm text-muted";
+  const allBranches = branches ?? [];
+  const multi = allBranches.length > 1;
+  const bName = (bid: string | null) => (bid ? allBranches.find((b) => b.id === bid)?.name_ar ?? "" : "");
+  const bTag = (bid: string | null) => (multi ? <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-muted">{bid ? bName(bid) : "كل الفروع"}</span> : null);
+  const branchSelect = multi ? (
+    <label className={lbl}>الفرع
+      <select name="branch_id" defaultValue="" className={field}>
+        <option value="">كل الفروع</option>
+        {allBranches.map((b) => <option key={b.id} value={b.id}>{b.name_ar}{b.city ? ` — ${b.city}` : ""}</option>)}
+      </select>
+    </label>
+  ) : null;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
@@ -100,16 +114,81 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
         </ActionForm>
       </section>
 
+      <section className={box}><h2 className="mb-1 text-lg font-bold">الفروع</h2>
+        <p className="mb-3 text-xs text-muted">الفرع الرئيسي بياخد بياناته من «البيانات الأساسية» فوق. أضف فروعك الثانية هون، وكل فرع بيكون إله أسعاره وعروضه ودوامه ومنتجاته وحصصه.</p>
+        <ul className="mb-4 space-y-2">
+          {allBranches.map((b) => (
+            <li key={b.id} className="rounded-xl bg-background/40 p-3 text-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-semibold">{b.name_ar}{b.is_main && <span className="text-muted"> (الرئيسي — {org.city})</span>}{!b.is_main && b.city && <span className="text-muted"> — {b.city}{b.area ? `، ${b.area}` : ""}</span>}{!b.is_active && <span className="text-yellow-200"> · مخفي</span>}{b.women_access === "women_only" && " 💗"}</span>
+                {!b.is_main && (
+                  <span className="flex gap-3 text-xs">
+                    <form action={setBranchActive.bind(null, id, b.id, !b.is_active)}><button className="underline">{b.is_active ? "إخفاء" : "إظهار"}</button></form>
+                    <form action={deleteBranch.bind(null, id, b.id)}><button className="text-red-300 underline">حذف (بيحذف أسعاره وعروضه ومنتجاته)</button></form>
+                  </span>
+                )}
+              </div>
+              {!b.is_main && (
+                <details className="mt-2">
+                  <summary className="cursor-pointer text-accent">تعديل بيانات الفرع</summary>
+                  <div className="mt-3">
+                    <ActionForm action={updateBranch.bind(null, id, b.id)}>
+                      <BranchFields b={b} lbl={lbl} />
+                    </ActionForm>
+                  </div>
+                </details>
+              )}
+            </li>
+          ))}
+        </ul>
+        <details className="rounded-xl border border-white/10 p-3">
+          <summary className="cursor-pointer font-bold text-accent">+ إضافة فرع</summary>
+          <div className="mt-3">
+            <ActionForm action={addBranch.bind(null, id)} submit="إضافة الفرع">
+              <BranchFields lbl={lbl} />
+            </ActionForm>
+          </div>
+        </details>
+      </section>
+
+      {(org.type === "gym" || org.type === "sports_facility") && (
+        <section className={box}><h2 className="mb-1 text-lg font-bold">المدربون</h2>
+          <p className="mb-3 text-xs text-muted">اعرض مدربينك بصورهم وخبراتهم. بيظهروا بصفحتك للزوار.</p>
+          <ul className="mb-4 space-y-3">{(trainers ?? []).map((t) => (
+            <li key={t.id} className="flex items-start gap-3 text-sm">
+              {t.photo_path ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={publicMediaUrl(t.photo_path)} alt={t.name_ar} className="size-14 shrink-0 rounded-full object-cover" />
+              ) : <div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-background/40 text-xs text-muted">بلا صورة</div>}
+              <div className="flex-1"><p className="font-semibold">{t.name_ar} {bTag(t.branch_id)}</p>
+                <p className="text-muted">{[t.title_ar, t.experience_years != null ? `${t.experience_years} سنة خبرة` : null].filter(Boolean).join(" · ")}</p></div>
+              <form action={deleteTrainer.bind(null, id, t.id)}><button className="text-red-300 underline">حذف</button></form></li>))}
+            {(trainers ?? []).length === 0 && <li className="text-sm text-muted">ما أضفت مدربين بعد.</li>}</ul>
+          <ActionForm action={addTrainer.bind(null, id)} submit="إضافة مدرب">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <input name="name_ar" required placeholder="اسم المدرب" className={field} />
+              <input name="title_ar" placeholder="التخصص (مثال: مدرب كمال أجسام)" className={field} />
+              <input name="experience_years" type="number" min="0" max="60" placeholder="سنوات الخبرة" className={field} />
+              <input name="specialties" placeholder="مجالات الخبرة (مثال: تضخيم، تنشيف، إصابات)" className={field} />
+            </div>
+            <textarea name="bio_ar" rows={3} placeholder="نبذة وخبرات وشهادات" className={field} />
+            {branchSelect}
+            <label className={lbl}>صورة المدرب<input name="photo" type="file" accept="image/jpeg,image/png,image/webp" className="text-sm" /></label>
+          </ActionForm>
+        </section>
+      )}
+
       <section className={box}><h2 className="mb-3 text-lg font-bold">الأسعار والخدمات</h2>
         <ul className="mb-4 space-y-2">{(services ?? []).map((s) => (
           <li key={s.id} className="flex items-center justify-between gap-3 text-sm">
-            <span>{s.name_ar} — <span className="text-accent">{jod(s.price_jod)}</span> {s.billing_period && BILLING_LABEL[s.billing_period]}</span>
+            <span>{s.name_ar} — <span className="text-accent">{jod(s.price_jod)}</span> {s.billing_period && BILLING_LABEL[s.billing_period]} {bTag(s.branch_id)}</span>
             <form action={deleteService.bind(null, id, s.id)}><button className="text-red-300 underline">حذف</button></form></li>))}
           {(services ?? []).length === 0 && <li className="text-sm text-muted">ما أضفت خدمات بعد.</li>}</ul>
         <ActionForm action={addService.bind(null, id)} submit="إضافة" className="grid gap-3 sm:grid-cols-[2fr_1fr_1fr_auto] sm:items-start">
           <input name="name_ar" required placeholder="مثال: اشتراك شهري" className={field} />
           <input name="price_jod" type="number" step="0.01" min="0" placeholder="السعر (د.أ)" className={field} />
           <select name="billing_period" className={field}><option value="">—</option>{Object.entries(BILLING_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
+          {branchSelect && <div className="sm:col-span-4">{branchSelect}</div>}
         </ActionForm>
       </section>
 
@@ -118,7 +197,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
           <p className="mb-3 text-xs text-muted">للعرض فقط (بدون حجز). بيظهر للزوار بصفحتك.</p>
           <ul className="mb-4 space-y-2">{(classes ?? []).map((c) => (
             <li key={c.id} className="flex items-center justify-between gap-3 text-sm">
-              <span>{WEEKDAYS[c.weekday]} {hhmm(c.starts_at)}{c.ends_at ? `–${hhmm(c.ends_at)}` : ""} — {c.title_ar}{c.women_only && " 💗"}</span>
+              <span>{WEEKDAYS[c.weekday]} {hhmm(c.starts_at)}{c.ends_at ? `–${hhmm(c.ends_at)}` : ""} — {c.title_ar}{c.women_only && " 💗"} {bTag(c.branch_id)}</span>
               <form action={deleteClass.bind(null, id, c.id)}><button className="text-red-300 underline">حذف</button></form></li>))}
             {(classes ?? []).length === 0 && <li className="text-sm text-muted">ما أضفت حصص بعد.</li>}</ul>
           <ActionForm action={addClass.bind(null, id)} submit="إضافة حصة" className="grid gap-3 sm:grid-cols-2">
@@ -127,6 +206,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             <label className={lbl}>من<input name="starts_at" type="time" required className={field} /></label>
             <label className={lbl}>إلى (اختياري)<input name="ends_at" type="time" className={field} /></label>
             <input name="note" maxLength={200} placeholder="ملاحظة (اختياري)" className={`${field} sm:col-span-2`} />
+            {branchSelect && <div className="sm:col-span-2">{branchSelect}</div>}
             <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="women_only" /> 💗 للنساء فقط</label>
           </ActionForm>
         </section>
@@ -134,16 +214,25 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
 
 
       <section className={box}><h2 className="mb-3 text-lg font-bold">ساعات الدوام</h2>
-        <ActionForm action={saveHours.bind(null, id)}>
-          {WEEKDAYS.map((name, d) => {
-            const h = hours?.find((x) => x.weekday === d);
-            return (<div key={d} className="grid grid-cols-[5rem_1fr_1fr_auto] items-center gap-2 text-sm">
-              <span>{name}</span>
-              <input name={`open_${d}`} type="time" defaultValue={hhmm(h?.opens_at ?? null)} className={field} dir="ltr" />
-              <input name={`close_${d}`} type="time" defaultValue={hhmm(h?.closes_at ?? null)} className={field} dir="ltr" />
-              <label className="flex items-center gap-1 text-xs text-muted"><input type="checkbox" name={`closed_${d}`} defaultChecked={!!h?.is_closed} />مغلق</label></div>);
-          })}
-        </ActionForm>
+        <div className="space-y-3">
+          {allBranches.map((b) => (
+            <details key={b.id} open={allBranches.length === 1} className="rounded-xl bg-background/40 p-3">
+              {multi && <summary className="cursor-pointer font-semibold">{b.name_ar}{b.city ? ` — ${b.city}` : ""}</summary>}
+              <div className="mt-3">
+                <ActionForm action={saveHours.bind(null, id, b.id)}>
+                  {WEEKDAYS.map((name, d) => {
+                    const h = hours?.find((x) => x.weekday === d && x.branch_id === b.id);
+                    return (<div key={d} className="grid grid-cols-[5rem_1fr_1fr_auto] items-center gap-2 text-sm">
+                      <span>{name}</span>
+                      <input name={`open_${d}`} type="time" defaultValue={hhmm(h?.opens_at ?? null)} className={field} dir="ltr" />
+                      <input name={`close_${d}`} type="time" defaultValue={hhmm(h?.closes_at ?? null)} className={field} dir="ltr" />
+                      <label className="flex items-center gap-1 text-xs text-muted"><input type="checkbox" name={`closed_${d}`} defaultChecked={!!h?.is_closed} />مغلق</label></div>);
+                  })}
+                </ActionForm>
+              </div>
+            </details>
+          ))}
+        </div>
       </section>
       <section className={box}><h2 className="mb-3 text-lg font-bold">الصور</h2>
         <div className="mb-4 grid grid-cols-3 gap-3">{(media ?? []).map((m) => (
@@ -168,7 +257,12 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
                 <img src={publicMediaUrl(p.image_path)} alt="" className="size-16 shrink-0 rounded-lg object-cover" />
               ) : <div className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-background/40 text-xs text-muted">بلا صورة</div>}
               <div className="flex-1 space-y-1">
-                <p>{p.name_ar} — <span className="text-accent">{jod(p.price_jod)}</span> · {AVAILABILITY_LABEL[p.availability]}{p.moderation_status !== "approved" && <span className="text-muted"> · {p.moderation_status === "pending" ? "بانتظار الموافقة" : "مرفوض"}</span>}</p>
+                <p>{p.name_ar} — <span className="text-accent">{jod(p.price_jod)}</span> · {AVAILABILITY_LABEL[p.availability]}{p.moderation_status !== "approved" && <span className="text-muted"> · {p.moderation_status === "pending" ? "بانتظار الموافقة" : "مرفوض"}</span>} {bTag(p.branch_id)}</p>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {p.availability !== "available" && <form action={setProductAvailability.bind(null, id, p.id, "available")}><button className="rounded-lg bg-accent/20 px-2 py-1 text-accent">✔ متوفر</button></form>}
+                  {p.availability !== "limited" && <form action={setProductAvailability.bind(null, id, p.id, "limited")}><button className="rounded-lg bg-white/10 px-2 py-1">كمية محدودة</button></form>}
+                  {p.availability !== "out_of_stock" && <form action={setProductAvailability.bind(null, id, p.id, "out_of_stock")}><button className="rounded-lg bg-red-400/20 px-2 py-1 text-red-200">✖ خلص</button></form>}
+                </div>
                 <ActionForm action={setProductImage.bind(null, id, p.id)} submit={p.image_path ? "تغيير الصورة" : "رفع صورة"} className="flex flex-wrap items-center gap-2">
                   <input name="image" type="file" accept="image/jpeg,image/png,image/webp" required className="text-xs" />
                 </ActionForm>
@@ -186,19 +280,21 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             <label className={lbl}>صورة المنتج<input name="image" type="file" accept="image/jpeg,image/png,image/webp" className="text-sm" /></label>
             <textarea name="description_ar" rows={3} placeholder="شرح المنتج (يظهر تحت الصورة)" className={field} />
             <textarea name="ingredients" rows={2} placeholder="المكونات (للمكملات)" className={field} />
+            {branchSelect}
           </ActionForm>
         </section>
       )}
 
       <section className={box}><h2 className="mb-3 text-lg font-bold">العروض</h2>
         <ul className="mb-4 space-y-2">{(offers ?? []).map((o) => (
-          <li key={o.id} className="flex items-center justify-between gap-3 text-sm"><span>{o.kind === "course" ? "🎓 " : ""}{o.title_ar} <span className="text-muted">حتى {o.ends_at.slice(0, 10)}</span></span>
+          <li key={o.id} className="flex items-center justify-between gap-3 text-sm"><span>{o.kind === "course" ? "🎓 " : ""}{o.title_ar} <span className="text-muted">حتى {o.ends_at.slice(0, 10)}</span> {bTag(o.branch_id)}</span>
             <form action={deleteOffer.bind(null, id, o.id)}><button className="text-red-300 underline">حذف</button></form></li>))}
           {(offers ?? []).length === 0 && <li className="text-sm text-muted">لا توجد عروض.</li>}</ul>
         <ActionForm action={addOffer.bind(null, id)} submit="إضافة عرض">
           <input name="title_ar" required placeholder="عنوان العرض" className={field} />
           <textarea name="description_ar" rows={2} placeholder="تفاصيل" className={field} />
           <select name="kind" className={field}><option value="offer">عرض</option><option value="course">دورة / برنامج</option></select>
+          {branchSelect}
           <div className="grid gap-3 sm:grid-cols-4">
             <input name="discount_percent" type="number" min="1" max="90" placeholder="نسبة الخصم %" className={field} />
             <input name="offer_price_jod" type="number" step="0.01" min="0" placeholder="سعر العرض" className={field} />
@@ -208,5 +304,36 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
         </ActionForm>
       </section>
     </div>
+  );
+}
+
+function BranchFields({ b, lbl }: { b?: { name_ar: string; city: string | null; area: string | null; address: string | null; phone: string | null; whatsapp: string | null; maps_url: string | null; women_access: string; women_hours_note: string | null }; lbl: string }) {
+  return (
+    <>
+      <label className={lbl}>اسم الفرع<input name="name_ar" required defaultValue={b?.name_ar ?? ""} placeholder="مثال: فرع عبدون" className={field} /></label>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className={lbl}>المدينة<input name="city" required defaultValue={b?.city ?? ""} className={field} /></label>
+        <label className={lbl}>المنطقة<input name="area" defaultValue={b?.area ?? ""} className={field} /></label>
+      </div>
+      <label className={lbl}>العنوان<input name="address" defaultValue={b?.address ?? ""} className={field} /></label>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className={lbl}>هاتف الفرع (اختياري)<input name="phone" defaultValue={b?.phone ?? ""} dir="ltr" placeholder="0791234567" className={field} /></label>
+        <label className={lbl}>واتساب الفرع (اختياري)<input name="whatsapp" defaultValue={b?.whatsapp ?? ""} dir="ltr" placeholder="0791234567" className={field} /></label>
+      </div>
+      <label className={lbl}>رابط الفرع على قوقل ماب
+        <input name="maps_url" defaultValue={b?.maps_url ?? ""} dir="ltr" placeholder="https://maps.app.goo.gl/..." className={field} />
+        <span className="block text-xs">بنحسب منه المسافة لميزة «قريب مني».</span>
+      </label>
+      <div className="space-y-2 rounded-xl border border-pink-400/30 bg-pink-500/5 p-3">
+        <label className={lbl}>💗 Pink Zone للفرع
+          <select name="women_access" defaultValue={b?.women_access ?? "none"} className={field}>
+            <option value="none">عادي (للجميع)</option>
+            <option value="women_only">خاص بالنساء بالكامل</option>
+            <option value="women_hours">فيه أوقات أو قسم نسائي</option>
+          </select>
+        </label>
+        <input name="women_hours_note" defaultValue={b?.women_hours_note ?? ""} maxLength={200} placeholder="أوقات القسم النسائي (إن وجدت)" className={field} />
+      </div>
+    </>
   );
 }

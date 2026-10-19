@@ -10,7 +10,7 @@ export const isOrgType = (v: string | undefined): v is Enums<"org_type"> =>
 
 export const WOMEN_FILTERS = ["only", "any"] as const;
 
-const LISTING_COLS = "id,slug,name_ar,type,city,area,description_ar,verified_at,is_featured,category_id,category_slug,category_name,women_access,women_hours_note,free_trial_note,min_price_jod,latitude,longitude";
+const LISTING_COLS = "id,slug,name_ar,type,city,area,description_ar,verified_at,is_featured,category_id,category_slug,category_name,women_access,women_hours_note,free_trial_note,min_price_jod,latitude,longitude,branch_count,branch_cities,branch_women_only,branch_women_hours,branch_points";
 
 type ListingRow = {
   id: string | null; slug: string | null; name_ar: string | null; type: Enums<"org_type"> | null; city: string | null; area: string | null;
@@ -19,6 +19,7 @@ type ListingRow = {
   women_access: string | null; women_hours_note: string | null;
   free_trial_note: string | null; min_price_jod: number | null;
   latitude: number | null; longitude: number | null;
+  branch_count: number | null; branch_cities: string[] | null; branch_women_only: boolean | null; branch_women_hours: boolean | null; branch_points: unknown;
 };
 function mapListing(data: ListingRow[]) {
   return data.flatMap((o) =>
@@ -32,6 +33,12 @@ function mapListing(data: ListingRow[]) {
           free_trial_note: o.free_trial_note,
           min_price_jod: o.min_price_jod == null ? null : Number(o.min_price_jod),
           lat: o.latitude == null ? null : Number(o.latitude), lng: o.longitude == null ? null : Number(o.longitude),
+          branch_count: Number(o.branch_count ?? 1),
+          branch_women_only: !!o.branch_women_only, branch_women_hours: !!o.branch_women_hours,
+          points: [
+            ...(o.latitude != null && o.longitude != null ? [{ lat: Number(o.latitude), lng: Number(o.longitude) }] : []),
+            ...(Array.isArray(o.branch_points) ? (o.branch_points as { lat: number; lng: number }[]).filter((p) => p && typeof p.lat === "number" && typeof p.lng === "number") : []),
+          ],
         }]
       : [],
   );
@@ -57,17 +64,17 @@ export async function searchOrgs(opts: { q?: string; type?: string; city?: strin
   if (q) query = query.or(`name_ar.ilike.%${q}%,name_en.ilike.%${q}%,area.ilike.%${q}%`);
   if (isOrgType(opts.type)) query = query.eq("type", opts.type);
   const city = cleanQuery(opts.city ?? "");
-  if (city) query = query.eq("city", city);
+  if (city) query = query.or(`city.eq.${city},branch_cities.cs.{"${city}"}`);
   if (opts.category) query = query.eq("category_slug", /^[a-z0-9-]{2,40}$/.test(opts.category) ? opts.category : "-");
-  if (opts.women === "only") query = query.eq("women_access", "women_only");
-  else if (opts.women === "any") query = query.in("women_access", ["women_only", "women_hours"]);
+  if (opts.women === "only") query = query.or("women_access.eq.women_only,branch_women_only.eq.true");
+  else if (opts.women === "any") query = query.or("women_access.in.(women_only,women_hours),branch_women_only.eq.true,branch_women_hours.eq.true");
   if (opts.maxPrice && opts.maxPrice > 0 && opts.maxPrice < 100000) query = query.lte("min_price_jod", opts.maxPrice);
   if (opts.trial) query = query.not("free_trial_note", "is", null);
   const { data, count, error } = await query;
   if (error) throw new Error(error.message);
   if (opts.near) {
     const near = opts.near;
-    const all = mapListing(data ?? []).flatMap((o) => (o.lat != null && o.lng != null ? [{ ...o, distance_km: distanceKm(near, { lat: o.lat, lng: o.lng }) }] : []))
+    const all = mapListing(data ?? []).flatMap((o) => (o.points.length ? [{ ...o, distance_km: Math.min(...o.points.map((p) => distanceKm(near, p))) }] : []))
       .sort((a, b) => a.distance_km - b.distance_km);
     const slice = all.slice((opts.page - 1) * PAGE_SIZE, opts.page * PAGE_SIZE);
     return { total: all.length, items: await withCovers(db, slice) };
@@ -96,7 +103,7 @@ export async function listHomeSections(perSection = 6) {
     .map((s) => ({ ...s, total: s.items.length, items: s.items.slice(0, perSection) }));
   const uncategorized = rows.filter((o) => !o.category_id);
   if (uncategorized.length) sections.push({ key: "other", title: "أنشطة أخرى", href: "/search", items: uncategorized.slice(0, perSection), total: uncategorized.length });
-  const pink = rows.filter((o) => o.women_access === "women_only");
+  const pink = rows.filter((o) => o.women_access === "women_only" || o.branch_women_only);
   const shown = new Set([...sections.flatMap((s) => s.items), ...pink.slice(0, perSection)].map((o) => o.id));
   const withCover = await withCovers(db, rows.filter((o) => shown.has(o.id)));
   const byId = new Map(withCover.map((o) => [o.id, o]));
@@ -126,15 +133,17 @@ export async function getOrgBySlug(slug: string) {
     .from("organizations").select("*").eq("slug", slug).eq("status", "published").maybeSingle();
   if (!org) return null;
   const now = new Date().toISOString();
-  const [hours, services, media, offers, products, classes] = await Promise.all([
+  const [hours, services, media, offers, products, classes, branches, trainers] = await Promise.all([
     db.from("organization_hours").select("*").eq("organization_id", org.id).order("weekday"),
     db.from("organization_services").select("*").eq("organization_id", org.id).eq("is_active", true).order("sort_order"),
     db.from("organization_media").select("*").eq("organization_id", org.id).order("sort_order"),
     db.from("offers").select("*").eq("organization_id", org.id).eq("is_active", true).lte("starts_at", now).gte("ends_at", now),
     org.type === "store"
-      ? db.from("products").select("id,name_ar,brand,price_jod,availability,description_ar,image_path").eq("organization_id", org.id).order("created_at", { ascending: false }).limit(48)
+      ? db.from("products").select("id,name_ar,brand,price_jod,availability,description_ar,image_path,branch_id").eq("organization_id", org.id).order("created_at", { ascending: false }).limit(48)
       : Promise.resolve({ data: [] }),
     db.from("org_classes").select("*").eq("organization_id", org.id).eq("is_active", true).order("weekday").order("starts_at"),
+    db.from("org_branches").select("*").eq("organization_id", org.id).eq("is_active", true).order("is_main", { ascending: false }).order("sort_order"),
+    db.from("org_trainers").select("*").eq("organization_id", org.id).eq("is_active", true).order("sort_order"),
   ]);
   return {
     org,
@@ -144,6 +153,8 @@ export async function getOrgBySlug(slug: string) {
     offers: offers.data ?? [],
     products: products.data ?? [],
     classes: classes.data ?? [],
+    branches: branches.data ?? [],
+    trainers: trainers.data ?? [],
   };
 }
 

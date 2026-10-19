@@ -20,7 +20,7 @@ export const BILLING_LABEL: Record<Enums<"billing_period">, string> = {
 export const AVAILABILITY_LABEL: Record<Enums<"availability_status">, string> = {
   available: "متوفر",
   limited: "كمية محدودة",
-  out_of_stock: "غير متوفر",
+  out_of_stock: "خلص — غير متاح حالياً",
   unknown: "غير معروف",
 };
 
