@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { missingForPublish } from "@/lib/completeness";
+import { resolveMapsCoords } from "@/lib/maps";
 
 export type FormState = { error?: string; ok?: string } | undefined;
 const opt = (max: number) => z.string().trim().max(max).optional().transform((v) => v || null);
@@ -69,6 +70,8 @@ export async function updateProfile(id: string, _: FormState, fd: FormData): Pro
   const data = { ...p.data, phone: intl(p.data.phone), whatsapp: intl(p.data.whatsapp), instagram: p.data.instagram?.replace(/^@/, "") ?? null };
   if (data.maps_url && !/^https:\/\/(maps\.app\.goo\.gl\/|goo\.gl\/maps\/|(www\.|maps\.)?google\.[a-z.]+\/maps)/i.test(data.maps_url)) return { error: "رابط الموقع لازم يكون من قوقل ماب (maps.app.goo.gl أو google.com/maps)." };
   if (data.women_access !== "women_hours") data.women_hours_note = null;
+  const coords = data.maps_url ? await resolveMapsCoords(data.maps_url) : null;
+  Object.assign(data, { latitude: coords?.lat ?? null, longitude: coords?.lng ?? null });
   const { error } = await supabase.from("organizations").update(data).eq("id", id);
   if (error) return { error: error.message.includes("category") ? "التصنيف لا يناسب نوع النشاط." : "تعذّر الحفظ. تأكد من صيغة الهاتف والواتساب والموقع (يبدأ بـ https://)." };
   revalidatePath(`/dashboard/${id}`);

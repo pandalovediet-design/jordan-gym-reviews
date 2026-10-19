@@ -1072,6 +1072,8 @@ export type Database = {
           women_access: string | null
           women_hours_note: string | null
           free_trial_note: string | null
+          latitude: number | null
+          longitude: number | null
           min_price_jod: number | null
         }
         Relationships: []

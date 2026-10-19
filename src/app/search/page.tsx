@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ProductCard } from "@/components/ProductCard";
+import { NearMeButton } from "@/components/NearMe";
 import { OrgCard } from "@/components/OrgCard";
 import { PAGE_SIZE, listCategories, searchOrgs, searchProducts } from "@/lib/queries";
 import { ORG_TYPE_LABEL } from "@/lib/format";
@@ -18,12 +19,14 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
   const maxPriceRaw = Number.parseFloat(one(sp.max) ?? "");
   const maxPrice = Number.isFinite(maxPriceRaw) && maxPriceRaw > 0 ? maxPriceRaw : 0;
   const trial = one(sp.trial) === "1";
+  const lat = Number.parseFloat(one(sp.lat) ?? ""), lng = Number.parseFloat(one(sp.lng) ?? "");
+  const near = Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lat, lng } : null;
   const mode = one(sp.in) === "products" ? "products" : "orgs";
   const page = Math.max(1, Number.parseInt(one(sp.page) ?? "1", 10) || 1);
 
   let error = false;
   const categories = await listCategories().catch(() => []);
-  const orgs = mode === "orgs" ? await searchOrgs({ q, type, city, category, women, maxPrice, trial, page }).catch(() => (error = true, null)) : null;
+  const orgs = mode === "orgs" ? await searchOrgs({ q, type, city, category, women, maxPrice, trial, near, page }).catch(() => (error = true, null)) : null;
   const prods = mode === "products" ? await searchProducts({ q, page }).catch(() => (error = true, null)) : null;
   const total = (orgs ?? prods)?.total ?? 0;
   const pages = Math.ceil(total / PAGE_SIZE);
@@ -32,6 +35,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
     if (q) u.set("q", q); if (type) u.set("type", type); if (city) u.set("city", city);
     if (category) u.set("category", category); if (women) u.set("women", women);
     if (maxPrice) u.set("max", String(maxPrice)); if (trial) u.set("trial", "1");
+    if (near) { u.set("lat", String(near.lat)); u.set("lng", String(near.lng)); }
     if (mode === "products") u.set("in", "products"); u.set("page", String(p));
     return `/search?${u}`;
   };
@@ -62,6 +66,8 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
         <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="trial" value="1" defaultChecked={trial} /> 🎟 يوم تجريبي مجاني</label>
         <button className="rounded-xl bg-accent px-6 font-bold text-accent-foreground">بحث</button>
       </form>
+
+      {mode === "orgs" && <div className="mb-4 flex flex-wrap items-center gap-3"><NearMeButton active={!!near} />{near && <span className="text-sm text-muted">مرتبة من الأقرب للأبعد (الأنشطة اللي حدّدت موقعها فقط)</span>}</div>}
 
       {error && <p className="rounded-2xl bg-surface p-6 text-center">تعذّر تحميل النتائج حالياً، جرّب مرة ثانية بعد قليل.</p>}
       {!error && total === 0 && <p className="rounded-2xl bg-surface p-8 text-center text-muted">ما لقينا نتائج مطابقة.</p>}

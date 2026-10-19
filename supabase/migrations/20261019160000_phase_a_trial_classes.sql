@@ -42,6 +42,7 @@ select o.id, o.slug, o.name_ar, o.name_en, o.type, o.city, o.area, o.description
        o.category_id, c.slug as category_slug, c.name_ar as category_name,
        o.women_access, o.women_hours_note,
        o.free_trial_note,
+       o.latitude, o.longitude,
        -- cheapest monthly plan if any, otherwise the cheapest priced service
        coalesce(
          (select min(s.price_jod) from public.organization_services s

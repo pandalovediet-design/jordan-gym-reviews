@@ -1,5 +1,6 @@
 import { createPublicClient } from "@/lib/supabase/public";
 import { cleanQuery } from "@/lib/format";
+import { distanceKm } from "@/lib/maps";
 import type { Enums } from "@/lib/database.types";
 
 export const PAGE_SIZE = 12;
@@ -9,7 +10,7 @@ export const isOrgType = (v: string | undefined): v is Enums<"org_type"> =>
 
 export const WOMEN_FILTERS = ["only", "any"] as const;
 
-const LISTING_COLS = "id,slug,name_ar,type,city,area,description_ar,verified_at,is_featured,category_id,category_slug,category_name,women_access,women_hours_note,free_trial_note,min_price_jod";
+const LISTING_COLS = "id,slug,name_ar,type,city,area,description_ar,verified_at,is_featured,category_id,category_slug,category_name,women_access,women_hours_note,free_trial_note,min_price_jod,latitude,longitude";
 
 type ListingRow = {
   id: string | null; slug: string | null; name_ar: string | null; type: Enums<"org_type"> | null; city: string | null; area: string | null;
@@ -17,6 +18,7 @@ type ListingRow = {
   category_id: string | null; category_slug: string | null; category_name: string | null;
   women_access: string | null; women_hours_note: string | null;
   free_trial_note: string | null; min_price_jod: number | null;
+  latitude: number | null; longitude: number | null;
 };
 function mapListing(data: ListingRow[]) {
   return data.flatMap((o) =>
@@ -29,6 +31,7 @@ function mapListing(data: ListingRow[]) {
           women_hours_note: o.women_hours_note,
           free_trial_note: o.free_trial_note,
           min_price_jod: o.min_price_jod == null ? null : Number(o.min_price_jod),
+          lat: o.latitude == null ? null : Number(o.latitude), lng: o.longitude == null ? null : Number(o.longitude),
         }]
       : [],
   );
@@ -41,15 +44,15 @@ async function withCovers<T extends { id: string }>(db: ReturnType<typeof create
   return rows.map((o) => ({ ...o, cover: covers.find((c) => c.organization_id === o.id) ?? null }));
 }
 
-export async function searchOrgs(opts: { q?: string; type?: string; city?: string; category?: string; women?: string; maxPrice?: number; trial?: boolean; page: number }) {
+export async function searchOrgs(opts: { q?: string; type?: string; city?: string; category?: string; women?: string; maxPrice?: number; trial?: boolean; near?: { lat: number; lng: number } | null; page: number }) {
   const db = createPublicClient();
   let query = db
     .from("organizations_listing")
     .select(LISTING_COLS, { count: "exact" })
     .order("is_featured", { ascending: false })
     .order("featured_rank", { ascending: false })
-    .order("created_at", { ascending: false })
-    .range((opts.page - 1) * PAGE_SIZE, opts.page * PAGE_SIZE - 1);
+    .order("created_at", { ascending: false });
+  query = opts.near ? query.limit(500) : query.range((opts.page - 1) * PAGE_SIZE, opts.page * PAGE_SIZE - 1);
   const q = cleanQuery(opts.q ?? "");
   if (q) query = query.or(`name_ar.ilike.%${q}%,name_en.ilike.%${q}%,area.ilike.%${q}%`);
   if (isOrgType(opts.type)) query = query.eq("type", opts.type);
@@ -62,6 +65,13 @@ export async function searchOrgs(opts: { q?: string; type?: string; city?: strin
   if (opts.trial) query = query.not("free_trial_note", "is", null);
   const { data, count, error } = await query;
   if (error) throw new Error(error.message);
+  if (opts.near) {
+    const near = opts.near;
+    const all = mapListing(data ?? []).flatMap((o) => (o.lat != null && o.lng != null ? [{ ...o, distance_km: distanceKm(near, { lat: o.lat, lng: o.lng }) }] : []))
+      .sort((a, b) => a.distance_km - b.distance_km);
+    const slice = all.slice((opts.page - 1) * PAGE_SIZE, opts.page * PAGE_SIZE);
+    return { total: all.length, items: await withCovers(db, slice) };
+  }
   return { total: count ?? 0, items: await withCovers(db, mapListing(data ?? [])) };
 }
 

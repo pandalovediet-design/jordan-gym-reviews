@@ -5,7 +5,7 @@ import type { Enums } from "@/lib/database.types";
 
 export function OrgCard({ org }: {
   org: { slug: string; name_ar: string; type: Enums<"org_type">; city: string; area: string | null; description_ar: string | null; verified_at: string | null; is_featured?: boolean;
-    category_name?: string | null; free_trial_note?: string | null; min_price_jod?: number | null; women_access?: "none" | "women_only" | "women_hours";
+    category_name?: string | null; free_trial_note?: string | null; min_price_jod?: number | null; distance_km?: number; women_access?: "none" | "women_only" | "women_hours";
     cover?: { storage_path: string; alt_text: string | null } | null };
 }) {
   return (
@@ -31,6 +31,7 @@ export function OrgCard({ org }: {
       <p className="mt-1 text-sm text-muted">{[org.area, org.city].filter(Boolean).join("، ")}</p>
       {org.description_ar && <p className="mt-2 line-clamp-2 text-sm">{org.description_ar}</p>}
       <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+        {org.distance_km != null && <span className="rounded-full bg-white/10 px-2 py-0.5">📍 {org.distance_km < 1 ? "أقل من 1" : org.distance_km.toFixed(1)} كم</span>}
         {org.min_price_jod != null && <span className="rounded-full bg-white/10 px-2 py-0.5">من {jod(org.min_price_jod)}</span>}
         {org.free_trial_note && <span className="rounded-full bg-accent/15 px-2 py-0.5 font-bold text-accent">🎟 {org.free_trial_note}</span>}
       </div>
