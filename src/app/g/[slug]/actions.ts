@@ -30,7 +30,7 @@ export async function sendInquiry(orgId: string, slug: string, _: PublicState, f
   if (!org) return { error: "النشاط غير متاح." };
   const { error } = await admin.from("inquiries").insert({
     organization_id: orgId, sender_name: p.data.sender_name, sender_phone: p.data.sender_phone,
-    message: p.data.message, user_id: u.user?.id ?? null, channel: "web",
+    message: p.data.message, user_id: u.user?.id ?? null, channel: "form",
   });
   if (error) return { error: "تعذّر إرسال الاستفسار." };
   await admin.from("analytics_events").insert({ organization_id: orgId, event_type: "inquiry" });
