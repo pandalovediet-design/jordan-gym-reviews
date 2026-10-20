@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import { dateAr } from "@/lib/format";
+import { dateAr, waNumber } from "@/lib/format";
 import { setInquiryStatus } from "../../actions";
 
 export const metadata: Metadata = { title: "الاستفسارات والإحصاءات", robots: { index: false } };
@@ -31,7 +31,9 @@ export default async function InquiriesAndStats({ params }: PageProps<"/dashboar
         <ul className="space-y-3">{(inquiries ?? []).map((q) => (
           <li key={q.id} className={box}><div className="flex justify-between text-sm"><span className="font-semibold">{q.sender_name}</span><span className="text-muted">{dateAr(q.created_at)}</span></div>
             <p className="mt-1 text-sm" dir="ltr">{q.sender_phone}</p><p className="mt-2 text-sm">{q.message}</p>
-            <div className="mt-3 flex items-center gap-3 text-xs"><span className="rounded-full bg-white/10 px-2 py-0.5">{q.status === "new" ? "جديد" : q.status === "seen" ? "مقروء" : "مغلق"}</span>
+            <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
+              {waNumber(q.sender_phone) && <a href={`https://wa.me/${waNumber(q.sender_phone)}?text=${encodeURIComponent(`مرحباً ${q.sender_name ?? ""}، بخصوص استفسارك عن ${org.name_ar}:`)}`} target="_blank" rel="noopener noreferrer" className="rounded-full bg-green-600 px-3 py-1 font-bold text-white">رد عبر واتساب</a>}
+              <span className="rounded-full bg-white/10 px-2 py-0.5">{q.status === "new" ? "جديد" : q.status === "seen" ? "مقروء" : "مغلق"}</span>
               {q.status === "new" && <form action={setInquiryStatus.bind(null, id, q.id, "seen")}><button className="underline">تم الاطلاع</button></form>}
               {q.status !== "closed" && <form action={setInquiryStatus.bind(null, id, q.id, "closed")}><button className="underline">إغلاق</button></form>}</div></li>))}
           {(inquiries ?? []).length === 0 && <li className="text-sm text-muted">لا توجد استفسارات.</li>}</ul></section>
