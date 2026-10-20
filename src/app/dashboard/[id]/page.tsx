@@ -127,7 +127,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
         </ActionForm>
       </section>
 
-      <section className={box}><h2 className="mb-1 text-lg font-bold">الفروع</h2>
+      {org.type !== "independent_coach" && <section className={box}><h2 className="mb-1 text-lg font-bold">الفروع</h2>
         <p className="mb-3 text-xs text-muted">الفرع الرئيسي بياخد بياناته من «البيانات الأساسية» فوق. أضف فروعك الثانية هون، وكل فرع بيكون إله أسعاره وعروضه ودوامه ومنتجاته وحصصه.</p>
         <ul className="mb-4 space-y-2">
           {allBranches.map((b) => (
@@ -162,7 +162,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             </ActionForm>
           </div>
         </details>
-      </section>
+      </section>}
 
       {(org.type === "gym" || org.type === "sports_facility") && (
         <section className={box}><h2 className="mb-1 text-lg font-bold">المدربون</h2>
