@@ -24,7 +24,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
     supabase.from("offers").select("*").eq("organization_id", id).order("ends_at", { ascending: false }),
     supabase.from("products").select("id,name_ar,price_jod,availability,moderation_status,image_path,branch_id").eq("organization_id", id).order("created_at", { ascending: false }),
     supabase.from("product_categories").select("id,name_ar").order("sort_order"),
-    supabase.from("org_categories").select("id,org_type,name_ar").eq("is_active", true).order("sort_order"),
+    supabase.from("org_categories").select("id,org_type,name_ar,slug").eq("is_active", true).order("sort_order"),
     supabase.from("org_classes").select("*").eq("organization_id", id).order("weekday").order("starts_at"),
     supabase.from("org_branches").select("*").eq("organization_id", id).order("is_main", { ascending: false }).order("sort_order"),
     supabase.from("org_trainers").select("*").eq("organization_id", id).order("sort_order"),
@@ -32,6 +32,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
   ]);
   if (!org) notFound();
   const missing = org.status === "draft" ? await missingForPublish(supabase, id) : [];
+  const isHomeChef = (orgCats ?? []).some((c) => c.id === org.category_id && c.slug === "home-chefs");
   const tips = org.status === "draft" ? await suggestionsFor(supabase, id) : [];
   const box = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
   const lbl = "block space-y-1 text-sm text-muted";
@@ -127,7 +128,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
         </ActionForm>
       </section>
 
-      {org.type !== "independent_coach" && <section className={box}><h2 className="mb-1 text-lg font-bold">الفروع</h2>
+      {org.type !== "independent_coach" && !isHomeChef && <section className={box}><h2 className="mb-1 text-lg font-bold">الفروع</h2>
         <p className="mb-3 text-xs text-muted">الفرع الرئيسي بياخد بياناته من «البيانات الأساسية» فوق. أضف فروعك الثانية هون، وكل فرع بيكون إله أسعاره وعروضه ودوامه ومنتجاته وحصصه.</p>
         <ul className="mb-4 space-y-2">
           {allBranches.map((b) => (
