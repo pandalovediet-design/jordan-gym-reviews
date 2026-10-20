@@ -141,6 +141,19 @@ export async function createFlashSlot(_: FormState, fd: FormData): Promise<FormS
   return { ok: "تم تفعيل المساحة. صاحب النشاط بيعبي عرضه من لوحته." };
 }
 
+const renewSchema = z.object({ hours: z.coerce.number().int().min(1, "المدة من 1 إلى 48 ساعة").max(48, "المدة من 1 إلى 48 ساعة") });
+
+/** Restart a slot from now for the given number of hours (≤ 48). */
+export async function renewFlashSlot(id: string, fd: FormData): Promise<void> {
+  const { supabase } = await requireAdmin();
+  const p = renewSchema.safeParse(Object.fromEntries(fd));
+  if (!p.success) return;
+  const start = new Date();
+  await supabase.from("flash_slots").update({ starts_at: start.toISOString(), ends_at: new Date(+start + p.data.hours * 3_600_000).toISOString() }).eq("id", id);
+  revalidatePath("/admin/flash");
+  revalidatePath("/");
+}
+
 export async function deleteFlashSlot(id: string): Promise<void> {
   const { supabase } = await requireAdmin();
   await supabase.from("flash_slots").delete().eq("id", id);

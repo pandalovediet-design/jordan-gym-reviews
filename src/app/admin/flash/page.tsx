@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { ActionForm, field } from "@/components/Form";
 import { dateAr, msAgo } from "@/lib/format";
-import { createFlashSlot, deleteFlashSlot } from "../more-actions";
+import { createFlashSlot, deleteFlashSlot, renewFlashSlot } from "../more-actions";
 
 export const metadata: Metadata = { title: "مساحات الفلاش", robots: { index: false } };
 
@@ -34,8 +34,13 @@ export default async function FlashAdmin() {
         {list.map((x) => { const t = st(x); return (
           <li key={x.id} className={`${box} flex flex-wrap items-center justify-between gap-3`}>
             <div><p className="font-semibold">{x.organizations?.name_ar} <span className={`text-xs ${t[1]}`}>{t[0]}</span></p>
-              <p className="text-xs text-muted">{dateAr(x.starts_at)} ← {dateAr(x.ends_at)} · {x.title_ar ? `العرض: ${x.title_ar}` : "لسا ما عبّى العرض"}</p></div>
-            <form action={deleteFlashSlot.bind(null, x.id)}><button className="rounded-lg bg-white/10 px-3 py-1 text-xs text-red-300 hover:bg-white/20">حذف</button></form>
+              <p className="text-xs text-muted">{dateAr(x.starts_at)} ← {dateAr(x.ends_at)} · المدة {Math.round((+new Date(x.ends_at) - +new Date(x.starts_at)) / 3_600_000)} ساعة · {x.title_ar ? `العرض: ${x.title_ar}` : "لسا ما عبّى العرض"}</p></div>
+            <div className="flex flex-wrap items-center gap-2">
+              <form action={renewFlashSlot.bind(null, x.id)} className="flex items-center gap-1">
+                <input name="hours" type="number" min="1" max="48" defaultValue={Math.round((+new Date(x.ends_at) - +new Date(x.starts_at)) / 3_600_000)} dir="ltr" aria-label="ساعات" className="w-16 rounded-lg bg-background px-2 py-1 text-xs ring-1 ring-white/10" />
+                <button className="rounded-lg bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">تجديد من الآن</button>
+              </form>
+              <form action={deleteFlashSlot.bind(null, x.id)}><button className="rounded-lg bg-white/10 px-3 py-1 text-xs text-red-300 hover:bg-white/20">حذف</button></form></div>
           </li>); })}
         {list.length === 0 && <li className="text-muted">لا توجد مساحات.</li>}
       </ul>
