@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
+import { ImageInput } from "@/components/ImageInput";
 import { ActionForm, field } from "@/components/Form";
 import { AVAILABILITY_LABEL, BILLING_LABEL, DELIVERY_LABEL, publicMediaUrl, WEEKDAYS, hhmm, jod } from "@/lib/format";
 import { CityAreaPicker } from "@/components/CityAreaPicker";
@@ -187,7 +188,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             </div>
             <textarea name="bio_ar" rows={3} placeholder="نبذة وخبرات وشهادات" className={field} />
             {branchSelect}
-            <label className={lbl}>صورة المدرب<input name="photo" type="file" accept="image/jpeg,image/png,image/webp" className="text-sm" /></label>
+            <label className={lbl}>صورة المدرب<ImageInput name="photo" accept="image/jpeg,image/png,image/webp" className="text-sm" /></label>
           </ActionForm>
         </section>
       )}
@@ -205,7 +206,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
                 <p>{m.name_ar} — <span className="text-accent">{jod(m.price_jod)}</span>{m.section && <span className="text-muted"> · {m.section}</span>} {bTag(m.branch_id)}</p>
                 <p className="text-xs text-muted">{[m.calories != null ? `${m.calories} سعرة` : null, m.protein_g != null ? `${m.protein_g}غ بروتين` : null, m.carbs_g != null ? `${m.carbs_g}غ كارب` : null, m.fat_g != null ? `${m.fat_g}غ دهون` : null].filter(Boolean).join(" · ")}</p>
                 <ActionForm action={setMenuImage.bind(null, id, m.id)} submit={m.image_path ? "تغيير الصورة" : "رفع صورة"} className="flex flex-wrap items-center gap-2">
-                  <input name="image" type="file" required accept="image/jpeg,image/png,image/webp" className="max-w-48 text-xs" />
+                  <ImageInput name="image" required accept="image/jpeg,image/png,image/webp" className="max-w-48 text-xs" />
                 </ActionForm>
                 <form action={setMenuAvailability.bind(null, id, m.id, !m.is_available)}><button className={`rounded-lg px-2 py-1 text-xs ${m.is_available ? "bg-red-400/20 text-red-200" : "bg-accent/20 text-accent"}`}>{m.is_available ? "✖ خلصت" : "✔ رجعت متوفرة"}</button></form>
               </div>
@@ -223,7 +224,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             </div>
             <textarea name="description_ar" rows={2} placeholder="وصف ومكونات" className={field} />
             {branchSelect}
-            <label className={lbl}>صورة الوجبة<input name="image" type="file" accept="image/jpeg,image/png,image/webp" className="text-sm" /></label>
+            <label className={lbl}>صورة الوجبة<ImageInput name="image" accept="image/jpeg,image/png,image/webp" className="text-sm" /></label>
           </ActionForm>
         </section>
       )}
@@ -292,7 +293,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             <form action={deleteMedia.bind(null, id, m.id)}><button className="text-xs text-red-300 underline">حذف</button></form></div>))}
           {(media ?? []).length === 0 && <p className="col-span-3 text-sm text-muted">ما رفعت صور بعد.</p>}</div>
         <ActionForm action={uploadMedia.bind(null, id)} submit="رفع">
-          <input name="file" type="file" accept="image/jpeg,image/png,image/webp" required className="text-sm" />
+          <ImageInput name="file" accept="image/jpeg,image/png,image/webp" required className="text-sm" />
           <input name="alt_text" placeholder="وصف الصورة (اختياري)" className={field} />
           <p className="text-xs text-muted">JPG / PNG / WebP، حتى 4MB، وحد أقصى 12 صورة.</p>
         </ActionForm>
@@ -314,7 +315,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
                   {p.availability !== "out_of_stock" && <form action={setProductAvailability.bind(null, id, p.id, "out_of_stock")}><button className="rounded-lg bg-red-400/20 px-2 py-1 text-red-200">✖ خلص</button></form>}
                 </div>
                 <ActionForm action={setProductImage.bind(null, id, p.id)} submit={p.image_path ? "تغيير الصورة" : "رفع صورة"} className="flex flex-wrap items-center gap-2">
-                  <input name="image" type="file" accept="image/jpeg,image/png,image/webp" required className="text-xs" />
+                  <ImageInput name="image" accept="image/jpeg,image/png,image/webp" required className="text-xs" />
                 </ActionForm>
               </div>
               <form action={deleteProduct.bind(null, id, p.id)}><button className="text-red-300 underline">حذف</button></form></li>))}
@@ -327,7 +328,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
               <input name="price_jod" type="number" step="0.01" min="0" required placeholder="السعر (د.أ)" className={field} />
               <select name="availability" className={field}>{Object.entries(AVAILABILITY_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
             </div>
-            <label className={lbl}>صورة المنتج<input name="image" type="file" accept="image/jpeg,image/png,image/webp" className="text-sm" /></label>
+            <label className={lbl}>صورة المنتج<ImageInput name="image" accept="image/jpeg,image/png,image/webp" className="text-sm" /></label>
             <textarea name="description_ar" rows={3} placeholder="شرح المنتج (يظهر تحت الصورة)" className={field} />
             <textarea name="ingredients" rows={2} placeholder="المكونات (للمكملات)" className={field} />
             {branchSelect}

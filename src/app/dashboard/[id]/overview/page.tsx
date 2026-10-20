@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { missingForPublish } from "@/lib/completeness";
-import { ORG_TYPE_LABEL, dateAr, isoDaysFromNow, msAgo } from "@/lib/format";
+import { ORG_TYPE_LABEL, dateAr, isVerified, isoDaysFromNow, msAgo } from "@/lib/format";
 import { siteUrl } from "@/lib/site";
 import { ActionForm, field } from "@/components/Form";
 import { saveFlashDeal } from "../../flash-actions";
@@ -16,7 +16,7 @@ export default async function Overview({ params }: PageProps<"/dashboard/[id]/ov
   const { id } = await params;
   if (!UUID.test(id)) notFound();
   const { supabase } = await requireUser();
-  const { data: org } = await supabase.from("organizations").select("id,slug,name_ar,type,status,verified_at").eq("id", id).maybeSingle();
+  const { data: org } = await supabase.from("organizations").select("id,slug,name_ar,type,status,verified_at,verified_until").eq("id", id).maybeSingle();
   if (!org) notFound();
   const since30 = isoDaysFromNow(-30);
   const soon = isoDaysFromNow(7).slice(0, 10);
@@ -42,7 +42,7 @@ export default async function Overview({ params }: PageProps<"/dashboard/[id]/ov
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
       <Link href="/dashboard" className="text-sm text-muted underline">← أنشطتي</Link>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><h1 className="text-2xl font-extrabold">{org.name_ar}</h1><p className="text-sm text-muted">{ORG_TYPE_LABEL[org.type]}{org.verified_at && " · ✓ موثّق"}</p></div>
+        <div><h1 className="text-2xl font-extrabold">{org.name_ar}</h1><p className="text-sm text-muted">{ORG_TYPE_LABEL[org.type]}{isVerified(org) && " · ✓ موثّق"}</p></div>
         <span className="rounded-full bg-white/10 px-3 py-1 text-xs">{STATUS[org.status]}</span>
       </div>
 

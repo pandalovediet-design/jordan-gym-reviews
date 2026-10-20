@@ -4,11 +4,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/ProductCard";
 import { PageView, TrackedLink } from "@/components/Track";
-import { InquiryForm } from "@/components/PublicForms";
-import { sendInquiry } from "./actions";
+import { InquiryForm, ReportForm } from "@/components/PublicForms";
+import { sendInquiry, sendReport } from "./actions";
 import { getOrgBySlug } from "@/lib/queries";
 import { createPublicClient } from "@/lib/supabase/public";
-import { BILLING_LABEL, DELIVERY_LABEL, GLOW_LABEL, ORG_TYPE_LABEL, WEEKDAYS, WOMEN_LABEL, dateAr, hhmm, jod, publicMediaUrl, waNumber } from "@/lib/format";
+import { BILLING_LABEL, DELIVERY_LABEL, GLOW_LABEL, ORG_TYPE_LABEL, WEEKDAYS, WOMEN_LABEL, dateAr, hhmm, isVerified, jod, publicMediaUrl, waNumber } from "@/lib/format";
 import type { Tables } from "@/lib/database.types";
 
 export const revalidate = 120;
@@ -214,7 +214,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {!multi && womenBanner(views[0])}
       <div className={glow ? `glow glow-${glow} rounded-2xl bg-surface p-5` : ""}>
       {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
-      <p className="text-sm text-muted">{category ?? ORG_TYPE_LABEL[org.type]}{org.verified_at && <span className="text-accent"> · ✓ موثّق</span>}{multi && <span> · {views.length} فروع</span>}</p>
+      <p className="text-sm text-muted">{category ?? ORG_TYPE_LABEL[org.type]}{isVerified(org) && <span className="text-accent"> · ✓ موثّق</span>}{multi && <span> · {views.length} فروع</span>}</p>
       <h1 className="mt-1 text-3xl font-extrabold">{org.name_ar}</h1>
       {!multi && <p className="mt-1 text-muted">{[org.address, org.area, org.city].filter(Boolean).join("، ")}</p>}
       </div>
@@ -244,7 +244,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
 
       {org.type === "nutritionist" && (
         <div className="mt-6 rounded-2xl bg-surface p-4 text-sm ring-1 ring-white/10">
-          {org.license_number && <p>الترخيص: <span dir="ltr">{org.license_number}</span>{org.license_authority && ` — ${org.license_authority}`}{!org.verified_at && <span className="text-muted"> (لم تتم مراجعته بعد)</span>}</p>}
+          {org.license_number && <p>الترخيص: <span dir="ltr">{org.license_number}</span>{org.license_authority && ` — ${org.license_authority}`}{!isVerified(org) && <span className="text-muted"> (لم تتم مراجعته بعد)</span>}</p>}
           <p className="mt-1 text-muted">المعلومات المعروضة لأغراض التعريف فقط وليست بديلاً عن الاستشارة الطبية.</p>
         </div>
       )}
@@ -310,7 +310,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </>
       )}
 
-      <section className="mt-8"><InquiryForm action={sendInquiry.bind(null, org.id, org.slug)} /></section>
+      <section className="mt-8"><InquiryForm action={sendInquiry.bind(null, org.id, org.slug)} /><ReportForm action={sendReport.bind(null, org.id, org.slug)} /></section>
     </div>
   );
 }

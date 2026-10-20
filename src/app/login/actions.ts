@@ -22,6 +22,7 @@ export async function login(_: AuthState, fd: FormData): Promise<AuthState> {
 }
 
 export async function signup(_: AuthState, fd: FormData): Promise<AuthState> {
+  if (String(fd.get("website") ?? "") !== "") return { error: "تعذّر إنشاء الحساب." }; // honeypot
   const p = schema.safeParse(Object.fromEntries(fd));
   if (!p.success) return { error: p.error.issues[0].message };
   const supabase = await createClient();

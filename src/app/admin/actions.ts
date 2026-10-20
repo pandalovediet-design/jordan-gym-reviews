@@ -17,9 +17,33 @@ export async function setOrgStatus(id: string, status: "published" | "suspended"
   revalidatePath("/");
 }
 
-export async function setVerified(id: string, verified: boolean): Promise<void> {
+/** fd.days: "off" removes the badge, "0" = no expiry, otherwise a number of days. */
+export async function setVerified(id: string, fd: FormData): Promise<void> {
   const { supabase } = await requireAdmin();
-  await supabase.from("organizations").update({ verified_at: verified ? new Date().toISOString() : null }).eq("id", id);
+  const v = String(fd.get("days") ?? "0");
+  const days = v === "off" ? null : Math.min(Math.max(Math.floor(Number(v) || 0), 0), 3650);
+  const patch = days === null
+    ? { verified_at: null, verified_until: null }
+    : { verified_at: new Date().toISOString(), verified_until: days > 0 ? new Date(Date.now() + days * 86_400_000).toISOString() : null };
+  await supabase.from("organizations").update(patch).eq("id", id);
+  revalidatePath("/admin", "layout");
+  revalidatePath("/", "layout");
+}
+
+const TYPES = ["gym", "independent_coach", "sports_facility", "store", "nutritionist", "healthy_food"] as const;
+/** Moves a business to another type (e.g. a coach who became a center). The category is cleared; the owner picks a new one. */
+export async function setOrgType(id: string, fd: FormData): Promise<void> {
+  const { supabase } = await requireAdmin();
+  const t = String(fd.get("type") ?? "");
+  if (!(TYPES as readonly string[]).includes(t)) return;
+  await supabase.from("organizations").update({ type: t as (typeof TYPES)[number], category_id: null }).eq("id", id);
+  revalidatePath("/admin", "layout");
+  revalidatePath("/", "layout");
+}
+
+export async function setReportHandled(id: string, handled: boolean): Promise<void> {
+  const { supabase } = await requireAdmin();
+  await supabase.from("listing_reports").update({ status: handled ? "handled" : "new" }).eq("id", id);
   revalidatePath("/admin", "layout");
 }
 

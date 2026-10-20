@@ -23,3 +23,27 @@ export function InquiryForm({ action }: { action: A }) {
     </form>
   );
 }
+
+export function ReportForm({ action }: { action: A }) {
+  const [s, run, pending] = useActionState(action, undefined);
+  return (
+    <details className="mt-6 text-sm text-muted">
+      <summary className="cursor-pointer hover:text-foreground">🚩 بلّغ عن مشكلة بهالصفحة</summary>
+      <form action={run} className="mt-3 space-y-3 rounded-2xl bg-surface p-5 ring-1 ring-white/10">
+        <select name="reason" required defaultValue="" className={field}>
+          <option value="" disabled>سبب البلاغ</option>
+          <option value="wrong_info">معلومات خاطئة (سعر، دوام، رقم)</option>
+          <option value="closed">النشاط مغلق</option>
+          <option value="fake">نشاط وهمي أو احتيال</option>
+          <option value="inappropriate">محتوى غير لائق</option>
+          <option value="other">سبب آخر</option>
+        </select>
+        <textarea name="details" rows={2} maxLength={500} placeholder="تفاصيل (اختياري)" className={field} />
+        <input name="contact" maxLength={100} placeholder="رقمك أو بريدك لو بدنا نتواصل معك (اختياري)" dir="ltr" className={field} />
+        <input name="website" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
+        <Msg s={s} />
+        <button disabled={pending} className="rounded-xl bg-white/10 px-5 py-2 font-bold text-foreground disabled:opacity-60">{pending ? "لحظة..." : "إرسال البلاغ"}</button>
+      </form>
+    </details>
+  );
+}

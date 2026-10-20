@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
+import { ImageInput } from "@/components/ImageInput";
 import { ActionForm, field } from "@/components/Form";
 import { adImageUrl } from "@/lib/ads";
 import { dateAr, jod, msAgo } from "@/lib/format";
@@ -40,7 +41,7 @@ export default async function AdsAdmin() {
             <label className={lbl}>أو نشاط على المنصة<select name="organization_id" className={field}><option value="">بدون</option>{(orgs.data ?? []).map((o) => <option key={o.id} value={o.id}>{o.name_ar}</option>)}</select></label>
             <label className={lbl}>من تاريخ<input name="starts_at" type="date" required dir="ltr" className={field} /></label>
             <label className={lbl}>إلى تاريخ<input name="ends_at" type="date" required dir="ltr" className={field} /></label>
-            <label className={`${lbl} sm:col-span-2`}>الصورة (JPG / PNG / WebP، أقل من 4MB)<input name="image" type="file" accept="image/jpeg,image/png,image/webp" className={field} /></label>
+            <label className={`${lbl} sm:col-span-2`}>الصورة (JPG / PNG / WebP، أقل من 4MB)<ImageInput name="image" accept="image/jpeg,image/png,image/webp" className={field} /></label>
           </div>
           <p className="pt-2 text-sm font-bold">بيانات المعلن (خاصة فيك)</p>
           <div className="grid gap-3 sm:grid-cols-3">

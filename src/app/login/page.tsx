@@ -14,6 +14,7 @@ function LoginForm() {
       <h1 className="mb-6 text-2xl font-extrabold">{mode === "login" ? "دخول الأنشطة" : "إنشاء حساب نشاط"}</h1>
       <form action={action} className="space-y-3" key={mode}>
         <input name="email" type="email" required placeholder="البريد الإلكتروني" autoComplete="email" dir="ltr" className={field} />
+        {mode === "signup" && <input name="website" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />}
         <input name="password" type="password" required minLength={8} placeholder="كلمة المرور" autoComplete={mode === "login" ? "current-password" : "new-password"} dir="ltr" className={field} />
         {linkError && !state && <p role="alert" className="text-sm text-red-300">الرابط منتهي أو غير صالح. اطلب رابط جديد.</p>}
         {state?.error && <p role="alert" className="text-sm text-red-300">{state.error}</p>}

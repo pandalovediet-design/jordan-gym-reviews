@@ -2,6 +2,8 @@
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { notifyAdmin } from "@/lib/notify";
+import { REPORT_REASON } from "@/lib/format";
 
 export type PublicState = { error?: string; ok?: string } | undefined;
 
@@ -33,4 +35,21 @@ export async function sendInquiry(orgId: string, slug: string, _: PublicState, f
   if (error) return { error: "تعذّر إرسال الاستفسار." };
   await admin.from("analytics_events").insert({ organization_id: orgId, event_type: "inquiry" });
   return { ok: "وصلت رسالتك، رح يتواصلوا معك قريباً." };
+}
+
+const reportSchema = z.object({
+  reason: z.enum(["wrong_info", "fake", "inappropriate", "closed", "other"], "اختر سبب البلاغ"),
+  details: z.string().trim().max(500).optional().transform((v) => v || null),
+  contact: z.string().trim().max(100).optional().transform((v) => v || null),
+  website: z.string().max(0).optional(), // honeypot
+});
+
+export async function sendReport(orgId: string, slug: string, _: PublicState, fd: FormData): Promise<PublicState> {
+  const p = reportSchema.safeParse(Object.fromEntries(fd));
+  if (!p.success) return { error: p.error.issues[0].message };
+  const supabase = await createClient();
+  const { error } = await supabase.from("listing_reports").insert({ reason: p.data.reason, details: p.data.details, contact: p.data.contact, organization_id: orgId });
+  if (error) return { error: error.message.includes("too many") ? "وصلنا عدة بلاغات عن هالصفحة، شكراً لصبرك." : "تعذّر إرسال البلاغ." };
+  await notifyAdmin(`🚩 بلاغ جديد على /g/${slug}\nالسبب: ${REPORT_REASON[p.data.reason]}${p.data.details ? `\n${p.data.details}` : ""}`);
+  return { ok: "وصلنا بلاغك، شكراً. رح نراجع الصفحة." };
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
+import { ImageInput } from "@/components/ImageInput";
 import { ActionForm, field } from "@/components/Form";
 import { adImageUrl } from "@/lib/ads";
 import { dateAr } from "@/lib/format";
@@ -27,7 +28,7 @@ export default async function PartnersAdmin() {
             <label className={lbl}>ينتهي بتاريخ (اختياري)<input name="ends_at" type="date" dir="ltr" className={field} /></label>
             <label className={lbl}>رابط (https://...)<input name="link_url" dir="ltr" className={field} /></label>
             <label className={lbl}>أو نشاط على المنصة<select name="organization_id" className={field}><option value="">بدون</option>{(orgs.data ?? []).map((o) => <option key={o.id} value={o.id}>{o.name_ar}</option>)}</select></label>
-            <label className={`${lbl} sm:col-span-2`}>الشعار (JPG / PNG / WebP)<input name="logo" type="file" required accept="image/jpeg,image/png,image/webp" className={field} /></label>
+            <label className={`${lbl} sm:col-span-2`}>الشعار (JPG / PNG / WebP)<ImageInput name="logo" required accept="image/jpeg,image/png,image/webp" className={field} /></label>
           </div>
         </ActionForm>
       </section>

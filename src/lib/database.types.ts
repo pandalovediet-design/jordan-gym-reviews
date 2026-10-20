@@ -800,6 +800,20 @@ export type Database = {
           },
         ]
       }
+      listing_reports: {
+        Row: { contact: string | null; created_at: string; details: string | null; id: string; organization_id: string; reason: string; status: string }
+        Insert: { contact?: string | null; created_at?: string; details?: string | null; id?: string; organization_id: string; reason: string; status?: string }
+        Update: { contact?: string | null; created_at?: string; details?: string | null; id?: string; organization_id?: string; reason?: string; status?: string }
+        Relationships: [
+          {
+            foreignKeyName: "listing_reports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partners: {
         Row: { created_at: string; ends_at: string | null; id: string; is_active: boolean; link_url: string | null; logo_path: string; name_ar: string; organization_id: string | null; sort_order: number }
         Insert: { created_at?: string; ends_at?: string | null; id?: string; is_active?: boolean; link_url?: string | null; logo_path: string; name_ar: string; organization_id?: string | null; sort_order?: number }
@@ -885,6 +899,7 @@ export type Database = {
           type: Database["public"]["Enums"]["org_type"]
           updated_at: string
           verified_at: string | null
+          verified_until: string | null
           website: string | null
           whatsapp: string | null
         }
@@ -916,6 +931,7 @@ export type Database = {
           type: Database["public"]["Enums"]["org_type"]
           updated_at?: string
           verified_at?: string | null
+          verified_until?: string | null
           website?: string | null
           whatsapp?: string | null
         }
@@ -947,6 +963,7 @@ export type Database = {
           type?: Database["public"]["Enums"]["org_type"]
           updated_at?: string
           verified_at?: string | null
+          verified_until?: string | null
           website?: string | null
           whatsapp?: string | null
         }

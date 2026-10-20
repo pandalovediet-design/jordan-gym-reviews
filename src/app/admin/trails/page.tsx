@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
+import { ImageInput } from "@/components/ImageInput";
 import { ActionForm, field } from "@/components/Form";
 import { TRAIL_DIFFICULTY, TRAIL_TYPE } from "@/lib/format";
 import { addTrail, deleteTrail, setTrailPublished } from "../more-actions";
@@ -30,7 +31,7 @@ export default async function TrailsAdmin() {
             <label className={`${lbl} sm:col-span-2`}>رابط قوقل ماب<input name="maps_url" dir="ltr" className={field} /></label>
             <label className={`${lbl} sm:col-span-2`}>الوصف<textarea name="description_ar" rows={3} className={field} /></label>
             <label className={`${lbl} sm:col-span-2`}>نصائح<textarea name="tips_ar" rows={2} className={field} /></label>
-            <label className={`${lbl} sm:col-span-2`}>صورة (اختياري)<input name="image" type="file" accept="image/jpeg,image/png,image/webp" className={field} /></label>
+            <label className={`${lbl} sm:col-span-2`}>صورة (اختياري)<ImageInput name="image" accept="image/jpeg,image/png,image/webp" className={field} /></label>
           </div>
         </ActionForm>
       </section>

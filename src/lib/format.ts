@@ -94,3 +94,8 @@ export const asGlow = (v: string | null | undefined): GlowColor | null => ((GLOW
 export const DELIVERY_LABEL = { own_delivery: "توصيل خاص", apps: "عبر تطبيقات التوصيل", pickup: "استلام من المكان" } as const;
 export const TRAIL_DIFFICULTY = { easy: "سهل", moderate: "متوسط", hard: "صعب", expert: "للخبراء" } as const;
 export const TRAIL_TYPE = { hiking: "هايكنق", walking: "مشي", running: "ركض" } as const;
+
+/** The verified badge is active unless it has an expiry date in the past. */
+export const isVerified = (o: { verified_at: string | null; verified_until?: string | null }) =>
+  !!o.verified_at && (!o.verified_until || +new Date(o.verified_until) > Date.now());
+export const REPORT_REASON = { wrong_info: "معلومات خاطئة", fake: "نشاط وهمي", inappropriate: "محتوى غير لائق", closed: "النشاط مغلق", other: "سبب آخر" } as const;

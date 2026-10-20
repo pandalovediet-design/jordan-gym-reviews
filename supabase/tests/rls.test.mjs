@@ -693,3 +693,50 @@ test("glow, flash slots, partners, trails, healthy food", async () => {
     await rejects(() => db.query(`insert into public.menu_items (organization_id, name_ar, price_jod, calories) values ($1, 'سالب', -1, 10)`, [id]));
   });
 });
+
+test("visitor reports and verified-badge expiry", async () => {
+  const org = (await db.query(`select id from public.organizations where slug = 'nutri-test'`)).rows[0].id;
+  // anyone can report a published page, nobody but admins can read reports
+  await asAnon(async () => {
+    await db.query(`insert into public.listing_reports (organization_id, reason, details) values ($1, 'wrong_info', 'رقم خاطئ')`, [org]);
+    assert.equal((await db.query(`select * from public.listing_reports`)).rows.length, 0);
+    await rejects(() => db.query(`insert into public.listing_reports (organization_id, reason, status) values ($1, 'fake', 'handled')`, [org]));
+    await rejects(() => db.query(`insert into public.listing_reports (organization_id, reason) values ($1, 'bogus')`, [org]));
+  });
+  await asAlice(async () => {
+    assert.equal((await db.query(`select * from public.listing_reports`)).rows.length, 0);
+    const u = await db.query(`update public.listing_reports set status = 'handled'`);
+    assert.equal(u.affectedRows, 0);
+  });
+  await asAdmin(async () => {
+    assert.equal((await db.query(`select * from public.listing_reports`)).rows.length, 1);
+    await db.query(`update public.listing_reports set status = 'handled'`);
+  });
+  // throttle: at most 10 reports per page per hour
+  await asAnon(async () => {
+    for (let i = 0; i < 9; i++) await db.query(`insert into public.listing_reports (organization_id, reason) values ($1, 'other')`, [org]);
+    await rejects(() => db.query(`insert into public.listing_reports (organization_id, reason) values ($1, 'other')`, [org]), /too many reports/);
+  });
+  // verified badge expires; owners cannot extend it
+  await asAdmin(async () => {
+    await db.query(`update public.organizations set verified_at = now(), verified_until = now() + interval '30 days' where id = $1`, [org]);
+  });
+  await asAnon(async () => {
+    assert.ok((await db.query(`select verified_at from public.organizations_listing where id = $1`, [org])).rows[0].verified_at);
+  });
+  await asAdmin(async () => {
+    await db.query(`update public.organizations set verified_until = now() - interval '1 day' where id = $1`, [org]);
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select verified_at from public.organizations_listing where id = $1`, [org])).rows[0].verified_at, null);
+  });
+  const owner = (await db.query(`select created_by from public.organizations where id = $1`, [org])).rows[0].created_by;
+  const as_owner = owner === ALICE ? asAlice : owner === BOB ? asBob : null;
+  if (as_owner) {
+    await as_owner(async () => {
+      await db.query(`update public.organizations set verified_until = now() + interval '900 days' where id = $1`, [org]);
+    });
+    const r = (await db.query(`select verified_until > now() as active from public.organizations where id = $1`, [org])).rows[0];
+    assert.equal(r.active, false);
+  }
+});

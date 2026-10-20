@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
-import { GLOW_COLORS, GLOW_NAME, ORG_TYPE_LABEL } from "@/lib/format";
+import { GLOW_COLORS, GLOW_NAME, ORG_TYPE_LABEL, isVerified } from "@/lib/format";
 import { cleanQuery } from "@/lib/format";
 import { isOrgType } from "@/lib/queries";
-import { clearWomenAccess, setFeatured, setGlow, setOrgStatus, setVerified } from "../actions";
+import { clearWomenAccess, setFeatured, setGlow, setOrgStatus, setOrgType, setVerified } from "../actions";
 
 export const metadata: Metadata = { title: "الأنشطة", robots: { index: false } };
 const STATUSES = ["draft", "pending", "published", "suspended"] as const;
@@ -17,7 +17,7 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
   const status = one(sp.status);
   const type = one(sp.type);
   const { supabase } = await requireUser();
-  let query = supabase.from("organizations").select("id,name_ar,type,city,status,verified_at,slug,women_access").order("created_at", { ascending: false }).limit(200);
+  let query = supabase.from("organizations").select("id,name_ar,type,city,status,verified_at,verified_until,slug,women_access").order("created_at", { ascending: false }).limit(200);
   if (q) query = query.or(`name_ar.ilike.%${q}%,name_en.ilike.%${q}%,city.ilike.%${q}%`);
   if ((STATUSES as readonly string[]).includes(status)) query = query.eq("status", status as (typeof STATUSES)[number]);
   if (isOrgType(type)) query = query.eq("type", type);
@@ -48,7 +48,7 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
       <ul className="space-y-2">{(orgs.data ?? []).map((o) => (
           <li key={o.id} className={`${box} space-y-3`}>
             <div className="flex flex-wrap items-center justify-between gap-3">
-            <div><p className="font-semibold">{o.name_ar} {o.verified_at && <span className="text-accent">✓</span>} {isLive(o.id) && <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">مميّز</span>}</p>
+            <div><p className="font-semibold">{o.name_ar} {isVerified(o) && <span className="text-accent">✓</span>} {isLive(o.id) && <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">مميّز</span>}</p>
               <p className="text-xs text-muted">{ORG_TYPE_LABEL[o.type]} · {o.city} · {STATUS_LABEL[o.status]}</p>
               {emailOf(o.id) && <p className="text-xs text-muted">المالك: <span dir="ltr">{emailOf(o.id)}</span></p>}</div>
             <div className="flex flex-wrap gap-2">
@@ -58,8 +58,22 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
               {o.status !== "published" && <form action={setOrgStatus.bind(null, o.id, "published")}><button className={`${btn} !bg-accent text-accent-foreground`}>نشر</button></form>}
               {o.status === "published" && <form action={setOrgStatus.bind(null, o.id, "suspended")}><button className={btn}>إيقاف</button></form>}
               {o.women_access !== "none" && <form action={clearWomenAccess.bind(null, o.id)}><button className={btn}>💗 إزالة {o.women_access === "women_only" ? "Pink Zone" : "الأوقات النسائية"}</button></form>}
-              <form action={setVerified.bind(null, o.id, !o.verified_at)}><button className={btn}>{o.verified_at ? "إلغاء التوثيق" : "توثيق"}</button></form>
             </div></div>
+            <form action={setVerified.bind(null, o.id)} className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="text-muted">التوثيق {isVerified(o) ? (o.verified_until ? `(حتى ${o.verified_until.slice(0, 10)})` : "(بدون انتهاء)") : o.verified_at ? "(منتهي)" : ""}:</span>
+              <select name="days" defaultValue="365" className="rounded-lg bg-background px-2 py-1 ring-1 ring-white/10">
+                <option value="365">سنة</option><option value="180">6 شهور</option><option value="90">3 شهور</option><option value="0">بدون انتهاء</option><option value="off">إلغاء التوثيق</option>
+              </select>
+              <button className={btn}>حفظ</button>
+            </form>
+            <form action={setOrgType.bind(null, o.id)} className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="text-muted">نوع النشاط ({ORG_TYPE_LABEL[o.type]}):</span>
+              <select name="type" defaultValue={o.type} className="rounded-lg bg-background px-2 py-1 ring-1 ring-white/10">
+                {Object.entries(ORG_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              </select>
+              <button className={btn}>تغيير</button>
+              <span className="text-muted">(بيتصفّر التصنيف وصاحب النشاط بيختار تصنيف جديد)</span>
+            </form>
             <form action={setFeatured.bind(null, o.id)} className="flex flex-wrap items-center gap-2 text-xs">
               <span className="text-muted">تمييز بالبحث:</span>
               <input name="days" type="number" min="0" max="366" placeholder="عدد الأيام (0 = إلغاء)" defaultValue={0} className="w-40 rounded-lg bg-background px-2 py-1 ring-1 ring-white/10" />
