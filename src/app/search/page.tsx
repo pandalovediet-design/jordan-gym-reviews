@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ProductCard } from "@/components/ProductCard";
 import { NearMeButton } from "@/components/NearMe";
+import { CityAreaPicker } from "@/components/CityAreaPicker";
 import { OrgCard } from "@/components/OrgCard";
 import { PAGE_SIZE, listCategories, searchOrgs, searchProducts } from "@/lib/queries";
 import { ORG_TYPE_LABEL } from "@/lib/format";
@@ -14,6 +15,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
   const q = one(sp.q) ?? "";
   const type = one(sp.type) ?? "";
   const city = one(sp.city) ?? "";
+  const area = one(sp.area) ?? "";
   const category = one(sp.category) ?? "";
   const women = one(sp.women) === "only" || one(sp.women) === "any" ? one(sp.women)! : "";
   const maxPriceRaw = Number.parseFloat(one(sp.max) ?? "");
@@ -26,13 +28,13 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
 
   let error = false;
   const categories = await listCategories().catch(() => []);
-  const orgs = mode === "orgs" ? await searchOrgs({ q, type, city, category, women, maxPrice, trial, near, page }).catch(() => (error = true, null)) : null;
+  const orgs = mode === "orgs" ? await searchOrgs({ q, type, city, area, category, women, maxPrice, trial, near, page }).catch(() => (error = true, null)) : null;
   const prods = mode === "products" ? await searchProducts({ q, page }).catch(() => (error = true, null)) : null;
   const total = (orgs ?? prods)?.total ?? 0;
   const pages = Math.ceil(total / PAGE_SIZE);
   const href = (p: number) => {
     const u = new URLSearchParams();
-    if (q) u.set("q", q); if (type) u.set("type", type); if (city) u.set("city", city);
+    if (q) u.set("q", q); if (type) u.set("type", type); if (city) u.set("city", city); if (area) u.set("area", area);
     if (category) u.set("category", category); if (women) u.set("women", women);
     if (maxPrice) u.set("max", String(maxPrice)); if (trial) u.set("trial", "1");
     if (near) { u.set("lat", String(near.lat)); u.set("lng", String(near.lng)); }
@@ -61,7 +63,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
           <option value="only">💗 Pink Zone فقط</option>
           <option value="any">يشمل أوقات نسائية</option>
         </select>
-        <input name="city" defaultValue={city} placeholder="المدينة" className={field} />
+        <CityAreaPicker defaultCity={city} defaultArea={area} allowAll labels={false} />
         <input name="max" type="number" min="1" step="1" defaultValue={maxPrice || ""} placeholder="أقصى سعر شهري (د.أ)" className={field} />
         <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="trial" value="1" defaultChecked={trial} /> 🎟 يوم تجريبي مجاني</label>
         <button className="rounded-xl bg-accent px-6 font-bold text-accent-foreground">بحث</button>

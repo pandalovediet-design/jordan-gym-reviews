@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { ActionForm, field } from "@/components/Form";
 import { AVAILABILITY_LABEL, BILLING_LABEL, DELIVERY_LABEL, publicMediaUrl, WEEKDAYS, hhmm, jod } from "@/lib/format";
+import { CityAreaPicker } from "@/components/CityAreaPicker";
 import { missingForPublish, suggestionsFor } from "@/lib/completeness";
 import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setProductAvailability, addMenuItem, deleteMenuItem, setMenuAvailability, setMenuImage } from "../actions";
 
@@ -75,8 +76,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
               {(orgCats ?? []).filter((c) => c.org_type === org.type).map((c) => <option key={c.id} value={c.id}>{c.name_ar}</option>)}
             </select>
           </label>
-          <label className={lbl}>المدينة<input name="city" required defaultValue={org.city} className={field} /></label>
-          <input type="hidden" name="area" defaultValue={org.area ?? ""} />
+          <CityAreaPicker defaultCity={org.city} defaultArea={org.area ?? ""} />
           <input type="hidden" name="address" defaultValue={org.address ?? ""} />
           <div className="grid gap-3 sm:grid-cols-2">
             <label className={lbl}>الهاتف<input name="phone" defaultValue={org.phone ?? ""} dir="ltr" placeholder="0791234567" className={field} /></label>
@@ -360,8 +360,7 @@ function BranchFields({ b, lbl }: { b?: { name_ar: string; city: string | null; 
   return (
     <>
       <label className={lbl}>اسم الفرع<input name="name_ar" required defaultValue={b?.name_ar ?? ""} placeholder="مثال: فرع عبدون" className={field} /></label>
-      <label className={lbl}>المدينة<input name="city" required defaultValue={b?.city ?? ""} className={field} /></label>
-      <input type="hidden" name="area" defaultValue={b?.area ?? ""} />
+      <CityAreaPicker defaultCity={b?.city ?? ""} defaultArea={b?.area ?? ""} />
       <input type="hidden" name="address" defaultValue={b?.address ?? ""} />
       <div className="grid gap-3 sm:grid-cols-2">
         <label className={lbl}>هاتف الفرع (اختياري)<input name="phone" defaultValue={b?.phone ?? ""} dir="ltr" placeholder="0791234567" className={field} /></label>

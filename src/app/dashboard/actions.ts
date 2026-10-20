@@ -20,6 +20,7 @@ const createSchema = z.object({
   name_ar: z.string().trim().min(2, "اكتب اسم النشاط").max(80),
   type: z.enum(["gym", "independent_coach", "sports_facility", "store", "nutritionist", "healthy_food"]),
   city: z.string().trim().min(2, "اكتب المدينة").max(40),
+  area: z.string().trim().max(60).optional().transform((v) => v || null),
   category_id: z.string().uuid("اختر التصنيف"),
 });
 

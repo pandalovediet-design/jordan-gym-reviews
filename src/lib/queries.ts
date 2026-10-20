@@ -51,7 +51,7 @@ async function withCovers<T extends { id: string }>(db: ReturnType<typeof create
   return rows.map((o) => ({ ...o, cover: covers.find((c) => c.organization_id === o.id) ?? null }));
 }
 
-export async function searchOrgs(opts: { q?: string; type?: string; city?: string; category?: string; women?: string; maxPrice?: number; trial?: boolean; near?: { lat: number; lng: number } | null; page: number }) {
+export async function searchOrgs(opts: { q?: string; type?: string; city?: string; area?: string; category?: string; women?: string; maxPrice?: number; trial?: boolean; near?: { lat: number; lng: number } | null; page: number }) {
   const db = createPublicClient();
   let query = db
     .from("organizations_listing")
@@ -65,6 +65,8 @@ export async function searchOrgs(opts: { q?: string; type?: string; city?: strin
   if (isOrgType(opts.type)) query = query.eq("type", opts.type);
   const city = cleanQuery(opts.city ?? "");
   if (city) query = query.or(`city.eq.${city},branch_cities.cs.{"${city}"}`);
+  const area = cleanQuery(opts.area ?? "");
+  if (area) query = query.eq("area", area);
   if (opts.category) query = query.eq("category_slug", /^[a-z0-9-]{2,40}$/.test(opts.category) ? opts.category : "-");
   if (opts.women === "only") query = query.or("women_access.eq.women_only,branch_women_only.eq.true");
   else if (opts.women === "any") query = query.or("women_access.in.(women_only,women_hours),branch_women_only.eq.true,branch_women_hours.eq.true");

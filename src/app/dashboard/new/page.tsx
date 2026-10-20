@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { ActionForm, field } from "@/components/Form";
 import { createOrg } from "../actions";
+import { CityAreaPicker } from "@/components/CityAreaPicker";
 import { CategoryPicker } from "@/components/CategoryPicker";
 import { listCategories } from "@/lib/queries";
 import { ORG_TYPE_LABEL } from "@/lib/format";
@@ -17,7 +18,7 @@ export default async function NewOrg() {
       <ActionForm action={createOrg} submit="إنشاء">
         <input name="name_ar" required placeholder="اسم النشاط" className={field} />
         <CategoryPicker types={ORG_TYPE_LABEL} categories={categories} />
-        <input name="city" required defaultValue="عمّان" placeholder="المدينة" className={field} />
+        <CityAreaPicker defaultCity="عمّان" labels={false} />
       </ActionForm>
     </div>
   );
