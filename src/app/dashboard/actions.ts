@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { notifyAdmin } from "@/lib/notify";
 import { requireUser } from "@/lib/auth";
 import { missingForPublish } from "@/lib/completeness";
 import { resolveMapsCoords } from "@/lib/maps";
@@ -33,6 +34,7 @@ export async function createOrg(_: FormState, fd: FormData): Promise<FormState> 
     .insert({ ...p.data, slug, created_by: user.id })
     .select("id").single();
   if (error) return { error: error.message.includes("category") ? "التصنيف لا يناسب نوع النشاط." : error.message.includes("max") || error.message.includes("limit") ? "وصلت الحد الأقصى من الأنشطة." : "تعذّر إنشاء النشاط." };
+  await notifyAdmin(`🏷️ نشاط جديد: ${p.data.name_ar}\nالنوع: ${p.data.type} · ${p.data.city}\n${user.email ?? ""}`);
   redirect(`/dashboard/${data.id}`);
 }
 
@@ -111,7 +113,8 @@ export async function deleteClass(id: string, classId: string): Promise<void> {
 export async function submitForReview(id: string): Promise<void> {
   const { supabase } = await requireUser();
   if ((await missingForPublish(supabase, id)).length > 0) return;
-  await supabase.from("organizations").update({ status: "pending" }).eq("id", id).eq("status", "draft");
+  const { data: sent } = await supabase.from("organizations").update({ status: "pending" }).eq("id", id).eq("status", "draft").select("name_ar").maybeSingle();
+  if (sent) await notifyAdmin(`📝 نشاط بانتظار مراجعتك: ${sent.name_ar}\nافتح /admin لاعتماده`);
   revalidatePath(`/dashboard/${id}`);
 }
 

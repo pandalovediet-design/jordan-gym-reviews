@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { siteUrl } from "@/lib/site";
+import { notifyAdmin } from "@/lib/notify";
 
 const schema = z.object({
   email: z.string().email("البريد الإلكتروني غير صحيح"),
@@ -26,6 +27,7 @@ export async function signup(_: AuthState, fd: FormData): Promise<AuthState> {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({ ...p.data, options: { emailRedirectTo: `${await siteUrl()}/auth/callback?next=/dashboard` } });
   if (error) return { error: "تعذّر إنشاء الحساب. تأكد من البيانات أو جرّب بريد ثاني." };
+  await notifyAdmin(`🆕 تسجيل جديد على Jordan Gym Reviews\n${p.data.email}`);
   if (!data.session) return { notice: "أرسلنا لك رابط تأكيد على بريدك. افتحه وبعدين سجّل دخولك." };
   redirect("/dashboard");
 }

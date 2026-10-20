@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { ActionForm, field } from "@/components/Form";
 import { AVAILABILITY_LABEL, BILLING_LABEL, DELIVERY_LABEL, publicMediaUrl, WEEKDAYS, hhmm, jod } from "@/lib/format";
-import { missingForPublish } from "@/lib/completeness";
+import { missingForPublish, suggestionsFor } from "@/lib/completeness";
 import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setProductAvailability, addMenuItem, deleteMenuItem, setMenuAvailability, setMenuImage } from "../actions";
 
 export const metadata: Metadata = { title: "تعديل النشاط", robots: { index: false } };
@@ -31,6 +31,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
   ]);
   if (!org) notFound();
   const missing = org.status === "draft" ? await missingForPublish(supabase, id) : [];
+  const tips = org.status === "draft" ? await suggestionsFor(supabase, id) : [];
   const box = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
   const lbl = "block space-y-1 text-sm text-muted";
   const allBranches = branches ?? [];
@@ -60,6 +61,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
         </form>
       )}
       {org.status === "draft" && missing.length > 0 && <p className="rounded-xl bg-yellow-400/10 p-3 text-sm text-yellow-200">ناقص قبل الإرسال: {missing.join("، ")}.</p>}
+      {org.status === "draft" && missing.length === 0 && tips.length > 0 && <p className="rounded-xl bg-white/5 p-3 text-sm text-muted">تقدر ترسل للمراجعة هسا. وتحسّن صفحتك بعدين: {tips.join("، ")}.</p>}
       {org.status === "published" && <Link href={`/g/${org.slug}`} className="text-accent underline">عرض الصفحة العامة</Link>}
 
       <section className={box}><h2 className="mb-3 text-lg font-bold">البيانات الأساسية</h2>
