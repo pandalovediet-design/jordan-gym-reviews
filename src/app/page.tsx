@@ -1,19 +1,21 @@
 import Link from "next/link";
 import { FlashStrip } from "@/components/FlashStrip";
 import { OrgCard } from "@/components/OrgCard";
+import { TrailCard } from "@/components/TrailCard";
 import { adImageUrl, listLiveAds } from "@/lib/ads";
-import { listActiveOffers, listHomeSections, listLiveFlash, listPartners } from "@/lib/queries";
+import { listActiveOffers, listHomeSections, listLiveFlash, listPartners, listTrails } from "@/lib/queries";
 import { ORG_TYPE_LABEL } from "@/lib/format";
 
 export const revalidate = 300;
 
 export default async function Home() {
-  const [home, offers, ads, flash, partners] = await Promise.all([
+  const [home, offers, ads, flash, partners, trails] = await Promise.all([
     listHomeSections().catch(() => ({ sections: [], pink: { total: 0, items: [] } })),
     listActiveOffers(6).catch(() => []),
     listLiveAds().catch(() => []),
     listLiveFlash(6).catch(() => []),
     listPartners().catch(() => []),
+    listTrails().catch(() => []),
   ]);
   const banner = ads.find((a) => a.placement === "banner");
   const sponsored = ads.filter((a) => a.placement === "sponsored").slice(0, 3);
@@ -101,6 +103,12 @@ export default async function Home() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{s.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>
           </section>
         ))
+      )}
+      {trails.length > 0 && (
+        <section className="mb-12">
+          <div className="mb-4 flex items-baseline justify-between"><h2 className="text-xl font-bold">🥾 مسارات المشي والهايكنق</h2><Link href="/trails" className="text-sm text-accent underline">كل المسارات</Link></div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{trails.slice(0, 6).map((t) => <TrailCard key={t.id} t={t} />)}</div>
+        </section>
       )}
       {partners.length > 0 && (
         <section className="mb-12">
