@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { FavButton } from "@/components/Favorites";
-import { ORG_TYPE_LABEL, WOMEN_LABEL, jod, publicMediaUrl } from "@/lib/format";
+import { GLOW_LABEL, ORG_TYPE_LABEL, WOMEN_LABEL, jod, publicMediaUrl, type GlowColor } from "@/lib/format";
 import type { Enums } from "@/lib/database.types";
 
 export function OrgCard({ org }: {
   org: { slug: string; name_ar: string; type: Enums<"org_type">; city: string; area: string | null; description_ar: string | null; verified_at: string | null; is_featured?: boolean;
-    category_name?: string | null; free_trial_note?: string | null; min_price_jod?: number | null; distance_km?: number; branch_count?: number; branch_women_only?: boolean; women_access?: "none" | "women_only" | "women_hours";
+    category_name?: string | null; free_trial_note?: string | null; min_price_jod?: number | null; distance_km?: number; glow_color?: GlowColor | null; branch_count?: number; branch_women_only?: boolean; women_access?: "none" | "women_only" | "women_hours";
     cover?: { storage_path: string; alt_text: string | null } | null };
 }) {
   return (
-    <div className="relative">
+    <div className={`relative ${org.glow_color ? `glow glow-${org.glow_color}` : ""}`}>
     <Link href={`/g/${org.slug}`} className={`block overflow-hidden rounded-2xl bg-surface ring-1 transition hover:ring-accent/60 ${org.women_access === "women_only" ? "ring-pink-400/60" : "ring-white/10"}`}>
       {org.women_access === "women_only" && <div className="bg-pink-500 px-4 py-1 text-center text-xs font-bold tracking-wide text-white">💗 {WOMEN_LABEL.women_only}</div>}
       {org.cover ? (
@@ -24,6 +24,7 @@ export function OrgCard({ org }: {
         <span className="flex gap-2">
           {org.women_access === "women_hours" && <span className="rounded-full bg-pink-500/20 px-2 py-0.5 font-bold text-pink-300 ring-1 ring-pink-400/40">{WOMEN_LABEL.women_hours}</span>}
           {org.is_featured && <span className="rounded-full bg-accent px-2 py-0.5 font-bold text-accent-foreground">مميّز</span>}
+          {org.glow_color && <span className="rounded-full bg-black/40 px-2 py-0.5 font-bold text-foreground">{GLOW_LABEL[org.glow_color]}</span>}
           {org.verified_at && <span className="text-accent">✓ موثّق</span>}
         </span>
       </div>

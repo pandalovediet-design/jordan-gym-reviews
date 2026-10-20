@@ -1,16 +1,19 @@
 import Link from "next/link";
+import { FlashStrip } from "@/components/FlashStrip";
 import { OrgCard } from "@/components/OrgCard";
 import { adImageUrl, listLiveAds } from "@/lib/ads";
-import { listActiveOffers, listHomeSections } from "@/lib/queries";
+import { listActiveOffers, listHomeSections, listLiveFlash, listPartners } from "@/lib/queries";
 import { ORG_TYPE_LABEL } from "@/lib/format";
 
 export const revalidate = 300;
 
 export default async function Home() {
-  const [home, offers, ads] = await Promise.all([
+  const [home, offers, ads, flash, partners] = await Promise.all([
     listHomeSections().catch(() => ({ sections: [], pink: { total: 0, items: [] } })),
     listActiveOffers(6).catch(() => []),
     listLiveAds().catch(() => []),
+    listLiveFlash(6).catch(() => []),
+    listPartners().catch(() => []),
   ]);
   const banner = ads.find((a) => a.placement === "banner");
   const sponsored = ads.filter((a) => a.placement === "sponsored").slice(0, 3);
@@ -31,6 +34,8 @@ export default async function Home() {
           {Object.entries(ORG_TYPE_LABEL).map(([k, v]) => (
             <Link key={k} href={`/search?type=${k}`} className="rounded-full bg-surface px-4 py-1.5 ring-1 ring-white/10 hover:ring-accent">{v}</Link>
           ))}
+          <Link href="/trails" className="rounded-full bg-surface px-4 py-1.5 ring-1 ring-white/10 hover:ring-accent">🥾 مسارات المشي والهايكنق</Link>
+          <Link href="/tools" className="rounded-full bg-surface px-4 py-1.5 ring-1 ring-white/10 hover:ring-accent">🧮 حاسبة السعرات</Link>
         </div>
       </section>
       {banner && (
@@ -60,6 +65,7 @@ export default async function Home() {
           </div>
         </section>
       )}
+      <FlashStrip items={flash} />
       {offers.length > 0 && (
         <section className="mb-12">
           <h2 className="mb-4 text-xl font-bold">عروض ودورات حالية</h2>
@@ -95,6 +101,21 @@ export default async function Home() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{s.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>
           </section>
         ))
+      )}
+      {partners.length > 0 && (
+        <section className="mb-12">
+          <h2 className="mb-4 text-center text-sm font-bold text-muted">شركاء المنصة</h2>
+          <div className="flex flex-wrap items-center justify-center gap-6">
+            {partners.map((p) => {
+              const img = (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={adImageUrl(p.logo_path)!} alt={p.name_ar} loading="lazy" className="h-14 w-auto max-w-40 object-contain opacity-80 transition hover:opacity-100" />
+              );
+              const href = p.link_url ?? (p.organizations ? `/g/${p.organizations.slug}` : null);
+              return href ? <a key={p.id} href={href} rel="sponsored noopener" title={p.name_ar}>{img}</a> : <span key={p.id} title={p.name_ar}>{img}</span>;
+            })}
+          </div>
+        </section>
       )}
     </div>
   );

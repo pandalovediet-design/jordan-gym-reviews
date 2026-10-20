@@ -1,16 +1,16 @@
 import { createPublicClient } from "@/lib/supabase/public";
-import { cleanQuery } from "@/lib/format";
+import { asGlow, cleanQuery } from "@/lib/format";
 import { distanceKm } from "@/lib/maps";
-import type { Enums } from "@/lib/database.types";
+import type { Enums, Tables } from "@/lib/database.types";
 
 export const PAGE_SIZE = 12;
-const ORG_TYPES = ["gym", "independent_coach", "sports_facility", "store", "nutritionist"] as const;
+const ORG_TYPES = ["gym", "independent_coach", "sports_facility", "store", "nutritionist", "healthy_food"] as const;
 export const isOrgType = (v: string | undefined): v is Enums<"org_type"> =>
   !!v && (ORG_TYPES as readonly string[]).includes(v);
 
 export const WOMEN_FILTERS = ["only", "any"] as const;
 
-const LISTING_COLS = "id,slug,name_ar,type,city,area,description_ar,verified_at,is_featured,category_id,category_slug,category_name,women_access,women_hours_note,free_trial_note,min_price_jod,latitude,longitude,branch_count,branch_cities,branch_women_only,branch_women_hours,branch_points";
+const LISTING_COLS = "id,slug,name_ar,type,city,area,description_ar,verified_at,is_featured,category_id,category_slug,category_name,women_access,women_hours_note,free_trial_note,min_price_jod,latitude,longitude,branch_count,branch_cities,branch_women_only,branch_women_hours,branch_points,glow_color";
 
 type ListingRow = {
   id: string | null; slug: string | null; name_ar: string | null; type: Enums<"org_type"> | null; city: string | null; area: string | null;
@@ -19,7 +19,7 @@ type ListingRow = {
   women_access: string | null; women_hours_note: string | null;
   free_trial_note: string | null; min_price_jod: number | null;
   latitude: number | null; longitude: number | null;
-  branch_count: number | null; branch_cities: string[] | null; branch_women_only: boolean | null; branch_women_hours: boolean | null; branch_points: unknown;
+  branch_count: number | null; branch_cities: string[] | null; branch_women_only: boolean | null; branch_women_hours: boolean | null; branch_points: unknown; glow_color: string | null;
 };
 function mapListing(data: ListingRow[]) {
   return data.flatMap((o) =>
@@ -33,7 +33,7 @@ function mapListing(data: ListingRow[]) {
           free_trial_note: o.free_trial_note,
           min_price_jod: o.min_price_jod == null ? null : Number(o.min_price_jod),
           lat: o.latitude == null ? null : Number(o.latitude), lng: o.longitude == null ? null : Number(o.longitude),
-          branch_count: Number(o.branch_count ?? 1),
+          branch_count: Number(o.branch_count ?? 1), glow_color: asGlow(o.glow_color),
           branch_women_only: !!o.branch_women_only, branch_women_hours: !!o.branch_women_hours,
           points: [
             ...(o.latitude != null && o.longitude != null ? [{ lat: Number(o.latitude), lng: Number(o.longitude) }] : []),
@@ -133,7 +133,7 @@ export async function getOrgBySlug(slug: string) {
     .from("organizations").select("*").eq("slug", slug).eq("status", "published").maybeSingle();
   if (!org) return null;
   const now = new Date().toISOString();
-  const [hours, services, media, offers, products, classes, branches, trainers] = await Promise.all([
+  const [hours, services, media, offers, products, classes, branches, trainers, promo, menu] = await Promise.all([
     db.from("organization_hours").select("*").eq("organization_id", org.id).order("weekday"),
     db.from("organization_services").select("*").eq("organization_id", org.id).eq("is_active", true).order("sort_order"),
     db.from("organization_media").select("*").eq("organization_id", org.id).order("sort_order"),
@@ -144,6 +144,10 @@ export async function getOrgBySlug(slug: string) {
     db.from("org_classes").select("*").eq("organization_id", org.id).eq("is_active", true).order("weekday").order("starts_at"),
     db.from("org_branches").select("*").eq("organization_id", org.id).eq("is_active", true).order("is_main", { ascending: false }).order("sort_order"),
     db.from("org_trainers").select("*").eq("organization_id", org.id).eq("is_active", true).order("sort_order"),
+    db.from("org_promotions").select("glow_color,glow_until").eq("organization_id", org.id).maybeSingle(),
+    org.type === "healthy_food"
+      ? db.from("menu_items").select("*").eq("organization_id", org.id).order("sort_order").order("created_at")
+      : Promise.resolve({ data: [] }),
   ]);
   return {
     org,
@@ -155,6 +159,8 @@ export async function getOrgBySlug(slug: string) {
     classes: classes.data ?? [],
     branches: branches.data ?? [],
     trainers: trainers.data ?? [],
+    glow: promo.data?.glow_until && +new Date(promo.data.glow_until) > Date.now() ? asGlow(promo.data.glow_color) : null,
+    menu: (menu.data ?? []) as Tables<"menu_items">[],
   };
 }
 
@@ -205,4 +211,36 @@ export async function listBySlugs(slugs: string[]) {
   if (error) throw new Error(error.message);
   const rows = mapListing(data ?? []).sort((a, b) => clean.indexOf(a.slug) - clean.indexOf(b.slug));
   return withCovers(db, rows);
+}
+
+export async function listLiveFlash(limit = 6) {
+  const now = new Date().toISOString();
+  const { data } = await createPublicClient()
+    .from("flash_slots")
+    .select("id,title_ar,description_ar,discount_percent,price_jod,ends_at,organizations(slug,name_ar,city,status)")
+    .lte("starts_at", now).gt("ends_at", now).not("title_ar", "is", null)
+    .order("ends_at", { ascending: true }).limit(limit);
+  return (data ?? []).flatMap((f) =>
+    f.organizations && f.title_ar
+      ? [{ id: f.id, title: f.title_ar, description: f.description_ar, discount: f.discount_percent, price: f.price_jod != null ? `${Number(f.price_jod).toFixed(2)} د.أ` : null, ends_at: f.ends_at,
+           org: { slug: f.organizations.slug, name: f.organizations.name_ar, city: f.organizations.city } }]
+      : [],
+  );
+}
+
+export async function listPartners() {
+  const now = new Date().toISOString();
+  const { data } = await createPublicClient().from("partners").select("id,name_ar,logo_path,link_url,organizations(slug)")
+    .eq("is_active", true).or(`ends_at.is.null,ends_at.gt.${now}`).order("sort_order").order("created_at").limit(24);
+  return data ?? [];
+}
+
+export async function listTrails() {
+  const { data } = await createPublicClient().from("trails").select("*").eq("is_published", true).order("created_at", { ascending: false }).limit(200);
+  return data ?? [];
+}
+
+export async function getTrail(slug: string) {
+  const { data } = await createPublicClient().from("trails").select("*").eq("slug", slug).eq("is_published", true).maybeSingle();
+  return data;
 }

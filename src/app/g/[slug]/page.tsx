@@ -8,7 +8,7 @@ import { InquiryForm } from "@/components/PublicForms";
 import { sendInquiry } from "./actions";
 import { getOrgBySlug } from "@/lib/queries";
 import { createPublicClient } from "@/lib/supabase/public";
-import { BILLING_LABEL, ORG_TYPE_LABEL, WEEKDAYS, WOMEN_LABEL, dateAr, hhmm, jod, publicMediaUrl, waNumber } from "@/lib/format";
+import { BILLING_LABEL, DELIVERY_LABEL, GLOW_LABEL, ORG_TYPE_LABEL, WEEKDAYS, WOMEN_LABEL, dateAr, hhmm, jod, publicMediaUrl, waNumber } from "@/lib/format";
 import type { Tables } from "@/lib/database.types";
 
 export const revalidate = 120;
@@ -98,6 +98,29 @@ function Trainers({ items }: { items: Tables<"org_trainers">[] }) {
       </div>))}</div>
   );
 }
+function Menu({ items }: { items: Tables<"menu_items">[] }) {
+  if (!items.length) return <p className="text-muted">القائمة قيد الإضافة.</p>;
+  const sections = [...new Set(items.map((m) => m.section ?? "الوجبات"))];
+  return (
+    <div className="space-y-6">{sections.map((sec) => (
+      <div key={sec}><h3 className="mb-2 text-lg font-bold text-accent">{sec}</h3>
+        <div className="grid gap-3 sm:grid-cols-2">{items.filter((m) => (m.section ?? "الوجبات") === sec).map((m) => (
+          <div key={m.id} className={`${card} flex gap-3 ${m.is_available ? "" : "opacity-60"}`}>
+            {m.image_path && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={publicMediaUrl(m.image_path)} alt={m.name_ar} loading="lazy" className={`size-20 shrink-0 rounded-xl object-cover ${m.is_available ? "" : "grayscale"}`} />
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start justify-between gap-2"><h4 className="font-bold">{m.name_ar}</h4><span className="shrink-0 text-accent">{jod(m.price_jod)}</span></div>
+              {!m.is_available && <span className="rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">خلصت</span>}
+              {m.description_ar && <p className="mt-1 text-sm text-muted">{m.description_ar}</p>}
+              {(m.calories != null || m.protein_g != null) && (
+                <p className="mt-2 text-xs text-muted">{[m.calories != null ? `🔥 ${m.calories} سعرة` : null, m.protein_g != null ? `💪 ${m.protein_g}غ بروتين` : null, m.carbs_g != null ? `${m.carbs_g}غ كارب` : null, m.fat_g != null ? `${m.fat_g}غ دهون` : null].filter(Boolean).join(" · ")}</p>
+              )}
+            </div>
+          </div>))}</div></div>))}</div>
+  );
+}
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return <section className="mt-8"><h2 className="mb-3 text-xl font-bold">{title}</h2>{children}</section>;
 }
@@ -110,7 +133,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   const { slug } = await params;
   const d = await load(decodeURIComponent(slug));
   if (!d) notFound();
-  const { org, hours, services, media, offers, products, classes, branches, trainers } = d;
+  const { org, hours, services, media, offers, products, classes, branches, trainers, glow, menu } = d;
   const mainRow = branches.find((b) => b.is_main);
   const orgMaps = org.maps_url ?? (org.latitude != null && org.longitude != null ? `https://www.google.com/maps?q=${org.latitude},${org.longitude}` : null);
   const views: BV[] = [
@@ -189,9 +212,12 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs).replace(/</g, "\\u003c") }} />
       {!multi && womenBanner(views[0])}
+      <div className={glow ? `glow glow-${glow} rounded-2xl bg-surface p-5` : ""}>
+      {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
       <p className="text-sm text-muted">{category ?? ORG_TYPE_LABEL[org.type]}{org.verified_at && <span className="text-accent"> · ✓ موثّق</span>}{multi && <span> · {views.length} فروع</span>}</p>
       <h1 className="mt-1 text-3xl font-extrabold">{org.name_ar}</h1>
       {!multi && <p className="mt-1 text-muted">{[org.address, org.area, org.city].filter(Boolean).join("، ")}</p>}
+      </div>
       {multi && (
         <nav className="mt-3 flex flex-wrap gap-2 text-sm">
           {views.map((v) => <a key={v.id} href={`#b-${v.id}`} className="rounded-full bg-surface px-4 py-1.5 ring-1 ring-white/10 hover:ring-accent">{v.name} — {v.city}{v.women_access === "women_only" && " 💗"}</a>)}
@@ -225,12 +251,25 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
 
       {org.description_ar && <p className="mt-6 whitespace-pre-line leading-8">{org.description_ar}</p>}
 
+      {org.type === "healthy_food" && (
+        <>
+          {(org.delivery_modes.length > 0 || org.delivery_areas) && (
+            <div className={`${card} mt-6`}>
+              <h2 className="mb-2 font-bold">طرق التوصيل</h2>
+              <div className="flex flex-wrap gap-2 text-sm">{org.delivery_modes.map((m) => <span key={m} className="rounded-full bg-accent/15 px-3 py-1 text-accent">{DELIVERY_LABEL[m as keyof typeof DELIVERY_LABEL] ?? m}</span>)}</div>
+              {org.delivery_areas && <p className="mt-2 text-sm text-muted">مناطق التوصيل: {org.delivery_areas}</p>}
+            </div>
+          )}
+          <Section title="قائمة الوجبات"><Menu items={menu} /></Section>
+        </>
+      )}
+
       {!multi ? (
         <>
           {offers.length > 0 && <Section title="العروض"><Offers items={offers} /></Section>}
           <div className="mt-8 grid gap-6 lg:grid-cols-[2fr_1fr]">
-            <section><h2 className="mb-3 text-xl font-bold">الأسعار والخدمات</h2>
-              {services.length === 0 ? <p className="text-muted">لم تُضف الأسعار بعد.</p> : <Services items={services} />}</section>
+            {(services.length > 0 || org.type !== "healthy_food") && <section><h2 className="mb-3 text-xl font-bold">الأسعار والخدمات</h2>
+              {services.length === 0 ? <p className="text-muted">لم تُضف الأسعار بعد.</p> : <Services items={services} />}</section>}
             <section><h2 className="mb-3 text-xl font-bold">ساعات الدوام</h2><Hours items={hours} /></section>
           </div>
           {classes.length > 0 && <Section title="جدول الحصص"><Classes items={classes} /></Section>}

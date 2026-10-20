@@ -9,6 +9,9 @@ const TABS = [
   { href: "/admin/subscriptions", label: "الاشتراكات" },
   { href: "/admin/ads", label: "الإعلانات" },
   { href: "/admin/categories", label: "التصنيفات" },
+  { href: "/admin/flash", label: "الفلاش" },
+  { href: "/admin/partners", label: "الشركاء" },
+  { href: "/admin/trails", label: "المسارات" },
 ];
 
 export function AdminTabs() {

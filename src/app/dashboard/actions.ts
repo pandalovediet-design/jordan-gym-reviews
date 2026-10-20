@@ -17,7 +17,7 @@ const slugify = (s: string) =>
 
 const createSchema = z.object({
   name_ar: z.string().trim().min(2, "اكتب اسم النشاط").max(80),
-  type: z.enum(["gym", "independent_coach", "sports_facility", "store", "nutritionist"]),
+  type: z.enum(["gym", "independent_coach", "sports_facility", "store", "nutritionist", "healthy_food"]),
   city: z.string().trim().min(2, "اكتب المدينة").max(40),
   category_id: z.string().uuid("اختر التصنيف"),
 });
@@ -26,7 +26,7 @@ export async function createOrg(_: FormState, fd: FormData): Promise<FormState> 
   const p = createSchema.safeParse(Object.fromEntries(fd));
   if (!p.success) return { error: p.error.issues[0].message };
   const { supabase, user } = await requireUser();
-  const base = slugify(p.data.name_ar) || (p.data.type === "store" ? "store" : p.data.type === "independent_coach" ? "coach" : p.data.type === "nutritionist" ? "nutritionist" : "gym");
+  const base = slugify(p.data.name_ar) || (p.data.type === "store" ? "store" : p.data.type === "independent_coach" ? "coach" : p.data.type === "nutritionist" ? "nutritionist" : p.data.type === "healthy_food" ? "food" : "gym");
   const slug = `${base}-${Math.random().toString(36).slice(2, 6)}`;
   const { data, error } = await supabase
     .from("organizations")
@@ -61,6 +61,7 @@ const profileSchema = z.object({
   women_hours_note: opt(200),
   maps_url: opt(500),
   free_trial_note: opt(120),
+  delivery_areas: opt(300),
   license_number: opt(60),
   license_authority: opt(120),
 });
@@ -72,8 +73,9 @@ export async function updateProfile(id: string, _: FormState, fd: FormData): Pro
   const data = { ...p.data, phone: intl(p.data.phone), whatsapp: intl(p.data.whatsapp), instagram: p.data.instagram?.replace(/^@/, "") ?? null };
   if (data.maps_url && !/^https:\/\/(maps\.app\.goo\.gl\/|goo\.gl\/maps\/|(www\.|maps\.)?google\.[a-z.]+\/maps)/i.test(data.maps_url)) return { error: "رابط الموقع لازم يكون من قوقل ماب (maps.app.goo.gl أو google.com/maps)." };
   if (data.women_access !== "women_hours") data.women_hours_note = null;
+  const extra = fd.has("delivery_present") ? { delivery_modes: fd.getAll("delivery_modes").map(String).filter((m) => ["own_delivery", "apps", "pickup"].includes(m)) } : {};
   const coords = data.maps_url ? await resolveMapsCoords(data.maps_url) : null;
-  Object.assign(data, { latitude: coords?.lat ?? null, longitude: coords?.lng ?? null });
+  Object.assign(data, { latitude: coords?.lat ?? null, longitude: coords?.lng ?? null }, extra);
   const { error } = await supabase.from("organizations").update(data).eq("id", id);
   if (error) return { error: error.message.includes("category") ? "التصنيف لا يناسب نوع النشاط." : "تعذّر الحفظ. تأكد من صيغة الهاتف والواتساب والموقع (يبدأ بـ https://)." };
   revalidatePath(`/dashboard/${id}`);
@@ -359,6 +361,53 @@ export async function deleteProduct(id: string, productId: string): Promise<void
   const { data: old } = await supabase.from("products").select("image_path").eq("id", productId).eq("organization_id", id).maybeSingle();
   if (old?.image_path && !old.image_path.split("/").pop()?.startsWith("demo-")) await supabase.storage.from("org-media").remove([old.image_path]);
   await supabase.from("products").delete().eq("id", productId).eq("organization_id", id);
+  revalidatePath(`/dashboard/${id}`);
+}
+
+// ---------------------------------------------------------------- healthy-food menu
+const menuSchema = z.object({
+  name_ar: z.string().trim().min(2, "اكتب اسم الوجبة").max(120),
+  section: opt(40),
+  description_ar: opt(500),
+  price_jod: z.coerce.number({ message: "اكتب السعر" }).min(0, "السعر غير منطقي").max(10000, "السعر غير منطقي"),
+  calories: z.string().optional().transform((v) => (v ? Number(v) : null)).pipe(z.number().int("السعرات رقم صحيح").min(0).max(5000, "السعرات غير منطقية").nullable()),
+  protein_g: num, carbs_g: num, fat_g: num,
+  branch_id: branchField,
+});
+
+export async function addMenuItem(id: string, _: FormState, fd: FormData): Promise<FormState> {
+  const { image, ...rest } = Object.fromEntries(fd);
+  const p = menuSchema.safeParse(rest);
+  if (!p.success) return { error: p.error.issues[0].message };
+  const { supabase } = await requireUser();
+  const { count } = await supabase.from("menu_items").select("id", { count: "exact", head: true }).eq("organization_id", id);
+  if ((count ?? 0) >= 300) return { error: "وصلت الحد الأقصى من الوجبات" };
+  let image_path: string | null = null;
+  if (image instanceof File && image.size > 0) {
+    const up = await uploadImage(supabase, id, image);
+    if (up.error) return { error: up.error };
+    image_path = up.path!;
+  }
+  const { error } = await supabase.from("menu_items").insert({ ...p.data, organization_id: id, image_path, sort_order: count ?? 0 });
+  if (error) {
+    if (image_path) await supabase.storage.from("org-media").remove([image_path]);
+    return { error: "تعذّرت إضافة الوجبة" };
+  }
+  revalidatePath(`/dashboard/${id}`);
+  return { ok: "تمت إضافة الوجبة" };
+}
+
+export async function deleteMenuItem(id: string, itemId: string): Promise<void> {
+  const { supabase } = await requireUser();
+  const { data: old } = await supabase.from("menu_items").select("image_path").eq("id", itemId).eq("organization_id", id).maybeSingle();
+  if (old?.image_path && !old.image_path.split("/").pop()?.startsWith("demo-")) await supabase.storage.from("org-media").remove([old.image_path]);
+  await supabase.from("menu_items").delete().eq("id", itemId).eq("organization_id", id);
+  revalidatePath(`/dashboard/${id}`);
+}
+
+export async function setMenuAvailability(id: string, itemId: string, available: boolean): Promise<void> {
+  const { supabase } = await requireUser();
+  await supabase.from("menu_items").update({ is_available: available }).eq("id", itemId).eq("organization_id", id);
   revalidatePath(`/dashboard/${id}`);
 }
 

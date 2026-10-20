@@ -5,6 +5,8 @@ import { requireUser } from "@/lib/auth";
 import { missingForPublish } from "@/lib/completeness";
 import { ORG_TYPE_LABEL, dateAr, isoDaysFromNow, msAgo } from "@/lib/format";
 import { siteUrl } from "@/lib/site";
+import { ActionForm, field } from "@/components/Form";
+import { saveFlashDeal } from "../../flash-actions";
 
 export const metadata: Metadata = { title: "نظرة عامة", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -19,7 +21,7 @@ export default async function Overview({ params }: PageProps<"/dashboard/[id]/ov
   const since30 = isoDaysFromNow(-30);
   const soon = isoDaysFromNow(7).slice(0, 10);
   const today = isoDaysFromNow(0).slice(0, 10);
-  const [events, promo, missing, newInq, expiring, memberCount, offers] = await Promise.all([
+  const [events, promo, missing, newInq, expiring, memberCount, offers, slots] = await Promise.all([
     supabase.from("analytics_events").select("event_type,created_at").eq("organization_id", id).gte("created_at", since30).limit(10000),
     supabase.from("org_promotions").select("featured_until").eq("organization_id", id).maybeSingle(),
     missingForPublish(supabase, id),
@@ -27,6 +29,7 @@ export default async function Overview({ params }: PageProps<"/dashboard/[id]/ov
     supabase.from("org_members").select("id", { count: "exact", head: true }).eq("organization_id", id).gte("ends_on", today).lte("ends_on", soon),
     supabase.from("org_members").select("id", { count: "exact", head: true }).eq("organization_id", id).gte("ends_on", today),
     supabase.from("offers").select("id", { count: "exact", head: true }).eq("organization_id", id).eq("is_active", true).gte("ends_at", isoDaysFromNow(0)),
+    supabase.from("flash_slots").select("*").eq("organization_id", id).gt("ends_at", isoDaysFromNow(0)).order("starts_at").limit(5),
   ]);
   const ev = events.data ?? [];
   const d7 = msAgo(7);
@@ -34,7 +37,7 @@ export default async function Overview({ params }: PageProps<"/dashboard/[id]/ov
   const featured = promo.data?.featured_until && +new Date(promo.data.featured_until) > msAgo(0) ? promo.data.featured_until : null;
   const base = await siteUrl();
   const box = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
-  const showMembers = org.type !== "store";
+  const showMembers = ["gym", "independent_coach", "sports_facility"].includes(org.type);
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
       <Link href="/dashboard" className="text-sm text-muted underline">← أنشطتي</Link>
@@ -69,6 +72,21 @@ export default async function Overview({ params }: PageProps<"/dashboard/[id]/ov
         <div className={box}><p className="font-bold">التمييز بالبحث</p>
           <p className="mt-1 text-sm text-muted">{featured ? `فعّال حتى ${dateAr(featured)}` : "غير مفعّل. للتفعيل تواصل مع إدارة المنصة."}</p></div>
       </section>
+
+      {(slots.data ?? []).map((sl) => (
+        <section key={sl.id} className={`${box} space-y-3`}>
+          <h2 className="font-bold">⚡ مساحة عرض فلاش</h2>
+          <p className="text-xs text-muted">من {dateAr(sl.starts_at)} إلى {dateAr(sl.ends_at)}. اكتب عرضك ليظهر بالرئيسية خلال هالفترة.</p>
+          <ActionForm action={saveFlashDeal.bind(null, id, sl.id)} submit="حفظ العرض">
+            <input name="title_ar" required defaultValue={sl.title_ar ?? ""} placeholder="عنوان العرض" className={field} />
+            <textarea name="description_ar" rows={2} defaultValue={sl.description_ar ?? ""} placeholder="تفاصيل قصيرة" className={field} />
+            <div className="grid grid-cols-2 gap-3">
+              <input name="discount_percent" type="number" min="1" max="90" defaultValue={sl.discount_percent ?? ""} placeholder="الخصم %" dir="ltr" className={field} />
+              <input name="price_jod" type="number" step="0.01" min="0" defaultValue={sl.price_jod ?? ""} placeholder="سعر العرض (دينار)" dir="ltr" className={field} />
+            </div>
+          </ActionForm>
+        </section>
+      ))}
     </div>
   );
 }

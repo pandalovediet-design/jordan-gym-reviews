@@ -138,6 +138,8 @@ export type Database = {
       }
       org_promotions: {
         Row: {
+          glow_color: string | null
+          glow_until: string | null
           created_at: string
           featured_rank: number
           featured_until: string | null
@@ -145,6 +147,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          glow_color?: string | null
+          glow_until?: string | null
           created_at?: string
           featured_rank?: number
           featured_until?: string | null
@@ -152,6 +156,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          glow_color?: string | null
+          glow_until?: string | null
           created_at?: string
           featured_rank?: number
           featured_until?: string | null
@@ -780,6 +786,46 @@ export type Database = {
         }
         Relationships: []
       }
+      flash_slots: {
+        Row: { created_at: string; description_ar: string | null; discount_percent: number | null; ends_at: string; id: string; organization_id: string; price_jod: number | null; starts_at: string; title_ar: string | null; updated_at: string }
+        Insert: { created_at?: string; description_ar?: string | null; discount_percent?: number | null; ends_at: string; id?: string; organization_id: string; price_jod?: number | null; starts_at: string; title_ar?: string | null; updated_at?: string }
+        Update: { created_at?: string; description_ar?: string | null; discount_percent?: number | null; ends_at?: string; id?: string; organization_id?: string; price_jod?: number | null; starts_at?: string; title_ar?: string | null; updated_at?: string }
+        Relationships: [
+          {
+            foreignKeyName: "flash_slots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partners: {
+        Row: { created_at: string; ends_at: string | null; id: string; is_active: boolean; link_url: string | null; logo_path: string; name_ar: string; organization_id: string | null; sort_order: number }
+        Insert: { created_at?: string; ends_at?: string | null; id?: string; is_active?: boolean; link_url?: string | null; logo_path: string; name_ar: string; organization_id?: string | null; sort_order?: number }
+        Update: { created_at?: string; ends_at?: string | null; id?: string; is_active?: boolean; link_url?: string | null; logo_path?: string; name_ar?: string; organization_id?: string | null; sort_order?: number }
+        Relationships: [
+          {
+            foreignKeyName: "partners_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trails: {
+        Row: { created_at: string; description_ar: string | null; difficulty: string; distance_km: number | null; duration_min: number | null; elevation_gain_m: number | null; id: string; image_path: string | null; is_published: boolean; maps_url: string | null; name_ar: string; region: string; slug: string; tips_ar: string | null; trail_type: string; updated_at: string }
+        Insert: { created_at?: string; description_ar?: string | null; difficulty?: string; distance_km?: number | null; duration_min?: number | null; elevation_gain_m?: number | null; id?: string; image_path?: string | null; is_published?: boolean; maps_url?: string | null; name_ar: string; region: string; slug: string; tips_ar?: string | null; trail_type?: string; updated_at?: string }
+        Update: { created_at?: string; description_ar?: string | null; difficulty?: string; distance_km?: number | null; duration_min?: number | null; elevation_gain_m?: number | null; id?: string; image_path?: string | null; is_published?: boolean; maps_url?: string | null; name_ar?: string; region?: string; slug?: string; tips_ar?: string | null; trail_type?: string; updated_at?: string }
+        Relationships: []
+      }
+      menu_items: {
+        Row: { branch_id: string | null; calories: number | null; carbs_g: number | null; created_at: string; description_ar: string | null; fat_g: number | null; id: string; image_path: string | null; is_available: boolean; name_ar: string; organization_id: string; price_jod: number; protein_g: number | null; section: string | null; sort_order: number; updated_at: string }
+        Insert: { branch_id?: string | null; calories?: number | null; carbs_g?: number | null; created_at?: string; description_ar?: string | null; fat_g?: number | null; id?: string; image_path?: string | null; is_available?: boolean; name_ar: string; organization_id: string; price_jod: number; protein_g?: number | null; section?: string | null; sort_order?: number; updated_at?: string }
+        Update: { branch_id?: string | null; calories?: number | null; carbs_g?: number | null; created_at?: string; description_ar?: string | null; fat_g?: number | null; id?: string; image_path?: string | null; is_available?: boolean; name_ar?: string; organization_id?: string; price_jod?: number; protein_g?: number | null; section?: string | null; sort_order?: number; updated_at?: string }
+        Relationships: []
+      }
       org_categories: {
         Row: {
           created_at: string
@@ -812,6 +858,8 @@ export type Database = {
       }
       organizations: {
         Row: {
+          delivery_areas: string | null
+          delivery_modes: string[]
           maps_url: string | null
           women_access: string
           women_hours_note: string | null
@@ -841,6 +889,8 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
+          delivery_areas?: string | null
+          delivery_modes?: string[]
           category_id?: string | null
           maps_url?: string | null
           women_access?: string
@@ -870,6 +920,8 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
+          delivery_areas?: string | null
+          delivery_modes?: string[]
           category_id?: string | null
           maps_url?: string | null
           women_access?: string
@@ -1206,6 +1258,7 @@ export type Database = {
           branch_women_only: boolean | null
           branch_women_hours: boolean | null
           branch_points: Json | null
+          glow_color: string | null
         }
         Relationships: []
       }
@@ -1294,7 +1347,7 @@ export type Database = {
       member_role: "owner" | "manager" | "staff"
       moderation_status: "pending" | "approved" | "rejected"
       org_status: "draft" | "pending" | "published" | "suspended"
-      org_type: "gym" | "independent_coach" | "sports_facility" | "store" | "nutritionist"
+      org_type: "gym" | "independent_coach" | "sports_facility" | "store" | "nutritionist" | "healthy_food"
       review_status: "published" | "hidden"
     }
     CompositeTypes: {

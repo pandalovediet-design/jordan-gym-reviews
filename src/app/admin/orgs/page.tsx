@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
-import { ORG_TYPE_LABEL } from "@/lib/format";
+import { GLOW_COLORS, GLOW_NAME, ORG_TYPE_LABEL } from "@/lib/format";
 import { cleanQuery } from "@/lib/format";
 import { isOrgType } from "@/lib/queries";
-import { clearWomenAccess, setFeatured, setOrgStatus, setVerified } from "../actions";
+import { clearWomenAccess, setFeatured, setGlow, setOrgStatus, setVerified } from "../actions";
 
 export const metadata: Metadata = { title: "الأنشطة", robots: { index: false } };
 const STATUSES = ["draft", "pending", "published", "suspended"] as const;
@@ -23,7 +23,7 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
   if (isOrgType(type)) query = query.eq("type", type);
   const [orgs, promos, owners, users] = await Promise.all([
     query,
-    supabase.from("org_promotions").select("organization_id,featured_until,featured_rank"),
+    supabase.from("org_promotions").select("organization_id,featured_until,featured_rank,glow_color,glow_until"),
     supabase.from("organization_members").select("organization_id,user_id,role").eq("role", "owner"),
     supabase.rpc("admin_list_users"),
   ]);
@@ -66,6 +66,15 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
               <input name="rank" type="number" min="0" max="100" placeholder="الأولوية" defaultValue={promoOf(o.id)?.featured_rank ?? 0} className="w-24 rounded-lg bg-background px-2 py-1 ring-1 ring-white/10" />
               <button className={btn}>حفظ</button>
               {promoOf(o.id)?.featured_until && <span className="text-muted">حتى {promoOf(o.id)!.featured_until!.slice(0, 10)}</span>}
+            </form>
+            <form action={setGlow.bind(null, o.id)} className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="text-muted">توهج العضوية:</span>
+              <select name="color" defaultValue={promoOf(o.id)?.glow_color ?? "gold"} className="rounded-lg bg-background px-2 py-1 ring-1 ring-white/10">
+                {GLOW_COLORS.map((c) => <option key={c} value={c}>{GLOW_NAME[c]}</option>)}
+              </select>
+              <input name="days" type="number" min="0" max="1100" placeholder="عدد الأيام (0 = إلغاء)" defaultValue={0} className="w-40 rounded-lg bg-background px-2 py-1 ring-1 ring-white/10" />
+              <button className={btn}>حفظ</button>
+              {promoOf(o.id)?.glow_until && new Date(promoOf(o.id)!.glow_until!) > new Date() && <span className="text-muted">{GLOW_NAME[promoOf(o.id)!.glow_color as keyof typeof GLOW_NAME] ?? ""} حتى {promoOf(o.id)!.glow_until!.slice(0, 10)}</span>}
             </form></li>))}
           {(orgs.data ?? []).length === 0 && <li className="text-muted">لا توجد أنشطة مطابقة.</li>}</ul>
     </div>

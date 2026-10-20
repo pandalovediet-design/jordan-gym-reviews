@@ -643,3 +643,53 @@ test("branches: main branch auto-created, per-branch content, trainers, RLS", as
     assert.equal(l.branch_points.length, 1);
   });
 });
+
+test("glow, flash slots, partners, trails, healthy food", async () => {
+  const org = (await db.query(`select id from public.organizations where slug = 'nutri-test'`)).rows[0].id;
+  // glow: admin only; expires by itself
+  await asAlice(() => rejects(() => db.query(`insert into public.org_promotions (organization_id, glow_color, glow_until) values ($1, 'gold', now() + interval '30 days')`, [org])));
+  await asAdmin(async () => {
+    await db.query(`insert into public.org_promotions (organization_id, glow_color, glow_until) values ($1, 'pink', now() + interval '30 days') on conflict (organization_id) do update set glow_color = 'pink', glow_until = now() + interval '30 days'`, [org]);
+    await rejects(() => db.query(`update public.org_promotions set glow_color = 'red' where organization_id = $1`, [org]));
+    await rejects(() => db.query(`update public.org_promotions set glow_color = null where organization_id = $1`, [org])); // pair must be both null or both set
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select glow_color from public.organizations_listing where id = $1`, [org])).rows[0].glow_color, 'pink');
+  });
+  // flash slots
+  let slot;
+  await asAlice(() => rejects(() => db.query(`insert into public.flash_slots (organization_id, starts_at, ends_at) values ($1, now(), now() + interval '24 hours')`, [org])));
+  await asAdmin(async () => {
+    await rejects(() => db.query(`insert into public.flash_slots (organization_id, starts_at, ends_at) values ($1, now(), now() + interval '49 hours')`, [org]));
+    slot = (await db.query(`insert into public.flash_slots (organization_id, starts_at, ends_at) values ($1, now() - interval '1 hour', now() + interval '24 hours') returning id`, [org])).rows[0].id;
+  });
+  await asAnon(async () => assert.equal((await db.query(`select * from public.flash_slots`)).rows.length, 0)); // no content yet
+  await asAlice(async () => {
+    await db.query(`update public.flash_slots set title_ar = 'خصم الفلاش', discount_percent = 30 where id = $1`, [slot]);
+    await rejects(() => db.query(`update public.flash_slots set ends_at = ends_at + interval '10 hours' where id = $1`, [slot]));
+  });
+  await asBob(async () => assert.equal((await db.query(`update public.flash_slots set title_ar = 'تسلل' where id = $1`, [slot])).affectedRows, 0));
+  await asAdmin(() => db.query(`update public.organizations set status = 'published' where id = $1`, [org]));
+  await asAnon(async () => assert.equal((await db.query(`select title_ar from public.flash_slots`)).rows[0].title_ar, 'خصم الفلاش'));
+  // partners & trails
+  await asAlice(() => rejects(() => db.query(`insert into public.partners (name_ar, logo_path) values ('شريك', 'p.png')`)));
+  await asAdmin(async () => {
+    await db.query(`insert into public.partners (name_ar, logo_path, link_url) values ('شريك', 'p.png', 'https://example.com')`);
+    await rejects(() => db.query(`insert into public.partners (name_ar, logo_path, link_url) values ('سيئ', 'p.png', 'http://x.com')`));
+    await db.query(`insert into public.trails (slug, name_ar, region, difficulty, distance_km, is_published) values ('wadi-mujib', 'وادي الموجب', 'مأدبا', 'hard', 5.5, true), ('draft-trail', 'مسار مسودة', 'عجلون', 'easy', 3, false)`);
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select * from public.partners`)).rows.length, 1);
+    assert.deepEqual((await db.query(`select slug from public.trails`)).rows.map((r) => r.slug), ['wadi-mujib']);
+    await rejects(() => db.query(`insert into public.trails (slug, name_ar, region) values ('hack-trail', 'x', 'y')`));
+  });
+  // healthy food
+  const hf = (await db.query(`select id from public.org_categories where slug = 'home-chefs'`)).rows[0].id;
+  await asAlice(async () => {
+    const r = await db.query(`insert into public.organizations (type, slug, name_ar, created_by, status, category_id, delivery_modes) values ('healthy_food', 'chef-test', 'مطبخ تجريبي', $1, 'draft', $2, array['own_delivery','pickup']) returning id`, [ALICE, hf]);
+    const id = r.rows[0].id;
+    await db.query(`insert into public.menu_items (organization_id, name_ar, price_jod, calories, protein_g) values ($1, 'سلطة دجاج', 4.5, 380, 35)`, [id]);
+    await rejects(() => db.query(`update public.organizations set delivery_modes = array['drone'] where id = $1`, [id]));
+    await rejects(() => db.query(`insert into public.menu_items (organization_id, name_ar, price_jod, calories) values ($1, 'سالب', -1, 10)`, [id]));
+  });
+});

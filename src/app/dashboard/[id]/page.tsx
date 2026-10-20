@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { ActionForm, field } from "@/components/Form";
-import { AVAILABILITY_LABEL, BILLING_LABEL, publicMediaUrl, WEEKDAYS, hhmm, jod } from "@/lib/format";
+import { AVAILABILITY_LABEL, BILLING_LABEL, DELIVERY_LABEL, publicMediaUrl, WEEKDAYS, hhmm, jod } from "@/lib/format";
 import { missingForPublish } from "@/lib/completeness";
-import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setProductAvailability } from "../actions";
+import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setProductAvailability, addMenuItem, deleteMenuItem, setMenuAvailability } from "../actions";
 
 export const metadata: Metadata = { title: "تعديل النشاط", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -15,7 +15,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
   const { id } = await params;
   if (!UUID.test(id)) notFound();
   const { supabase } = await requireUser();
-  const [{ data: org }, { data: services }, { data: hours }, { data: media }, { data: offers }, { data: products }, { data: cats }, { data: orgCats }, { data: classes }, { data: branches }, { data: trainers }] = await Promise.all([
+  const [{ data: org }, { data: services }, { data: hours }, { data: media }, { data: offers }, { data: products }, { data: cats }, { data: orgCats }, { data: classes }, { data: branches }, { data: trainers }, { data: menu }] = await Promise.all([
     supabase.from("organizations").select("*").eq("id", id).maybeSingle(),
     supabase.from("organization_services").select("*").eq("organization_id", id).order("sort_order").order("created_at"),
     supabase.from("organization_hours").select("*").eq("organization_id", id),
@@ -27,6 +27,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
     supabase.from("org_classes").select("*").eq("organization_id", id).order("weekday").order("starts_at"),
     supabase.from("org_branches").select("*").eq("organization_id", id).order("is_main", { ascending: false }).order("sort_order"),
     supabase.from("org_trainers").select("*").eq("organization_id", id).order("sort_order"),
+    supabase.from("menu_items").select("*").eq("organization_id", id).order("sort_order").order("created_at"),
   ]);
   if (!org) notFound();
   const missing = org.status === "draft" ? await missingForPublish(supabase, id) : [];
@@ -91,6 +92,18 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             <input name="free_trial_note" defaultValue={org.free_trial_note ?? ""} maxLength={120} placeholder="مثال: يوم تجريبي مجاني" className={field} />
             <span className="block text-xs">لو كتبت شي، بيظهر زر «احجز يوم تجريبي» بصفحتك وشارة على بطاقتك، وبيوصل الطلب على واتساب. اتركه فاضي لإخفائه.</span>
           </label>
+          {org.type === "healthy_food" && (
+            <div className="space-y-2 rounded-xl border border-white/10 p-3">
+              <input type="hidden" name="delivery_present" value="1" />
+              <p className="text-sm font-semibold">طرق التوصيل</p>
+              <div className="flex flex-wrap gap-4 text-sm">
+                {Object.entries(DELIVERY_LABEL).map(([k, v]) => (
+                  <label key={k} className="flex items-center gap-2"><input type="checkbox" name="delivery_modes" value={k} defaultChecked={org.delivery_modes?.includes(k)} /> {v}</label>
+                ))}
+              </div>
+              <label className={lbl}>مناطق التوصيل<input name="delivery_areas" defaultValue={org.delivery_areas ?? ""} maxLength={300} placeholder="مثال: عمّان الغربية، الجبيهة، الصويفية" className={field} /></label>
+            </div>
+          )}
           <div className="space-y-2 rounded-xl border border-pink-400/30 bg-pink-500/5 p-3">
             <label className={lbl}>💗 Pink Zone (للنساء)
               <select name="women_access" defaultValue={org.women_access} className={field}>
@@ -178,6 +191,39 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
         </section>
       )}
 
+      {org.type === "healthy_food" && (
+        <section className={box}><h2 className="mb-1 text-lg font-bold">قائمة الوجبات</h2>
+          <p className="mb-3 text-xs text-muted">اكتب السعرات والبروتين إذا بتعرفها. بتظهر للزوار مع كل وجبة. زر «خلصت» بيخفي الوجبة من الطلب مؤقتاً.</p>
+          <ul className="mb-4 space-y-3">{(menu ?? []).map((m) => (
+            <li key={m.id} className="flex items-start gap-3 text-sm">
+              {m.image_path ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={publicMediaUrl(m.image_path)} alt="" className="size-16 shrink-0 rounded-lg object-cover" />
+              ) : <div className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-background/40 text-xs text-muted">بلا صورة</div>}
+              <div className="flex-1 space-y-1">
+                <p>{m.name_ar} — <span className="text-accent">{jod(m.price_jod)}</span>{m.section && <span className="text-muted"> · {m.section}</span>} {bTag(m.branch_id)}</p>
+                <p className="text-xs text-muted">{[m.calories != null ? `${m.calories} سعرة` : null, m.protein_g != null ? `${m.protein_g}غ بروتين` : null, m.carbs_g != null ? `${m.carbs_g}غ كارب` : null, m.fat_g != null ? `${m.fat_g}غ دهون` : null].filter(Boolean).join(" · ")}</p>
+                <form action={setMenuAvailability.bind(null, id, m.id, !m.is_available)}><button className={`rounded-lg px-2 py-1 text-xs ${m.is_available ? "bg-red-400/20 text-red-200" : "bg-accent/20 text-accent"}`}>{m.is_available ? "✖ خلصت" : "✔ رجعت متوفرة"}</button></form>
+              </div>
+              <form action={deleteMenuItem.bind(null, id, m.id)}><button className="text-red-300 underline">حذف</button></form></li>))}
+            {(menu ?? []).length === 0 && <li className="text-sm text-muted">ما أضفت وجبات بعد.</li>}</ul>
+          <ActionForm action={addMenuItem.bind(null, id)} submit="إضافة وجبة">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <input name="name_ar" required placeholder="اسم الوجبة" className={field} />
+              <input name="section" placeholder="القسم (مثال: سلطات، وجبات رئيسية)" className={field} />
+              <input name="price_jod" type="number" step="0.01" min="0" required placeholder="السعر (د.أ)" className={field} />
+              <input name="calories" type="number" min="0" max="5000" placeholder="السعرات (اختياري)" className={field} />
+              <input name="protein_g" type="number" step="0.1" min="0" placeholder="بروتين غ" className={field} />
+              <input name="carbs_g" type="number" step="0.1" min="0" placeholder="كارب غ" className={field} />
+              <input name="fat_g" type="number" step="0.1" min="0" placeholder="دهون غ" className={field} />
+            </div>
+            <textarea name="description_ar" rows={2} placeholder="وصف ومكونات" className={field} />
+            {branchSelect}
+            <label className={lbl}>صورة الوجبة<input name="image" type="file" accept="image/jpeg,image/png,image/webp" className="text-sm" /></label>
+          </ActionForm>
+        </section>
+      )}
+
       <section className={box}><h2 className="mb-3 text-lg font-bold">الأسعار والخدمات</h2>
         <ul className="mb-4 space-y-2">{(services ?? []).map((s) => (
           <li key={s.id} className="flex items-center justify-between gap-3 text-sm">
@@ -192,7 +238,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
         </ActionForm>
       </section>
 
-      {org.type !== "store" && (
+      {(org.type === "gym" || org.type === "sports_facility" || org.type === "independent_coach") && (
         <section className={box}><h2 className="mb-1 text-lg font-bold">جدول الحصص الأسبوعي</h2>
           <p className="mb-3 text-xs text-muted">للعرض فقط (بدون حجز). بيظهر للزوار بصفحتك.</p>
           <ul className="mb-4 space-y-2">{(classes ?? []).map((c) => (

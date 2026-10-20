@@ -6,6 +6,7 @@ export const ORG_TYPE_LABEL: Record<Enums<"org_type">, string> = {
   sports_facility: "منشأة رياضية",
   store: "متجر رياضي",
   nutritionist: "أخصائي تغذية",
+  healthy_food: "أكل صحي",
 };
 
 export const BILLING_LABEL: Record<Enums<"billing_period">, string> = {
@@ -60,6 +61,7 @@ export const ORG_TYPE_PLURAL: Record<Enums<"org_type">, string> = {
   sports_facility: "منشآت رياضية",
   store: "متاجر رياضية",
   nutritionist: "أخصائيو تغذية",
+  healthy_food: "أكل صحي",
 };
 
 /** Normalize a Jordanian/international phone to +<digits> (07xxxxxxxx -> +9627xxxxxxxx). */
@@ -82,3 +84,13 @@ export const isoDaysFromNow = (days: number) => new Date(Date.now() + days * 86_
 export const msAgo = (days: number) => Date.now() - days * 86_400_000;
 
 export const WOMEN_LABEL = { women_only: "Pink Zone", women_hours: "أوقات نسائية" } as const;
+
+export const GLOW_COLORS = ["gold", "blue", "green", "pink"] as const;
+export type GlowColor = (typeof GLOW_COLORS)[number];
+export const GLOW_LABEL: Record<GlowColor, string> = { gold: "⭐ عضو ذهبي", blue: "💎 عضو أزرق", green: "🌿 عضو أخضر", pink: "💗 عضو زهري" };
+export const GLOW_NAME: Record<GlowColor, string> = { gold: "ذهبي", blue: "أزرق", green: "أخضر", pink: "زهري" };
+export const asGlow = (v: string | null | undefined): GlowColor | null => ((GLOW_COLORS as readonly string[]).includes(v ?? "") ? (v as GlowColor) : null);
+
+export const DELIVERY_LABEL = { own_delivery: "توصيل خاص", apps: "عبر تطبيقات التوصيل", pickup: "استلام من المكان" } as const;
+export const TRAIL_DIFFICULTY = { easy: "سهل", moderate: "متوسط", hard: "صعب", expert: "للخبراء" } as const;
+export const TRAIL_TYPE = { hiking: "هايكنق", walking: "مشي", running: "ركض" } as const;

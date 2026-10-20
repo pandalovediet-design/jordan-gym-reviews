@@ -1,4 +1,5 @@
 "use server";
+import { GLOW_COLORS } from "@/lib/format";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
 
@@ -32,12 +33,29 @@ export async function setFeatured(id: string, fd: FormData): Promise<void> {
   const { supabase } = await requireAdmin();
   const days = Math.max(0, Math.min(366, Number(fd.get("days")) || 0));
   const rank = Math.max(0, Math.min(100, Number(fd.get("rank")) || 0));
-  if (days === 0) {
-    await supabase.from("org_promotions").delete().eq("organization_id", id);
-  } else {
+  if (days === 0) await supabase.from("org_promotions").update({ featured_until: null, featured_rank: 0 }).eq("organization_id", id);
+  else {
     const until = new Date(Date.now() + days * 86_400_000).toISOString();
     await supabase.from("org_promotions").upsert({ organization_id: id, featured_until: until, featured_rank: rank });
   }
+  await supabase.from("org_promotions").delete().eq("organization_id", id).is("featured_until", null).is("glow_until", null);
+  revalidatePath("/admin", "layout");
+  revalidatePath("/");
+  revalidatePath("/search");
+}
+
+/** Colored glow tier ("عضو ذهبي"...): color + duration in days (0 removes it). */
+export async function setGlow(id: string, fd: FormData): Promise<void> {
+  const { supabase } = await requireAdmin();
+  const days = Math.max(0, Math.min(1100, Number(fd.get("days")) || 0));
+  const color = String(fd.get("color") ?? "");
+  if (days === 0 || !(GLOW_COLORS as readonly string[]).includes(color)) {
+    await supabase.from("org_promotions").update({ glow_color: null, glow_until: null }).eq("organization_id", id);
+  } else {
+    const until = new Date(Date.now() + days * 86_400_000).toISOString();
+    await supabase.from("org_promotions").upsert({ organization_id: id, glow_color: color, glow_until: until });
+  }
+  await supabase.from("org_promotions").delete().eq("organization_id", id).is("featured_until", null).is("glow_until", null);
   revalidatePath("/admin", "layout");
   revalidatePath("/");
   revalidatePath("/search");
@@ -153,7 +171,7 @@ export async function deleteSubscription(id: string): Promise<void> {
 
 // ---------------------------------------------------------------- categories & Pink Zone
 const catSchema = z.object({
-  org_type: z.enum(["gym", "independent_coach", "sports_facility", "store", "nutritionist"]),
+  org_type: z.enum(["gym", "independent_coach", "sports_facility", "store", "nutritionist", "healthy_food"]),
   name_ar: z.string().trim().min(2, "اكتب اسم التصنيف").max(60),
   slug: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "الرمز بالإنجليزي صغير وأرقام وشرطات فقط").min(2).max(40),
   sort_order: z.coerce.number().int().min(0).max(10000).default(0),
