@@ -7,6 +7,7 @@ export const ORG_TYPE_LABEL: Record<Enums<"org_type">, string> = {
   store: "متجر رياضي",
   nutritionist: "أخصائي تغذية",
   healthy_food: "أكل صحي",
+  sports_health: "علاج وطب رياضي",
 };
 
 export const BILLING_LABEL: Record<Enums<"billing_period">, string> = {
@@ -62,6 +63,7 @@ export const ORG_TYPE_PLURAL: Record<Enums<"org_type">, string> = {
   store: "متاجر رياضية",
   nutritionist: "أخصائيو تغذية",
   healthy_food: "أكل صحي",
+  sports_health: "عيادات وعلاج رياضي",
 };
 
 /** Normalize a Jordanian/international phone to +<digits> (07xxxxxxxx -> +9627xxxxxxxx). */

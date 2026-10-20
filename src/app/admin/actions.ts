@@ -30,7 +30,7 @@ export async function setVerified(id: string, fd: FormData): Promise<void> {
   revalidatePath("/", "layout");
 }
 
-const TYPES = ["gym", "independent_coach", "sports_facility", "store", "nutritionist", "healthy_food"] as const;
+const TYPES = ["gym", "independent_coach", "sports_facility", "store", "nutritionist", "healthy_food", "sports_health"] as const;
 /** Moves a business to another type (e.g. a coach who became a center). The category is cleared; the owner picks a new one. */
 export async function setOrgType(id: string, fd: FormData): Promise<void> {
   const { supabase } = await requireAdmin();
@@ -195,7 +195,7 @@ export async function deleteSubscription(id: string): Promise<void> {
 
 // ---------------------------------------------------------------- categories & Pink Zone
 const catSchema = z.object({
-  org_type: z.enum(["gym", "independent_coach", "sports_facility", "store", "nutritionist", "healthy_food"]),
+  org_type: z.enum(["gym", "independent_coach", "sports_facility", "store", "nutritionist", "healthy_food", "sports_health"]),
   name_ar: z.string().trim().min(2, "اكتب اسم التصنيف").max(60),
   slug: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "الرمز بالإنجليزي صغير وأرقام وشرطات فقط").min(2).max(40),
   sort_order: z.coerce.number().int().min(0).max(10000).default(0),

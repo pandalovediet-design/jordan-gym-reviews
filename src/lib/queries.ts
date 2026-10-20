@@ -4,7 +4,7 @@ import { distanceKm } from "@/lib/maps";
 import type { Enums, Tables } from "@/lib/database.types";
 
 export const PAGE_SIZE = 12;
-const ORG_TYPES = ["gym", "independent_coach", "sports_facility", "store", "nutritionist", "healthy_food"] as const;
+const ORG_TYPES = ["gym", "independent_coach", "sports_facility", "store", "nutritionist", "healthy_food", "sports_health"] as const;
 export const isOrgType = (v: string | undefined): v is Enums<"org_type"> =>
   !!v && (ORG_TYPES as readonly string[]).includes(v);
 

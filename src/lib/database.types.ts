@@ -1364,7 +1364,7 @@ export type Database = {
       member_role: "owner" | "manager" | "staff"
       moderation_status: "pending" | "approved" | "rejected"
       org_status: "draft" | "pending" | "published" | "suspended"
-      org_type: "gym" | "independent_coach" | "sports_facility" | "store" | "nutritionist" | "healthy_food"
+      org_type: "gym" | "independent_coach" | "sports_facility" | "store" | "nutritionist" | "healthy_food" | "sports_health"
       review_status: "published" | "hidden"
     }
     CompositeTypes: {
