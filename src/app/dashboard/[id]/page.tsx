@@ -75,20 +75,18 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
               {(orgCats ?? []).filter((c) => c.org_type === org.type).map((c) => <option key={c.id} value={c.id}>{c.name_ar}</option>)}
             </select>
           </label>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label className={lbl}>المدينة<input name="city" required defaultValue={org.city} className={field} /></label>
-            <label className={lbl}>المنطقة<input name="area" defaultValue={org.area ?? ""} className={field} /></label>
-          </div>
-          <label className={lbl}>العنوان<input name="address" defaultValue={org.address ?? ""} className={field} /></label>
+          <label className={lbl}>المدينة<input name="city" required defaultValue={org.city} className={field} /></label>
+          <input type="hidden" name="area" defaultValue={org.area ?? ""} />
+          <input type="hidden" name="address" defaultValue={org.address ?? ""} />
           <div className="grid gap-3 sm:grid-cols-2">
             <label className={lbl}>الهاتف<input name="phone" defaultValue={org.phone ?? ""} dir="ltr" placeholder="0791234567" className={field} /></label>
             <label className={lbl}>واتساب<input name="whatsapp" defaultValue={org.whatsapp ?? ""} dir="ltr" placeholder="0791234567" className={field} /></label>
             <label className={lbl}>انستغرام (بدون @)<input name="instagram" defaultValue={org.instagram ?? ""} dir="ltr" className={field} /></label>
             <label className={lbl}>الموقع الإلكتروني<input name="website" defaultValue={org.website ?? ""} dir="ltr" placeholder="https://" className={field} /></label>
           </div>
-          <label className={lbl}>رابط الموقع على قوقل ماب (اختياري)
+          <label className={lbl}>📍 حدّد موقعك على الخريطة
             <input name="maps_url" defaultValue={org.maps_url ?? ""} dir="ltr" placeholder="https://maps.app.goo.gl/..." className={field} />
-            <span className="block text-xs">افتح قوقل ماب، دوّر على مكانك، اضغط «مشاركة» ثم «نسخ الرابط» والصقه هون.</span>
+            <span className="block text-xs">افتح قوقل ماب، دوّر على مكانك، اضغط «مشاركة» ثم «نسخ الرابط» والصقه هون. بنستعمله للعنوان وللمسافة بميزة «قريب مني».</span>
           </label>
           <label className={lbl}>🎟 عرض يوم تجريبي (اختياري)
             <input name="free_trial_note" defaultValue={org.free_trial_note ?? ""} maxLength={120} placeholder="مثال: يوم تجريبي مجاني" className={field} />
@@ -362,18 +360,16 @@ function BranchFields({ b, lbl }: { b?: { name_ar: string; city: string | null; 
   return (
     <>
       <label className={lbl}>اسم الفرع<input name="name_ar" required defaultValue={b?.name_ar ?? ""} placeholder="مثال: فرع عبدون" className={field} /></label>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className={lbl}>المدينة<input name="city" required defaultValue={b?.city ?? ""} className={field} /></label>
-        <label className={lbl}>المنطقة<input name="area" defaultValue={b?.area ?? ""} className={field} /></label>
-      </div>
-      <label className={lbl}>العنوان<input name="address" defaultValue={b?.address ?? ""} className={field} /></label>
+      <label className={lbl}>المدينة<input name="city" required defaultValue={b?.city ?? ""} className={field} /></label>
+      <input type="hidden" name="area" defaultValue={b?.area ?? ""} />
+      <input type="hidden" name="address" defaultValue={b?.address ?? ""} />
       <div className="grid gap-3 sm:grid-cols-2">
         <label className={lbl}>هاتف الفرع (اختياري)<input name="phone" defaultValue={b?.phone ?? ""} dir="ltr" placeholder="0791234567" className={field} /></label>
         <label className={lbl}>واتساب الفرع (اختياري)<input name="whatsapp" defaultValue={b?.whatsapp ?? ""} dir="ltr" placeholder="0791234567" className={field} /></label>
       </div>
-      <label className={lbl}>رابط الفرع على قوقل ماب
+      <label className={lbl}>📍 حدّد موقع الفرع على الخريطة
         <input name="maps_url" defaultValue={b?.maps_url ?? ""} dir="ltr" placeholder="https://maps.app.goo.gl/..." className={field} />
-        <span className="block text-xs">بنحسب منه المسافة لميزة «قريب مني».</span>
+        <span className="block text-xs">الصق رابط قوقل ماب (مشاركة ثم نسخ الرابط). بنستعمله للمسافة بميزة «قريب مني».</span>
       </label>
       <div className="space-y-2 rounded-xl border border-pink-400/30 bg-pink-500/5 p-3">
         <label className={lbl}>💗 Pink Zone للفرع

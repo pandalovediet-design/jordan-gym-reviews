@@ -15,7 +15,7 @@ export async function missingForPublish(supabase: SupabaseClient<Database>, id: 
 /** Nice-to-have items shown as tips; they never block sending for review. */
 export async function suggestionsFor(supabase: SupabaseClient<Database>, id: string): Promise<string[]> {
   const [{ data: org }, media, services, products, menu] = await Promise.all([
-    supabase.from("organizations").select("type,description_ar,address,area").eq("id", id).maybeSingle(),
+    supabase.from("organizations").select("type,description_ar,maps_url").eq("id", id).maybeSingle(),
     supabase.from("organization_media").select("id", { count: "exact", head: true }).eq("organization_id", id),
     supabase.from("organization_services").select("id", { count: "exact", head: true }).eq("organization_id", id),
     supabase.from("products").select("id", { count: "exact", head: true }).eq("organization_id", id),
@@ -24,7 +24,7 @@ export async function suggestionsFor(supabase: SupabaseClient<Database>, id: str
   if (!org) return [];
   const tips: string[] = [];
   if ((org.description_ar ?? "").trim().length < 40) tips.push("وصف قصير عن نشاطك");
-  if (!org.address && !org.area) tips.push("العنوان أو المنطقة");
+  if (!org.maps_url) tips.push("موقعك على الخريطة (رابط قوقل ماب)");
   if ((media.count ?? 0) < 1) tips.push("صورة أو أكثر");
   if (org.type === "healthy_food") { if ((menu.count ?? 0) < 1) tips.push("وجبات بالقائمة"); }
   else if (org.type === "store") { if ((products.count ?? 0) < 1) tips.push("منتجات"); }
