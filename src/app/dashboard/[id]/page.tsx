@@ -7,7 +7,7 @@ import { ActionForm, field } from "@/components/Form";
 import { AVAILABILITY_LABEL, BILLING_LABEL, DELIVERY_LABEL, publicMediaUrl, WEEKDAYS, hhmm, jod } from "@/lib/format";
 import { CityAreaPicker } from "@/components/CityAreaPicker";
 import { missingForPublish, suggestionsFor } from "@/lib/completeness";
-import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setProductAvailability, addMenuItem, deleteMenuItem, setMenuAvailability, setMenuImage } from "../actions";
+import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setProductAvailability, addMenuItem, deleteMenuItem, setMenuAvailability, setMenuImage, setMainImage } from "../actions";
 
 export const metadata: Metadata = { title: "تعديل النشاط", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -33,6 +33,8 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
   ]);
   if (!org) notFound();
   const missing = org.status === "draft" ? await missingForPublish(supabase, id) : [];
+  const mainImage = (media ?? []).find((m) => m.sort_order < 0) ?? null;
+  const galleryMedia = (media ?? []).filter((m) => m.sort_order >= 0);
   const isHomeChef = (orgCats ?? []).some((c) => c.id === org.category_id && c.slug === "home-chefs");
   const tips = org.status === "draft" ? await suggestionsFor(supabase, id) : [];
   const box = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
@@ -68,6 +70,17 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
       {org.status === "published" && <Link href={`/g/${org.slug}`} className="text-accent underline">عرض الصفحة العامة</Link>}
 
       <section className={box}><h2 className="mb-3 text-lg font-bold">البيانات الأساسية</h2>
+        <div className="mb-5 flex flex-wrap items-center gap-4">
+          {mainImage
+            // eslint-disable-next-line @next/next/no-img-element
+            ? <img src={publicMediaUrl(mainImage.storage_path)} alt="" className="size-24 rounded-xl object-cover ring-1 ring-white/10" />
+            : <div className="grid size-24 place-items-center rounded-xl bg-white/5 text-xs text-muted">بدون صورة</div>}
+          <div className="min-w-52 flex-1"><p className="mb-1 text-sm font-semibold">الصورة الرئيسية</p>
+            <p className="mb-2 text-xs text-muted">هاي اللي بتظهر على بطاقة نشاطك بالصفحة الرئيسية والبحث.</p>
+            <ActionForm action={setMainImage.bind(null, id)} submit={mainImage ? "تغيير الصورة" : "رفع الصورة"}>
+              <ImageInput name="file" accept="image/jpeg,image/png,image/webp" required className="text-sm" />
+            </ActionForm></div>
+        </div>
         <ActionForm action={updateProfile.bind(null, id)}>
           <label className={lbl}>الاسم<input name="name_ar" required defaultValue={org.name_ar} className={field} /></label>
           <label className={lbl}>الاسم بالإنجليزي<input name="name_en" defaultValue={org.name_en ?? ""} dir="ltr" className={field} /></label>
@@ -285,13 +298,13 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
           ))}
         </div>
       </section>
-      <section className={box}><h2 className="mb-3 text-lg font-bold">الصور</h2>
-        <div className="mb-4 grid grid-cols-3 gap-3">{(media ?? []).map((m) => (
+      <section className={box}><h2 className="mb-3 text-lg font-bold">معرض الصور</h2>
+        <div className="mb-4 grid grid-cols-3 gap-3">{galleryMedia.map((m) => (
           <div key={m.id} className="space-y-1">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={publicMediaUrl(m.storage_path)} alt={m.alt_text ?? ""} className="aspect-[4/3] w-full rounded-lg object-cover" />
             <form action={deleteMedia.bind(null, id, m.id)}><button className="text-xs text-red-300 underline">حذف</button></form></div>))}
-          {(media ?? []).length === 0 && <p className="col-span-3 text-sm text-muted">ما رفعت صور بعد.</p>}</div>
+          {galleryMedia.length === 0 && <p className="col-span-3 text-sm text-muted">ما رفعت صور بعد.</p>}</div>
         <ActionForm action={uploadMedia.bind(null, id)} submit="رفع">
           <ImageInput name="file" accept="image/jpeg,image/png,image/webp" required className="text-sm" />
           <input name="alt_text" placeholder="وصف الصورة (اختياري)" className={field} />

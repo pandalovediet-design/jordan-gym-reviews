@@ -290,6 +290,33 @@ export async function uploadMedia(id: string, _: FormState, fd: FormData): Promi
   return { ok: "تم رفع الصورة" };
 }
 
+/** The business's main image (shown on cards and as the page cover). Marked with sort_order = -1; replaces the previous one. */
+export async function setMainImage(id: string, _: FormState, fd: FormData): Promise<FormState> {
+  const file = fd.get("file");
+  if (!(file instanceof File) || file.size === 0) return { error: "اختر صورة" };
+  const ext = EXT[file.type];
+  if (!ext) return { error: "الصيغ المسموحة: JPG أو PNG أو WebP" };
+  if (file.size > MAX_IMG) return { error: "حجم الصورة أكبر من 4MB" };
+  const { supabase } = await requireUser();
+  const path = `${id}/${crypto.randomUUID()}.${ext}`;
+  const { error: upErr } = await supabase.storage.from("org-media").upload(path, file, { contentType: file.type, upsert: false });
+  if (upErr) return { error: "تعذّر رفع الصورة" };
+  const { data: old } = await supabase.from("organization_media").select("id,storage_path").eq("organization_id", id).lt("sort_order", 0);
+  await supabase.from("organization_media").update({ is_cover: false }).eq("organization_id", id);
+  const { error } = await supabase.from("organization_media").insert({ organization_id: id, storage_path: path, alt_text: null, is_cover: true, sort_order: -1 });
+  if (error) {
+    await supabase.storage.from("org-media").remove([path]);
+    return { error: "تعذّر حفظ الصورة" };
+  }
+  if (old?.length) {
+    await supabase.from("organization_media").delete().in("id", old.map((o) => o.id));
+    await supabase.storage.from("org-media").remove(old.map((o) => o.storage_path));
+  }
+  revalidatePath(`/dashboard/${id}`);
+  revalidatePath("/");
+  return { ok: "تم تحديث الصورة الرئيسية" };
+}
+
 export async function deleteMedia(id: string, mediaId: string): Promise<void> {
   const { supabase } = await requireUser();
   const { data } = await supabase.from("organization_media").select("storage_path").eq("id", mediaId).eq("organization_id", id).maybeSingle();
