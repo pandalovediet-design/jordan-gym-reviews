@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth";
 import { ActionForm, field } from "@/components/Form";
 import { AVAILABILITY_LABEL, BILLING_LABEL, DELIVERY_LABEL, publicMediaUrl, WEEKDAYS, hhmm, jod } from "@/lib/format";
 import { missingForPublish } from "@/lib/completeness";
-import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setProductAvailability, addMenuItem, deleteMenuItem, setMenuAvailability } from "../actions";
+import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setProductAvailability, addMenuItem, deleteMenuItem, setMenuAvailability, setMenuImage } from "../actions";
 
 export const metadata: Metadata = { title: "تعديل النشاط", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -203,6 +203,9 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
               <div className="flex-1 space-y-1">
                 <p>{m.name_ar} — <span className="text-accent">{jod(m.price_jod)}</span>{m.section && <span className="text-muted"> · {m.section}</span>} {bTag(m.branch_id)}</p>
                 <p className="text-xs text-muted">{[m.calories != null ? `${m.calories} سعرة` : null, m.protein_g != null ? `${m.protein_g}غ بروتين` : null, m.carbs_g != null ? `${m.carbs_g}غ كارب` : null, m.fat_g != null ? `${m.fat_g}غ دهون` : null].filter(Boolean).join(" · ")}</p>
+                <ActionForm action={setMenuImage.bind(null, id, m.id)} submit={m.image_path ? "تغيير الصورة" : "رفع صورة"} className="flex flex-wrap items-center gap-2">
+                  <input name="image" type="file" required accept="image/jpeg,image/png,image/webp" className="max-w-48 text-xs" />
+                </ActionForm>
                 <form action={setMenuAvailability.bind(null, id, m.id, !m.is_available)}><button className={`rounded-lg px-2 py-1 text-xs ${m.is_available ? "bg-red-400/20 text-red-200" : "bg-accent/20 text-accent"}`}>{m.is_available ? "✖ خلصت" : "✔ رجعت متوفرة"}</button></form>
               </div>
               <form action={deleteMenuItem.bind(null, id, m.id)}><button className="text-red-300 underline">حذف</button></form></li>))}

@@ -397,6 +397,24 @@ export async function addMenuItem(id: string, _: FormState, fd: FormData): Promi
   return { ok: "تمت إضافة الوجبة" };
 }
 
+export async function setMenuImage(id: string, itemId: string, _: FormState, fd: FormData): Promise<FormState> {
+  const file = fd.get("image");
+  if (!(file instanceof File) || file.size === 0) return { error: "اختر صورة" };
+  const { supabase } = await requireUser();
+  const { data: old } = await supabase.from("menu_items").select("image_path").eq("id", itemId).eq("organization_id", id).maybeSingle();
+  if (!old) return { error: "الوجبة غير موجودة" };
+  const up = await uploadImage(supabase, id, file);
+  if (up.error) return { error: up.error };
+  const { error } = await supabase.from("menu_items").update({ image_path: up.path! }).eq("id", itemId).eq("organization_id", id);
+  if (error) {
+    await supabase.storage.from("org-media").remove([up.path!]);
+    return { error: "تعذّر حفظ الصورة" };
+  }
+  if (old.image_path && !old.image_path.split("/").pop()?.startsWith("demo-")) await supabase.storage.from("org-media").remove([old.image_path]);
+  revalidatePath(`/dashboard/${id}`);
+  return { ok: "تم تحديث الصورة" };
+}
+
 export async function deleteMenuItem(id: string, itemId: string): Promise<void> {
   const { supabase } = await requireUser();
   const { data: old } = await supabase.from("menu_items").select("image_path").eq("id", itemId).eq("organization_id", id).maybeSingle();
