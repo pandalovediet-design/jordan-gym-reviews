@@ -804,6 +804,34 @@ export type Database = {
           },
         ]
       }
+      videos: {
+        Row: { cover_path: string | null; created_at: string; id: string; kind: string; organization_id: string; platform: string; status: string; title_ar: string | null; url: string; views: number }
+        Insert: { cover_path?: string | null; created_at?: string; id?: string; kind: string; organization_id: string; platform?: string; status?: string; title_ar?: string | null; url: string; views?: number }
+        Update: { cover_path?: string | null; created_at?: string; id?: string; kind?: string; organization_id?: string; platform?: string; status?: string; title_ar?: string | null; url?: string; views?: number }
+        Relationships: [
+          {
+            foreignKeyName: "videos_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_reports: {
+        Row: { created_at: string; id: string; reason: string | null; video_id: string }
+        Insert: { created_at?: string; id?: string; reason?: string | null; video_id: string }
+        Update: { created_at?: string; id?: string; reason?: string | null; video_id?: string }
+        Relationships: [
+          {
+            foreignKeyName: "video_reports_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_votes: {
         Row: { category: string; created_at: string; id: string; nominee_org_id: string; vote_month: string; voter_id: string }
         Insert: { category: string; created_at?: string; id?: string; nominee_org_id: string; vote_month?: string; voter_id?: string }
@@ -1461,6 +1489,14 @@ export type Database = {
         Returns: string
       }
       report_equipment: {
+        Args: { p_id: string; p_reason: string }
+        Returns: boolean
+      }
+      count_video_view: {
+        Args: { p_id: string }
+        Returns: undefined
+      }
+      report_video: {
         Args: { p_id: string; p_reason: string }
         Returns: boolean
       }

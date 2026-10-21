@@ -6,6 +6,7 @@ import { notifyAdmin } from "@/lib/notify";
 import { requireUser } from "@/lib/auth";
 import { missingForPublish } from "@/lib/completeness";
 import { resolveMapsCoords } from "@/lib/maps";
+import { parseVideoUrl } from "@/lib/video";
 
 export type FormState = { error?: string; ok?: string } | undefined;
 const opt = (max: number) => z.string().trim().max(max).optional().transform((v) => v || null);
@@ -692,4 +693,38 @@ export async function deleteEquipment(id: string, listingId: string): Promise<vo
   if (old.image_path) await supabase.storage.from("org-media").remove([old.image_path]);
   revalidatePath(`/dashboard/${id}/growth`);
   revalidatePath("/market");
+}
+
+// ───────── videos (reels) ─────────
+
+export async function addVideo(id: string, _: FormState, fd: FormData): Promise<FormState> {
+  const parsed = parseVideoUrl(String(fd.get("url") ?? ""));
+  if (!parsed) return { error: "الرابط غير مدعوم. استخدم رابط كامل من يوتيوب أو إنستغرام أو تيك توك أو فيسبوك (يبدأ بـ https://)." };
+  const title = z.string().trim().max(80).optional().safeParse(fd.get("title") ?? undefined);
+  if (!title.success) return { error: "العنوان طويل" };
+  const { supabase } = await requireUser();
+  let cover_path: string | null = null;
+  const cover = fd.get("cover");
+  if (cover instanceof File && cover.size > 0) {
+    const up = await uploadImage(supabase, id, cover);
+    if (up.error) return { error: up.error };
+    cover_path = up.path!;
+  }
+  const { error } = await supabase.from("videos").insert({ organization_id: id, kind: "reel", url: parsed.url, title_ar: title.data || null, cover_path });
+  if (error) {
+    if (cover_path) await supabase.storage.from("org-media").remove([cover_path]);
+    return { error: error.message.includes("too many") ? "وصلت الحد الأقصى (3 فيديوهات)." : "تعذّرت الإضافة" };
+  }
+  await notifyAdmin(`🎬 فيديو جديد بانتظار الموافقة\n${parsed.url}`);
+  revalidatePath(`/dashboard/${id}/growth`);
+  return { ok: "وصل الفيديو، بيظهر بعد موافقة الإدارة." };
+}
+
+export async function deleteVideo(id: string, videoId: string): Promise<void> {
+  const { supabase } = await requireUser();
+  const { data: old } = await supabase.from("videos").select("cover_path").eq("id", videoId).eq("organization_id", id).maybeSingle();
+  await supabase.from("videos").delete().eq("id", videoId).eq("organization_id", id);
+  if (old?.cover_path) await supabase.storage.from("org-media").remove([old.cover_path]);
+  revalidatePath(`/dashboard/${id}/growth`);
+  revalidatePath("/reels");
 }

@@ -9,6 +9,8 @@ import { InquiryForm, ReportForm } from "@/components/PublicForms";
 import { sendInquiry, sendReport } from "./actions";
 import { getOrgBySlug } from "@/lib/queries";
 import { createPublicClient } from "@/lib/supabase/public";
+import { listVideos } from "@/lib/videos";
+import { VideoCard } from "@/components/VideoCard";
 import { BILLING_LABEL, DELIVERY_LABEL, GLOW_LABEL, ORG_TYPE_LABEL, WEEKDAYS, WOMEN_LABEL, ammanDate, dateAr, dayLabelAr, hhmm, isVerified, jod, publicMediaUrl, waNumber } from "@/lib/format";
 import type { Tables } from "@/lib/database.types";
 
@@ -164,6 +166,9 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   const msg = (extra = "") => encodeURIComponent(`مرحبا، شفت ${org.name_ar}${extra} على Jordan Gym Reviews وبدي أستفسر.`);
   const trialMsg = encodeURIComponent(`مرحبا، شفت ${org.name_ar} على Jordan Gym Reviews وبدي أحجز يوم تجريبي.`);
   const shareHref = `https://wa.me/?text=${encodeURIComponent(`${org.name_ar} — ${baseUrl()}/g/${org.slug}`)}`;
+  const orgVideos = await listVideos({ orgId: org.id, limit: 12 });
+  const reviewVideos = orgVideos.filter((x) => x.kind === "review");
+  const reelVideos = orgVideos.filter((x) => x.kind === "reel");
   const category = org.category_id ? (await createPublicClient().from("org_categories").select("name_ar").eq("id", org.category_id).maybeSingle()).data?.name_ar : null;
   const jsonLd = {
     "@context": "https://schema.org",
@@ -260,6 +265,13 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         {wa && org.free_trial_note && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${trialMsg}`} className="rounded-xl bg-accent/15 px-5 py-2.5 font-bold text-accent ring-1 ring-accent/50">🎟 {org.free_trial_note}</TrackedLink>}
         <a href={shareHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">شارك على واتساب</a>
       </div>
+      {reviewVideos.length > 0 && (
+        <section className="mt-6 rounded-2xl bg-accent/10 p-4 ring-1 ring-accent/30">
+          <h2 className="mb-1 text-lg font-bold">🎬 مراجعة عبدالله</h2>
+          <p className="mb-3 text-xs text-muted">زرنا المكان وصوّرنا رأينا. عبدالله صاحب نادي، والمراجعة بدون مقابل ما لم يُذكر غير ذلك.</p>
+          <div className="grid max-w-md grid-cols-2 gap-4">{reviewVideos.map((x) => <VideoCard key={x.id} v={x} showOrg={false} />)}</div>
+        </section>
+      )}
 
       {media.length > 0 && (
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -285,6 +297,11 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           </Section>
         );
       })()}
+      {reelVideos.length > 0 && (
+        <Section title="🎬 فيديوهات">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">{reelVideos.map((x) => <VideoCard key={x.id} v={x} showOrg={false} />)}</div>
+        </Section>
+      )}
       {org.type === "nutritionist" && (
         <div className="mt-6 rounded-2xl bg-surface p-4 text-sm ring-1 ring-white/10">
           {org.license_number && <p>الترخيص: <span dir="ltr">{org.license_number}</span>{org.license_authority && ` — ${org.license_authority}`}{!isVerified(org) && <span className="text-muted"> (لم تتم مراجعته بعد)</span>}</p>}

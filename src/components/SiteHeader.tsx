@@ -15,6 +15,7 @@ export function SiteHeader() {
           <Link href="/pink" className="text-pink-300 hover:text-pink-200">💗 Pink Zone</Link>
           <Link href="/now" className="hover:text-foreground">⏱️ هسا</Link>
           <Link href="/awards" className="hover:text-foreground">🏆 نادي الشهر</Link>
+          <Link href="/reels" className="hover:text-foreground">🎬 ريلز</Link>
           <Link href="/deals" className="hover:text-foreground">🎟️ أكواد خصم</Link>
           <Link href="/market" className="hover:text-foreground">🔄 سوق المعدات</Link>
           <Link href="/trails" className="hover:text-foreground">المسارات</Link>

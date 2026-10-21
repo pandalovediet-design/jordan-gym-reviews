@@ -31,6 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/join` },
     { url: `${base}/sponsors` },
     { url: `${base}/deals` },
+    { url: `${base}/reels` },
     { url: `${base}/market` },
     { url: `${base}/search` },
     { url: `${base}/trails` },

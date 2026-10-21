@@ -94,7 +94,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
       {org.status === "draft" && missing.length > 0 && <p className="rounded-xl bg-yellow-400/10 p-3 text-sm text-yellow-200">ناقص قبل الإرسال: {missing.join("، ")}.</p>}
       {org.status === "draft" && missing.length === 0 && tips.length > 0 && <p className="rounded-xl bg-white/5 p-3 text-sm text-muted">تقدر ترسل للمراجعة هسا. وتحسّن صفحتك بعدين: {tips.join("، ")}.</p>}
       {org.status === "published" && <Link href={`/g/${org.slug}`} className="text-accent underline">عرض الصفحة العامة</Link>}
-      <Link href={`/dashboard/${id}/growth`} className="block rounded-2xl bg-accent/10 p-4 text-sm font-bold text-accent ring-1 ring-accent/30">🎟️ أكواد الخصم{(org.type === "gym" || org.type === "sports_facility" || org.type === "store") && " + 🔄 سوق المعدات"} ←</Link>
+      <Link href={`/dashboard/${id}/growth`} className="block rounded-2xl bg-accent/10 p-4 text-sm font-bold text-accent ring-1 ring-accent/30">🎬 فيديو + 🎟️ أكواد الخصم{(org.type === "gym" || org.type === "sports_facility" || org.type === "store") && " + 🔄 سوق المعدات"} ←</Link>
 
       <section className={box}><h2 className="mb-3 text-lg font-bold">البيانات الأساسية</h2>
         <div className="mb-5 flex flex-wrap items-center gap-4">

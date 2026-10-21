@@ -1020,3 +1020,34 @@ test("monetization: codes hide the code, reveals counted; market guards; stats; 
     await rejects(() => db.query(`insert into public.equipment_listings (organization_id, title_ar, condition, kind, price_jod) values ($1, 'غلط', 'used', 'sale', 5)`, [draft]));
   });
 });
+
+test("videos: reviews are admin-only, reels pending until approved, link allow-list", async () => {
+  const gym = (await db.query(`select id from public.organizations where slug = 'cg-gym'`)).rows[0].id;
+  let reelId;
+  await asAlice(async () => {
+    await rejects(() => db.query(`insert into public.videos (organization_id, kind, url) values ($1, 'review', 'https://youtu.be/abcdefghijk')`, [gym]), /platform only/);
+    await rejects(() => db.query(`insert into public.videos (organization_id, kind, url) values ($1, 'reel', 'https://evil.example.com/x')`, [gym]), /unsupported/);
+    reelId = (await db.query(`insert into public.videos (organization_id, kind, url, status, views) values ($1, 'reel', 'https://www.tiktok.com/@a/video/123', 'approved', 50) returning id`, [gym])).rows[0].id;
+    const r = (await db.query(`select status, views, platform from public.videos where id = $1`, [reelId])).rows[0];
+    assert.deepEqual([r.status, Number(r.views), r.platform], ["pending", 0, "tiktok"]);
+    await db.query(`update public.videos set status = 'approved' where id = $1`, [reelId]);
+    assert.equal((await db.query(`select status from public.videos where id = $1`, [reelId])).rows[0].status, "pending");
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select id from public.videos`)).rows.length, 0);
+  });
+  await asAdmin(async () => {
+    await db.query(`update public.videos set status = 'approved' where id = $1`, [reelId]);
+    await db.query(`insert into public.videos (organization_id, kind, url, status, title_ar) values ($1, 'review', 'https://www.instagram.com/reel/AbC123/', 'approved', 'مراجعة')`, [gym]);
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select id from public.videos`)).rows.length, 2);
+    await db.query(`select public.count_video_view($1)`, [reelId]);
+    assert.equal((await db.query(`select public.report_video($1, 'سبام') as ok`, [reelId])).rows[0].ok, true);
+    assert.equal((await db.query(`select * from public.video_reports`).catch(() => ({ rows: [] }))).rows.length, 0);
+  });
+  await asAlice(async () => {
+    assert.equal(Number((await db.query(`select views from public.videos where id = $1`, [reelId])).rows[0].views), 1);
+    await db.query(`delete from public.videos where id = $1`, [reelId]);
+  });
+});

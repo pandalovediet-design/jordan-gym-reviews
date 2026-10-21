@@ -4,8 +4,9 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { ImageInput } from "@/components/ImageInput";
 import { ActionForm, field } from "@/components/Form";
+import { PLATFORM_LABEL, type Platform } from "@/lib/video";
 import { EQUIP_COND, dateAr, isPast, jod, publicMediaUrl } from "@/lib/format";
-import { addEquipment, addOfferCode, deleteEquipment, deleteOfferCode, setEquipmentStatus, setOfferCodeActive } from "../../actions";
+import { addEquipment, addOfferCode, addVideo, deleteVideo, deleteEquipment, deleteOfferCode, setEquipmentStatus, setOfferCodeActive } from "../../actions";
 
 export const metadata: Metadata = { title: "أكواد الخصم وسوق المعدات", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -17,16 +18,37 @@ export default async function Growth({ params }: PageProps<"/dashboard/[id]/grow
   const { data: org } = await supabase.from("organizations").select("id,name_ar,type,status").eq("id", id).maybeSingle();
   if (!org) notFound();
   const canMarket = org.type === "gym" || org.type === "sports_facility" || org.type === "store";
-  const [{ data: codes }, { data: items }] = await Promise.all([
+  const [{ data: codes }, { data: items }, { data: vids }] = await Promise.all([
     supabase.from("offer_codes").select("*").eq("organization_id", id).order("created_at", { ascending: false }),
     canMarket ? supabase.from("equipment_listings").select("*").eq("organization_id", id).neq("status", "removed").order("created_at", { ascending: false }) : Promise.resolve({ data: [] }),
+    supabase.from("videos").select("id,kind,platform,url,title_ar,status,views").eq("organization_id", id).order("created_at", { ascending: false }),
   ]);
+  const STATUS_VID: Record<string, string> = { pending: "بانتظار موافقة الإدارة", approved: "ظاهر للعامة", rejected: "مرفوض" };
   const box = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
   const btn = "rounded-lg bg-white/10 px-3 py-1 text-xs hover:bg-white/20";
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
       <Link href={`/dashboard/${id}`} className="text-sm text-accent underline">← رجوع للوحة {org.name_ar}</Link>
-      <h1 className="text-2xl font-extrabold">أكواد الخصم وسوق المعدات</h1>
+      <h1 className="text-2xl font-extrabold">الفيديو وأكواد الخصم وسوق المعدات</h1>
+
+      <section className={box}>
+        <h2 className="text-lg font-bold">🎬 فيديوهاتك (ريلز)</h2>
+        <p className="mb-3 mt-1 text-sm text-muted">الصق رابط فيديو من يوتيوب أو إنستغرام أو تيك توك أو فيسبوك. بيظهر بصفحتك وبصفحة «ريلز» بعد موافقة الإدارة، وبنعدّلك المشاهدات. الحد 3 فيديوهات.</p>
+        <ul className="mb-4 space-y-2">
+          {(vids ?? []).filter((x) => x.kind === "reel").map((x) => (
+            <li key={x.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-background p-3 text-sm">
+              <div className="min-w-0"><p className="truncate font-semibold">{x.title_ar ?? x.url}</p><p className="text-xs text-muted">{PLATFORM_LABEL[x.platform as Platform]} · {STATUS_VID[x.status]} · {x.views} مشاهدة</p></div>
+              <form action={deleteVideo.bind(null, id, x.id)}><button className={btn}>حذف</button></form>
+            </li>
+          ))}
+          {(vids ?? []).filter((x) => x.kind === "reel").length === 0 && <li className="text-sm text-muted">ما أضفت فيديوهات.</li>}
+        </ul>
+        <ActionForm action={addVideo.bind(null, id)} submit="إضافة الفيديو">
+          <input name="url" required dir="ltr" placeholder="https://www.youtube.com/shorts/..." className={field} />
+          <input name="title" maxLength={80} placeholder="عنوان قصير (اختياري)" className={field} />
+          <label className="block text-sm text-muted">صورة غلاف (اختياري، مفيدة لإنستغرام وتيك توك)<ImageInput name="cover" accept="image/jpeg,image/png,image/webp" className="mt-1 text-xs" /></label>
+        </ActionForm>
+      </section>
 
       <section className={box}>
         <h2 className="text-lg font-bold">🎟️ أكواد خصم لزوار المنصة</h2>

@@ -2,6 +2,7 @@
 import { GLOW_COLORS } from "@/lib/format";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
+import { parseVideoUrl } from "@/lib/video";
 
 async function requireAdmin() {
   const ctx = await requireUser();
@@ -254,4 +255,40 @@ export async function clearEquipmentReports(listingId: string): Promise<void> {
   const { supabase } = await requireAdmin();
   await supabase.from("equipment_reports").delete().eq("listing_id", listingId);
   revalidatePath("/admin/market");
+}
+
+export async function addReviewVideo(_: { error?: string; ok?: string } | undefined, fd: FormData): Promise<{ error?: string; ok?: string }> {
+  const { supabase } = await requireAdmin();
+  const parsed = parseVideoUrl(String(fd.get("url") ?? ""));
+  if (!parsed) return { error: "رابط غير مدعوم (استخدم الرابط الكامل)." };
+  const slug = String(fd.get("slug") ?? "").trim();
+  const { data: org } = await supabase.from("organizations").select("id").eq("slug", slug).maybeSingle();
+  if (!org) return { error: "ما لقيت نشاط بهالـ slug." };
+  const title = String(fd.get("title") ?? "").trim().slice(0, 80) || null;
+  const { error } = await supabase.from("videos").insert({ organization_id: org.id, kind: "review", url: parsed.url, title_ar: title, status: "approved" });
+  if (error) return { error: "تعذّرت الإضافة" };
+  revalidatePath("/admin/videos");
+  revalidatePath("/reels");
+  revalidatePath(`/g/${slug}`);
+  return { ok: "تمت إضافة المراجعة" };
+}
+
+export async function setVideoStatus(id: string, status: "approved" | "rejected"): Promise<void> {
+  const { supabase } = await requireAdmin();
+  await supabase.from("videos").update({ status }).eq("id", id);
+  revalidatePath("/admin/videos");
+  revalidatePath("/reels");
+}
+
+export async function adminDeleteVideo(id: string): Promise<void> {
+  const { supabase } = await requireAdmin();
+  await supabase.from("videos").delete().eq("id", id);
+  revalidatePath("/admin/videos");
+  revalidatePath("/reels");
+}
+
+export async function clearVideoReports(videoId: string): Promise<void> {
+  const { supabase } = await requireAdmin();
+  await supabase.from("video_reports").delete().eq("video_id", videoId);
+  revalidatePath("/admin/videos");
 }
