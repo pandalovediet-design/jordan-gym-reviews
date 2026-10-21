@@ -198,6 +198,7 @@ export type Database = {
       }
       org_members: {
         Row: {
+          access_token: string
           created_at: string
           ends_on: string
           full_name: string
@@ -210,6 +211,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          access_token?: string
           created_at?: string
           ends_on: string
           full_name: string
@@ -222,6 +224,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          access_token?: string
           created_at?: string
           ends_on?: string
           full_name?: string
@@ -233,6 +236,12 @@ export type Database = {
           starts_on?: string
           updated_at?: string
         }
+        Relationships: []
+      }
+      member_checkins: {
+        Row: { checked_in_at: string; checked_in_by: string | null; id: string; member_id: string; organization_id: string; was_expired: boolean }
+        Insert: { checked_in_at?: string; checked_in_by?: string | null; id?: string; member_id: string; organization_id: string; was_expired?: boolean }
+        Update: { checked_in_at?: string; checked_in_by?: string | null; id?: string; member_id?: string; organization_id?: string; was_expired?: boolean }
         Relationships: []
       }
       member_programs: {
@@ -1322,6 +1331,18 @@ export type Database = {
           views: number
           whatsapp: number
         }[]
+      }
+      record_checkin: {
+        Args: { p_token: string }
+        Returns: { checked_in_at: string; days_left: number; duplicate: boolean; ends_on: string; expired: boolean; member_name: string; org_name: string }[]
+      }
+      get_member_by_token: {
+        Args: { p_token: string }
+        Returns: { days_left: number; ends_on: string; member_name: string; org_name: string; org_slug: string; org_whatsapp: string | null; plan_name: string | null; starts_on: string }[]
+      }
+      get_member_programs: {
+        Args: { p_token: string }
+        Returns: { body: string; created_at: string; kind: Database["public"]["Enums"]["program_kind"]; title: string }[]
       }
       get_program_by_token: {
         Args: { p_token: string }

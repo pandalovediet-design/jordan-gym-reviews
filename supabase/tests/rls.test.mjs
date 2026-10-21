@@ -740,3 +740,48 @@ test("visitor reports and verified-badge expiry", async () => {
     assert.equal(r.active, false);
   }
 });
+
+test("QR check-in: staff only, once per 8 hours, expired members are flagged, member page by token", async () => {
+  const org = (await db.query(`select id from public.organizations where slug = 'nutri-test'`)).rows[0].id;
+  const m = (await db.query(`select id, access_token from public.org_members where organization_id = $1 limit 1`, [org])).rows[0];
+  const expired = await asAlice(async () => (await db.query(
+    `insert into public.org_members (organization_id, full_name, phone, starts_on, ends_on)
+     values ($1, 'منتهي', '+962795550000', current_date - 60, current_date - 5) returning id, access_token`, [org])).rows[0]);
+  // outsider cannot record; unknown token fails; anon cannot call
+  await asBob(async () => { await rejects(() => db.query(`select * from public.record_checkin($1)`, [m.access_token]), /not allowed/); });
+  await asAnon(async () => { await rejects(() => db.query(`select * from public.record_checkin($1)`, [m.access_token])); });
+  await asAlice(async () => {
+    await rejects(() => db.query(`select * from public.record_checkin('00000000-0000-4000-8000-000000000000')`), /member not found/);
+    const a = (await db.query(`select * from public.record_checkin($1)`, [m.access_token])).rows[0];
+    assert.equal(a.duplicate, false);
+    assert.equal(a.expired, false);
+    const b = (await db.query(`select * from public.record_checkin($1)`, [m.access_token])).rows[0];
+    assert.equal(b.duplicate, true);
+    assert.equal((await db.query(`select id from public.member_checkins where member_id = $1`, [m.id])).rows.length, 1);
+  });
+  // more than 8 hours later a new attendance is recorded
+  await db.query(`update public.member_checkins set checked_in_at = now() - interval '9 hours' where member_id = $1`, [m.id]);
+  await asAlice(async () => {
+    const c = (await db.query(`select * from public.record_checkin($1)`, [m.access_token])).rows[0];
+    assert.equal(c.duplicate, false);
+    assert.equal((await db.query(`select id from public.member_checkins where member_id = $1`, [m.id])).rows.length, 2);
+    // expired subscription is recorded but flagged
+    const e = (await db.query(`select * from public.record_checkin($1)`, [expired.access_token])).rows[0];
+    assert.equal(e.expired, true);
+    assert.equal(e.duplicate, false);
+    assert.equal((await db.query(`select was_expired from public.member_checkins where member_id = $1`, [expired.id])).rows[0].was_expired, true);
+    // staff cannot forge attendance with a direct insert
+    await rejects(() => db.query(`insert into public.member_checkins (organization_id, member_id) values ($1, $2)`, [org, m.id]));
+  });
+  await asBob(async () => { assert.equal((await db.query(`select id from public.member_checkins`)).rows.length, 0); });
+  // member page exposes only what the token opens
+  await db.exec(`update public.organizations set status = 'published' where id = '${org}'`);
+  await asAnon(async () => {
+    const r = (await db.query(`select member_name, days_left from public.get_member_by_token($1)`, [m.access_token])).rows;
+    assert.equal(r.length, 1);
+    assert.ok(r[0].days_left >= 0);
+    assert.equal((await db.query(`select * from public.get_member_programs($1)`, [m.access_token])).rows.length, 1);
+    assert.equal((await db.query(`select * from public.get_member_by_token('00000000-0000-4000-8000-000000000000')`)).rows.length, 0);
+    assert.equal((await db.query(`select access_token from public.org_members`).catch(() => ({ rows: [] }))).rows.length, 0);
+  });
+});

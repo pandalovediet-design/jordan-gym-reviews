@@ -18,7 +18,8 @@ export async function login(_: AuthState, fd: FormData): Promise<AuthState> {
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(p.data);
   if (error) return { error: "البريد أو كلمة المرور غير صحيحة" };
-  redirect("/dashboard");
+  const next = String(fd.get("next") ?? "");
+  redirect(/^\/(?!\/)[\w\-./?=&%]*$/.test(next) ? next : "/dashboard");
 }
 
 export async function signup(_: AuthState, fd: FormData): Promise<AuthState> {

@@ -7,13 +7,16 @@ import { login, signup } from "./actions";
 function LoginForm() {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [state, action, pending] = useActionState(mode === "login" ? login : signup, undefined);
-  const linkError = useSearchParams().get("error") === "link";
+  const sp = useSearchParams();
+  const linkError = sp.get("error") === "link";
+  const next = sp.get("next") ?? "";
   const field = "w-full rounded-xl bg-surface px-4 py-3 ring-1 ring-white/10 outline-none focus:ring-accent";
   return (
     <div className="mx-auto max-w-sm px-4 py-16">
       <h1 className="mb-6 text-2xl font-extrabold">{mode === "login" ? "دخول الأنشطة" : "إنشاء حساب نشاط"}</h1>
       <form action={action} className="space-y-3" key={mode}>
         <input name="email" type="email" required placeholder="البريد الإلكتروني" autoComplete="email" dir="ltr" className={field} />
+        {mode === "login" && next && <input type="hidden" name="next" value={next} />}
         {mode === "signup" && <input name="website" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />}
         <input name="password" type="password" required minLength={8} placeholder="كلمة المرور" autoComplete={mode === "login" ? "current-password" : "new-password"} dir="ltr" className={field} />
         {linkError && !state && <p role="alert" className="text-sm text-red-300">الرابط منتهي أو غير صالح. اطلب رابط جديد.</p>}

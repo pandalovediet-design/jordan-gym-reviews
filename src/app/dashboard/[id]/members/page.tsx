@@ -74,6 +74,7 @@ export default async function Members({ params }: PageProps<"/dashboard/[id]/mem
                 <div className="text-left text-xs"><p className={status[1]}>{status[0]}</p><p className="text-muted">حتى {dateAr(m.ends_on)}</p></div>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
+                <a href={wa(m.phone, `مرحباً ${m.full_name}، هذا رابط عضويتك في ${org.name_ar} (اشتراكك، برامجك، والـQR للحضور): ${base}/me/${m.access_token}`)} target="_blank" rel="noopener noreferrer" className={btn}>إرسال رابط العضو</a>
                 <a href={wa(m.phone, remind)} target="_blank" rel="noopener noreferrer" className={`${btn} !bg-accent text-accent-foreground`}>تذكير بواتساب</a>
                 <form action={renewMember.bind(null, id, m.id)}><button className={btn}>تجديد</button></form>
                 <form action={deleteMember.bind(null, id, m.id)}><button className={`${btn} text-red-300`}>حذف</button></form>
