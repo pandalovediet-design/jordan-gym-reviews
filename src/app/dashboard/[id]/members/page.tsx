@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth";
 import { ActionForm, field } from "@/components/Form";
 import { dateAr, jod } from "@/lib/format";
 import { siteUrl } from "@/lib/site";
-import { addMember, addPlan, addProgram, deleteMember, deletePlan, deleteProgram, renewMember } from "../../members-actions";
+import { addMember, addPlan, addProgram, deleteMember, deletePlan, deleteProgram, renewMember, setCoachNote } from "../../members-actions";
 
 export const metadata: Metadata = { title: "الأعضاء والاشتراكات", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -83,6 +83,10 @@ export default async function Members({ params }: PageProps<"/dashboard/[id]/mem
                 <li key={p.id} className="flex flex-wrap items-center justify-between gap-2"><span>{p.kind === "workout" ? "🏋️" : "🥗"} {p.title}</span>
                   <span className="flex gap-2"><a href={wa(m.phone, `مرحبا ${m.full_name}، هاد ${p.kind === "workout" ? "برنامج التمرين" : "النظام الغذائي"} الخاص فيك من ${org.name_ar}: ${base}/m/${p.access_token}`)} target="_blank" rel="noopener noreferrer" className={`${btn} !bg-accent text-accent-foreground`}>إرسال بواتساب</a>
                   <form action={deleteProgram.bind(null, id, p.id)}><button className={`${btn} text-red-300`}>حذف</button></form></span></li>))}</ul>}
+              <details className="mt-3"><summary className="cursor-pointer text-sm text-accent">ملاحظة المدرب للعضو{m.coach_note ? " ✓" : ""}</summary>
+                <form action={setCoachNote.bind(null, id, m.id)} className="mt-3 space-y-2">
+                  <textarea name="coach_note" rows={3} maxLength={500} defaultValue={m.coach_note ?? ""} placeholder="مثلاً: أحسنت على التزامك! ركّز على الأوزان هالأسبوع" className={field} />
+                  <button className={btn}>حفظ الملاحظة</button></form></details>
               <details className="mt-3"><summary className="cursor-pointer text-sm text-accent">إضافة برنامج تمرين / غذاء</summary>
                 <div className="mt-3">
                   <ActionForm action={addProgram.bind(null, id, m.id)} submit="حفظ البرنامج">

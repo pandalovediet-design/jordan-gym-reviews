@@ -785,3 +785,23 @@ test("QR check-in: staff only, once per 8 hours, expired members are flagged, me
     assert.equal((await db.query(`select access_token from public.org_members`).catch(() => ({ rows: [] }))).rows.length, 0);
   });
 });
+
+test("member page v2: coach note and own attendance by token only", async () => {
+  const org = (await db.query(`select id from public.organizations where slug = 'nutri-test'`)).rows[0].id;
+  const m = (await db.query(`select id, access_token from public.org_members where organization_id = $1 order by created_at limit 1`, [org])).rows[0];
+  await asAlice(async () => {
+    await db.query(`update public.org_members set coach_note = 'ممتاز، كمّل' where id = $1`, [m.id]);
+  });
+  await asBob(async () => {
+    await db.query(`update public.org_members set coach_note = 'x' where id = $1`, [m.id]);
+    assert.equal((await db.query(`select coach_note from public.org_members`)).rows.length, 0);
+  });
+  await asAnon(async () => {
+    const r = (await db.query(`select coach_note from public.get_member_by_token($1)`, [m.access_token])).rows[0];
+    assert.equal(r.coach_note, 'ممتاز، كمّل');
+    const a = (await db.query(`select * from public.get_member_attendance($1)`, [m.access_token])).rows;
+    assert.ok(a.length >= 1 && a.length <= 10);
+    assert.ok(Number(a[0].month_count) >= 1);
+    assert.equal((await db.query(`select * from public.get_member_attendance('00000000-0000-4000-8000-000000000000')`)).rows.length, 0);
+  });
+});

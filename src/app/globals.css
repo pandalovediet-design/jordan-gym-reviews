@@ -37,3 +37,12 @@ body {
 .glow-blue { --glow: linear-gradient(135deg, #38bdf8, #6366f1, #22d3ee); }
 .glow-green { --glow: linear-gradient(135deg, #34d399, #10b981, #86efac); }
 .glow-pink { --glow: linear-gradient(135deg, #f472b6, #ec4899, #fb7185); }
+
+/* Print a single section of the member page as a clean PDF (window.print -> "Save as PDF"). */
+@media print {
+  .printing-one { background: #fff !important; }
+  .printing-one [data-sec]:not([data-print-active]) { display: none !important; }
+  .printing-one [data-print-active] { background: #fff !important; color: #000 !important; box-shadow: none !important; border: 0 !important; }
+  .printing-one [data-print-active] * { color: #000 !important; }
+  .printing-one .no-print { display: none !important; }
+}

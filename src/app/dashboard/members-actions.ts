@@ -72,6 +72,12 @@ export async function renewMember(id: string, memberId: string): Promise<void> {
   await supabase.from("org_members").update({ starts_on: from, ends_on: addDays(from, days) }).eq("id", memberId).eq("organization_id", id);
   refresh(id);
 }
+export async function setCoachNote(id: string, memberId: string, fd: FormData): Promise<void> {
+  const { supabase } = await requireUser();
+  const note = String(fd.get("coach_note") ?? "").trim().slice(0, 500) || null;
+  await supabase.from("org_members").update({ coach_note: note }).eq("id", memberId).eq("organization_id", id);
+  refresh(id);
+}
 export async function deleteMember(id: string, memberId: string): Promise<void> {
   const { supabase } = await requireUser();
   await supabase.from("org_members").delete().eq("id", memberId).eq("organization_id", id);

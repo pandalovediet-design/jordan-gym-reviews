@@ -199,6 +199,7 @@ export type Database = {
       org_members: {
         Row: {
           access_token: string
+          coach_note: string | null
           created_at: string
           ends_on: string
           full_name: string
@@ -212,6 +213,7 @@ export type Database = {
         }
         Insert: {
           access_token?: string
+          coach_note?: string | null
           created_at?: string
           ends_on: string
           full_name: string
@@ -225,6 +227,7 @@ export type Database = {
         }
         Update: {
           access_token?: string
+          coach_note?: string | null
           created_at?: string
           ends_on?: string
           full_name?: string
@@ -1338,7 +1341,11 @@ export type Database = {
       }
       get_member_by_token: {
         Args: { p_token: string }
-        Returns: { days_left: number; ends_on: string; member_name: string; org_name: string; org_slug: string; org_whatsapp: string | null; plan_name: string | null; starts_on: string }[]
+        Returns: { coach_note: string | null; days_left: number; ends_on: string; member_name: string; org_name: string; org_slug: string; org_whatsapp: string | null; plan_name: string | null; starts_on: string }[]
+      }
+      get_member_attendance: {
+        Args: { p_token: string }
+        Returns: { checked_in_at: string; month_count: number }[]
       }
       get_member_programs: {
         Args: { p_token: string }
