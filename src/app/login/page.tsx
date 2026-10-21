@@ -5,9 +5,9 @@ import { useSearchParams } from "next/navigation";
 import { login, signup } from "./actions";
 
 function LoginForm() {
-  const [mode, setMode] = useState<"login" | "signup">("login");
-  const [state, action, pending] = useActionState(mode === "login" ? login : signup, undefined);
   const sp = useSearchParams();
+  const [mode, setMode] = useState<"login" | "signup">(sp.get("mode") === "signup" ? "signup" : "login");
+  const [state, action, pending] = useActionState(mode === "login" ? login : signup, undefined);
   const linkError = sp.get("error") === "link";
   const next = sp.get("next") ?? "";
   const field = "w-full rounded-xl bg-surface px-4 py-3 ring-1 ring-white/10 outline-none focus:ring-accent";

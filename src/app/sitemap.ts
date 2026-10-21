@@ -21,6 +21,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     { url: base },
     ...dirs.map((url) => ({ url })),
+    { url: `${base}/directory` },
+    { url: `${base}/pink` },
+    { url: `${base}/join` },
     { url: `${base}/search` },
     { url: `${base}/trails` },
     { url: `${base}/tools` },
