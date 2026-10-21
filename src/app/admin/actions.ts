@@ -242,3 +242,16 @@ export async function clearWomenAccess(orgId: string): Promise<void> {
   revalidatePath("/admin", "layout");
   revalidatePath("/");
 }
+
+export async function removeEquipment(id: string): Promise<void> {
+  const { supabase } = await requireAdmin();
+  await supabase.from("equipment_listings").update({ status: "removed" }).eq("id", id);
+  revalidatePath("/admin/market");
+  revalidatePath("/market");
+}
+
+export async function clearEquipmentReports(listingId: string): Promise<void> {
+  const { supabase } = await requireAdmin();
+  await supabase.from("equipment_reports").delete().eq("listing_id", listingId);
+  revalidatePath("/admin/market");
+}

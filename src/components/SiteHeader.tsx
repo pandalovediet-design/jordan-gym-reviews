@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { InstallButton } from "@/components/InstallButton";
 
 export function SiteHeader() {
   return (
@@ -14,11 +15,14 @@ export function SiteHeader() {
           <Link href="/pink" className="text-pink-300 hover:text-pink-200">💗 Pink Zone</Link>
           <Link href="/now" className="hover:text-foreground">⏱️ هسا</Link>
           <Link href="/awards" className="hover:text-foreground">🏆 نادي الشهر</Link>
+          <Link href="/deals" className="hover:text-foreground">🎟️ أكواد خصم</Link>
+          <Link href="/market" className="hover:text-foreground">🔄 سوق المعدات</Link>
           <Link href="/trails" className="hover:text-foreground">المسارات</Link>
           <Link href="/tools" className="hover:text-foreground">الحاسبة</Link>
           <Link href="/favorites" className="hover:text-foreground">❤️ المفضلة</Link>
           <Link href="/join" className="hover:text-foreground">سجّل نشاطك</Link>
           <Link href="/login" className="hover:text-foreground">دخول الأنشطة</Link>
+          <InstallButton />
         </nav>
       </div>
     </header>
@@ -29,7 +33,7 @@ export function SiteFooter() {
   return (
     <footer className="print:hidden mt-16 border-t border-white/10 py-8 text-center text-sm text-muted">
       <p>Jordan Gym Reviews — دليل الرياضة في الأردن</p>
-      <p className="mt-2 flex justify-center gap-4"><Link href="/directory" className="hover:text-foreground">الدليل</Link><Link href="/guides" className="hover:text-foreground">أدلة</Link><Link href="/pink" className="hover:text-foreground">Pink Zone</Link><Link href="/join" className="hover:text-foreground">سجّل نشاطك</Link><Link href="/terms" className="hover:text-foreground">الشروط</Link><Link href="/privacy" className="hover:text-foreground">الخصوصية</Link></p>
+      <p className="mt-2 flex justify-center gap-4"><Link href="/directory" className="hover:text-foreground">الدليل</Link><Link href="/guides" className="hover:text-foreground">أدلة</Link><Link href="/pink" className="hover:text-foreground">Pink Zone</Link><Link href="/join" className="hover:text-foreground">سجّل نشاطك</Link><Link href="/sponsors" className="hover:text-foreground">للرعاة</Link><Link href="/terms" className="hover:text-foreground">الشروط</Link><Link href="/privacy" className="hover:text-foreground">الخصوصية</Link></p>
     </footer>
   );
 }

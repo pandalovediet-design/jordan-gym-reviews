@@ -971,3 +971,52 @@ test("nutritionist can partner with several gyms", async () => {
     assert.equal((await db.query(`select * from public.get_coach_gyms($1)`, [nut])).rows.length, 2);
   });
 });
+
+test("monetization: codes hide the code, reveals counted; market guards; stats; leads", async () => {
+  const gym = (await db.query(`select id from public.organizations where slug = 'cg-gym'`)).rows[0].id;
+  let codeId;
+  await asAlice(async () => {
+    codeId = (await db.query(`insert into public.offer_codes (organization_id, title_ar, code, reveals) values ($1, 'خصم 15%', 'JGR15', 99) returning id`, [gym])).rows[0].id;
+    assert.equal((await db.query(`select reveals from public.offer_codes where id = $1`, [codeId])).rows[0].reveals, 0);
+    await rejects(() => db.query(`insert into public.offer_codes (organization_id, title_ar, code) values ($1, 'سيء', 'bad code!')`, [gym]));
+  });
+  await asBob(async () => {
+    assert.equal((await db.query(`select id from public.offer_codes`)).rows.length, 0);
+  });
+  await asAnon(async () => {
+    const list = (await db.query(`select * from public.list_public_codes()`)).rows;
+    assert.equal(list.length, 1);
+    assert.equal(Object.keys(list[0]).includes("code"), false);
+    assert.equal((await db.query(`select public.reveal_offer_code($1) as c`, [codeId])).rows[0].c, "JGR15");
+    assert.equal((await db.query(`select code from public.offer_codes`).catch(() => ({ rows: [] }))).rows.length, 0);
+    const s = (await db.query(`select * from public.get_public_stats()`)).rows[0];
+    assert.ok(Number(s.orgs) >= 1);
+    assert.equal((await db.query(`select public.submit_sponsor_lead('شركة', 'ش', '+962790000000', 'راعي', 'اهلا') as ok`)).rows[0].ok, true);
+    assert.equal((await db.query(`select * from public.sponsor_leads`).catch(() => ({ rows: [] }))).rows.length, 0);
+  });
+  await asAlice(async () => {
+    assert.equal(Number((await db.query(`select reveals from public.offer_codes where id = $1`, [codeId])).rows[0].reveals), 1);
+    const id = (await db.query(`insert into public.equipment_listings (organization_id, title_ar, condition, kind, price_jod) values ($1, 'جهاز جري', 'used', 'sale', 250) returning id`, [gym])).rows[0].id;
+    await rejects(() => db.query(`insert into public.equipment_listings (organization_id, title_ar, condition, kind) values ($1, 'بدون سعر', 'used', 'sale')`, [gym]));
+    await db.query(`insert into public.equipment_listings (organization_id, title_ar, condition, kind, swap_for) values ($1, 'بدلة', 'like_new', 'swap', 'بار أولمبي')`, [gym]);
+    await rejects(() => db.query(`update public.equipment_listings set status = 'removed' where id = $1`, [id]), /only the platform/);
+    await db.query(`update public.equipment_listings set expires_at = now() + interval '400 days' where id = $1`, [id]);
+    assert.ok(new Date((await db.query(`select expires_at from public.equipment_listings where id = $1`, [id])).rows[0].expires_at) < new Date(Date.now() + 31 * 86400000));
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select id from public.equipment_listings`)).rows.length, 2);
+    const id = (await db.query(`select id from public.equipment_listings limit 1`)).rows[0].id;
+    assert.equal((await db.query(`select public.report_equipment($1, 'مشبوه') as ok`, [id])).rows[0].ok, true);
+  });
+  await asAdmin(async () => {
+    await db.query(`update public.equipment_listings set status = 'removed' where title_ar = 'بدلة'`);
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select id from public.equipment_listings`)).rows.length, 1);
+  });
+  // a store / non-published org cannot list; facility ok
+  const draft = (await db.query(`select id from public.organizations where slug = 'nutri-test'`)).rows[0].id;
+  await asAlice(async () => {
+    await rejects(() => db.query(`insert into public.equipment_listings (organization_id, title_ar, condition, kind, price_jod) values ($1, 'غلط', 'used', 'sale', 5)`, [draft]));
+  });
+});

@@ -603,3 +603,93 @@ export async function clearSlotsDay(id: string, date: string): Promise<void> {
   await supabase.from("facility_slots").delete().eq("organization_id", id).eq("slot_date", date);
   revalidatePath(`/dashboard/${id}`);
 }
+
+// ───────── discount codes + equipment market ─────────
+
+const codeSchema = z.object({
+  title_ar: z.string().trim().min(2, "اكتب عنوان العرض").max(80),
+  code: z.string().trim().min(2, "الكود قصير").max(30).regex(/^[A-Za-z0-9_-]+$/, "الكود أحرف إنجليزية وأرقام فقط"),
+  details_ar: opt(200),
+  ends_at: z.string().optional().transform((v) => (v ? v : null)),
+});
+
+export async function addOfferCode(id: string, _: FormState, fd: FormData): Promise<FormState> {
+  const p = codeSchema.safeParse(Object.fromEntries(fd));
+  if (!p.success) return { error: p.error.issues[0].message };
+  const ends = p.data.ends_at ? new Date(`${p.data.ends_at}T23:59:59+03:00`) : null;
+  if (ends && Number.isNaN(ends.getTime())) return { error: "تاريخ غير صحيح" };
+  const { supabase } = await requireUser();
+  const { error } = await supabase.from("offer_codes").insert({ ...p.data, ends_at: ends ? ends.toISOString() : null, organization_id: id });
+  if (error) return { error: error.message.includes("max") || error.message.includes("many") ? "وصلت الحد الأقصى من الأكواد (10)." : "تعذّرت الإضافة" };
+  revalidatePath(`/dashboard/${id}/growth`);
+  revalidatePath("/deals");
+  return { ok: "تمت إضافة الكود" };
+}
+
+export async function setOfferCodeActive(id: string, codeId: string, active: boolean): Promise<void> {
+  const { supabase } = await requireUser();
+  await supabase.from("offer_codes").update({ is_active: active }).eq("id", codeId).eq("organization_id", id);
+  revalidatePath(`/dashboard/${id}/growth`);
+  revalidatePath("/deals");
+}
+
+export async function deleteOfferCode(id: string, codeId: string): Promise<void> {
+  const { supabase } = await requireUser();
+  await supabase.from("offer_codes").delete().eq("id", codeId).eq("organization_id", id);
+  revalidatePath(`/dashboard/${id}/growth`);
+  revalidatePath("/deals");
+}
+
+const equipSchema = z.object({
+  title_ar: z.string().trim().min(3, "اكتب اسم الجهاز (3 أحرف على الأقل)").max(80),
+  description_ar: opt(600),
+  condition: z.enum(["new", "like_new", "used"]),
+  kind: z.enum(["sale", "swap"]),
+  price_jod: z.string().optional().transform((v) => (v ? Number(v) : null)).pipe(z.number().min(0).max(1000000).nullable()),
+  swap_for: opt(120),
+});
+
+export async function addEquipment(id: string, _: FormState, fd: FormData): Promise<FormState> {
+  const { image, ...rest } = Object.fromEntries(fd);
+  const p = equipSchema.safeParse(rest);
+  if (!p.success) return { error: p.error.issues[0].message };
+  if (p.data.kind === "sale" && p.data.price_jod == null) return { error: "اكتب السعر للبيع" };
+  const { supabase } = await requireUser();
+  let image_path: string | null = null;
+  if (image instanceof File && image.size > 0) {
+    const up = await uploadImage(supabase, id, image);
+    if (up.error) return { error: up.error };
+    image_path = up.path!;
+  }
+  const { error } = await supabase.from("equipment_listings").insert({
+    ...p.data, price_jod: p.data.kind === "sale" ? p.data.price_jod : null, swap_for: p.data.kind === "swap" ? p.data.swap_for : null,
+    organization_id: id, image_path,
+  });
+  if (error) {
+    if (image_path) await supabase.storage.from("org-media").remove([image_path]);
+    return { error: error.message.includes("published") ? "النشاط لازم يكون منشور أول." : error.message.includes("many") ? "وصلت الحد الأقصى (20 إعلان فعّال)." : "تعذّرت الإضافة (السوق للنوادي والملاعب والمتاجر)." };
+  }
+  revalidatePath(`/dashboard/${id}/growth`);
+  revalidatePath("/market");
+  return { ok: "تم نشر الإعلان لمدة 30 يوم" };
+}
+
+export async function setEquipmentStatus(id: string, listingId: string, status: "active" | "sold"): Promise<void> {
+  const { supabase } = await requireUser();
+  const patch = status === "active"
+    ? { status, expires_at: new Date(Date.now() + 30 * 86_400_000).toISOString() }
+    : { status };
+  await supabase.from("equipment_listings").update(patch).eq("id", listingId).eq("organization_id", id);
+  revalidatePath(`/dashboard/${id}/growth`);
+  revalidatePath("/market");
+}
+
+export async function deleteEquipment(id: string, listingId: string): Promise<void> {
+  const { supabase } = await requireUser();
+  const { data: old } = await supabase.from("equipment_listings").select("image_path,status").eq("id", listingId).eq("organization_id", id).maybeSingle();
+  if (!old || old.status === "removed") return;
+  await supabase.from("equipment_listings").delete().eq("id", listingId).eq("organization_id", id);
+  if (old.image_path) await supabase.storage.from("org-media").remove([old.image_path]);
+  revalidatePath(`/dashboard/${id}/growth`);
+  revalidatePath("/market");
+}

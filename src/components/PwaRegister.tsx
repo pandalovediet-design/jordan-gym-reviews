@@ -16,14 +16,16 @@ export function PwaRegister() {
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       (navigator as unknown as { standalone?: boolean }).standalone === true;
+    const stash = (e: Event) => { e.preventDefault(); (window as unknown as { __pwaEvt?: Event }).__pwaEvt = e; window.dispatchEvent(new Event("pwa-ready")); };
+    window.addEventListener("beforeinstallprompt", stash);
     let dismissed = false;
     try { dismissed = localStorage.getItem("pwa-dismissed") === "1"; } catch {}
-    if (standalone || dismissed) return;
+    if (standalone || dismissed) return () => window.removeEventListener("beforeinstallprompt", stash);
     const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
     const onPrompt = (e: Event) => { e.preventDefault(); setEvt(e as InstallEvent); setHidden(false); };
     window.addEventListener("beforeinstallprompt", onPrompt);
     if (isIos) queueMicrotask(() => { setIos(true); setHidden(false); });
-    return () => window.removeEventListener("beforeinstallprompt", onPrompt);
+    return () => { window.removeEventListener("beforeinstallprompt", onPrompt); window.removeEventListener("beforeinstallprompt", stash); };
   }, []);
 
   if (hidden || (!evt && !ios)) return null;

@@ -756,6 +756,54 @@ export type Database = {
         }
         Relationships: []
       }
+      sponsor_leads: {
+        Row: { company: string | null; created_at: string; id: string; message: string | null; name: string; package: string | null; phone: string }
+        Insert: { company?: string | null; created_at?: string; id?: string; message?: string | null; name: string; package?: string | null; phone: string }
+        Update: { company?: string | null; created_at?: string; id?: string; message?: string | null; name?: string; package?: string | null; phone?: string }
+        Relationships: []
+      }
+      offer_codes: {
+        Row: { code: string; created_at: string; details_ar: string | null; ends_at: string | null; id: string; is_active: boolean; organization_id: string; reveals: number; title_ar: string }
+        Insert: { code: string; created_at?: string; details_ar?: string | null; ends_at?: string | null; id?: string; is_active?: boolean; organization_id: string; reveals?: number; title_ar: string }
+        Update: { code?: string; created_at?: string; details_ar?: string | null; ends_at?: string | null; id?: string; is_active?: boolean; organization_id?: string; reveals?: number; title_ar?: string }
+        Relationships: [
+          {
+            foreignKeyName: "offer_codes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_listings: {
+        Row: { condition: string; created_at: string; description_ar: string | null; expires_at: string; id: string; image_path: string | null; kind: string; organization_id: string; price_jod: number | null; status: string; swap_for: string | null; title_ar: string; updated_at: string }
+        Insert: { condition: string; created_at?: string; description_ar?: string | null; expires_at?: string; id?: string; image_path?: string | null; kind: string; organization_id: string; price_jod?: number | null; status?: string; swap_for?: string | null; title_ar: string; updated_at?: string }
+        Update: { condition?: string; created_at?: string; description_ar?: string | null; expires_at?: string; id?: string; image_path?: string | null; kind?: string; organization_id?: string; price_jod?: number | null; status?: string; swap_for?: string | null; title_ar?: string; updated_at?: string }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_listings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_reports: {
+        Row: { created_at: string; id: string; listing_id: string; reason: string | null }
+        Insert: { created_at?: string; id?: string; listing_id: string; reason?: string | null }
+        Update: { created_at?: string; id?: string; listing_id?: string; reason?: string | null }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_votes: {
         Row: { category: string; created_at: string; id: string; nominee_org_id: string; vote_month: string; voter_id: string }
         Insert: { category: string; created_at?: string; id?: string; nominee_org_id: string; vote_month?: string; voter_id?: string }
@@ -1395,6 +1443,26 @@ export type Database = {
       get_member_by_token: {
         Args: { p_token: string }
         Returns: { coach_note: string | null; days_left: number; ends_on: string; member_name: string; org_name: string; org_slug: string; org_whatsapp: string | null; plan_name: string | null; starts_on: string }[]
+      }
+      get_public_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: { cities: number; inquiries_30d: number; orgs: number; phone_30d: number; views_30d: number; whatsapp_30d: number }[]
+      }
+      submit_sponsor_lead: {
+        Args: { p_company: string; p_message: string; p_name: string; p_package: string; p_phone: string }
+        Returns: boolean
+      }
+      list_public_codes: {
+        Args: { p_org?: string }
+        Returns: { details_ar: string | null; ends_at: string | null; id: string; org_city: string; org_name: string; org_slug: string; reveals: number; title_ar: string }[]
+      }
+      reveal_offer_code: {
+        Args: { p_id: string }
+        Returns: string
+      }
+      report_equipment: {
+        Args: { p_id: string; p_reason: string }
+        Returns: boolean
       }
       get_member_streak: {
         Args: { p_token: string }

@@ -116,3 +116,7 @@ export const ammanMonthStart = (offsetMonths = 0) => {
   d.setUTCMonth(d.getUTCMonth() + offsetMonths);
   return d.toISOString().slice(0, 10);
 };
+
+export const EQUIP_COND: Record<string, string> = { new: "جديد", like_new: "كالجديد", used: "مستعمل" };
+
+export const isPast = (iso: string) => new Date(iso).getTime() < Date.now();

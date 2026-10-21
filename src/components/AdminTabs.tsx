@@ -13,6 +13,8 @@ const TABS = [
   { href: "/admin/flash", label: "الفلاش" },
   { href: "/admin/partners", label: "الشركاء" },
   { href: "/admin/trails", label: "المسارات" },
+  { href: "/admin/leads", label: "الرعاة" },
+  { href: "/admin/market", label: "السوق" },
 ];
 
 export function AdminTabs() {
