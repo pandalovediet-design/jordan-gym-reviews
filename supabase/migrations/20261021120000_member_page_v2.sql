@@ -2,8 +2,8 @@
 
 alter table public.org_members add column coach_note text check (char_length(coach_note) <= 500);
 
-drop function public.get_member_by_token(uuid);
-create function public.get_member_by_token(p_token uuid)
+-- New function (the old get_member_by_token stays untouched); this one also returns the coach note.
+create function public.get_member_page(p_token uuid)
 returns table (member_name text, org_name text, org_slug text, org_whatsapp text, plan_name text, starts_on date, ends_on date, days_left integer, coach_note text)
 language sql stable security definer set search_path = '' as $$
   select m.full_name, o.name_ar, o.slug, o.whatsapp, p.name_ar, m.starts_on, m.ends_on,
@@ -13,8 +13,8 @@ language sql stable security definer set search_path = '' as $$
   left join public.membership_plans p on p.id = m.plan_id and p.organization_id = m.organization_id
   where m.access_token = p_token and o.status = 'published'
 $$;
-revoke execute on function public.get_member_by_token(uuid) from public;
-grant execute on function public.get_member_by_token(uuid) to anon, authenticated;
+revoke execute on function public.get_member_page(uuid) from public;
+grant execute on function public.get_member_page(uuid) to anon, authenticated;
 
 -- Last 10 visits (newest first) plus this month's visit count, repeated on each row.
 create function public.get_member_attendance(p_token uuid)

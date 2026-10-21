@@ -797,7 +797,7 @@ test("member page v2: coach note and own attendance by token only", async () => 
     assert.equal((await db.query(`select coach_note from public.org_members`)).rows.length, 0);
   });
   await asAnon(async () => {
-    const r = (await db.query(`select coach_note from public.get_member_by_token($1)`, [m.access_token])).rows[0];
+    const r = (await db.query(`select coach_note from public.get_member_page($1)`, [m.access_token])).rows[0];
     assert.equal(r.coach_note, 'ممتاز، كمّل');
     const a = (await db.query(`select * from public.get_member_attendance($1)`, [m.access_token])).rows;
     assert.ok(a.length >= 1 && a.length <= 10);

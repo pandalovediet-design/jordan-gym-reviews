@@ -20,7 +20,7 @@ export default async function MemberPage({ params }: PageProps<"/me/[token]">) {
   if (!/^[0-9a-f-]{36}$/i.test(token)) notFound();
   const db = createPublicClient();
   const [{ data }, { data: programs }, { data: visits }] = await Promise.all([
-    db.rpc("get_member_by_token", { p_token: token }),
+    db.rpc("get_member_page", { p_token: token }),
     db.rpc("get_member_programs", { p_token: token }),
     db.rpc("get_member_attendance", { p_token: token }),
   ]);

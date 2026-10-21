@@ -1343,6 +1343,10 @@ export type Database = {
         Args: { p_token: string }
         Returns: { coach_note: string | null; days_left: number; ends_on: string; member_name: string; org_name: string; org_slug: string; org_whatsapp: string | null; plan_name: string | null; starts_on: string }[]
       }
+      get_member_page: {
+        Args: { p_token: string }
+        Returns: { coach_note: string | null; days_left: number; ends_on: string; member_name: string; org_name: string; org_slug: string; org_whatsapp: string | null; plan_name: string | null; starts_on: string }[]
+      }
       get_member_attendance: {
         Args: { p_token: string }
         Returns: { checked_in_at: string; month_count: number }[]
