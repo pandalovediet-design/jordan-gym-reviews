@@ -38,6 +38,17 @@ export function Calculator() {
           ))}
         </div>
       ) : <p className="text-sm text-red-300">تأكد من الأرقام المدخلة.</p>}
+      {valid && (
+        <div className="rounded-2xl bg-accent/10 p-5 ring-1 ring-accent/30">
+          <p className="font-bold">بدك تحقق هدفك ({goal === "300" ? "زيادة عضل" : goal === "-500" ? "تنزيل وزن" : "تثبيت"}) بمتابعة مختص؟</p>
+          <div className="mt-3 flex flex-wrap gap-3 text-sm">
+            <a href="/search?type=nutritionist" className="rounded-xl bg-accent px-4 py-2 font-bold text-accent-foreground">أخصائي تغذية</a>
+            <a href="/search?type=independent_coach" className="rounded-xl bg-surface px-4 py-2 ring-1 ring-white/10">مدرب شخصي</a>
+            <a href="/search?type=healthy_food" className="rounded-xl bg-surface px-4 py-2 ring-1 ring-white/10">وجبات صحية جاهزة</a>
+            <a href="/now" className="rounded-xl bg-surface px-4 py-2 ring-1 ring-white/10">نادي مفتوح قريب مني</a>
+          </div>
+        </div>
+      )}
       <p className="text-xs text-muted">تقدير تقريبي (معادلة Mifflin-St Jeor) وليس نصيحة طبية. للحالات الخاصة راجع أخصائي تغذية.</p>
     </div>
   );

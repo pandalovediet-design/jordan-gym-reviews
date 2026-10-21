@@ -5,6 +5,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import { dateAr, waNumber } from "@/lib/format";
 import { siteUrl } from "@/lib/site";
 import { SectionPrintButton as PrintButton } from "@/components/SectionPrintButton";
+import { ShareButton } from "@/components/ShareButton";
 
 export const dynamic = "force-dynamic";
 
@@ -19,11 +20,12 @@ export default async function MemberPage({ params }: PageProps<"/me/[token]">) {
   const { token } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(token)) notFound();
   const db = createPublicClient();
-  const [{ data }, { data: programs }, { data: visits }, { data: files }] = await Promise.all([
+  const [{ data }, { data: programs }, { data: visits }, { data: files }, { data: streakRows }] = await Promise.all([
     db.rpc("get_member_page", { p_token: token }),
     db.rpc("get_member_programs", { p_token: token }),
     db.rpc("get_member_attendance", { p_token: token }),
     db.rpc("get_member_files", { p_token: token }),
+    db.rpc("get_member_streak", { p_token: token }),
   ]);
   const m = data?.[0];
   if (!m) notFound();
@@ -34,6 +36,14 @@ export default async function MemberPage({ params }: PageProps<"/me/[token]">) {
   const workout = (programs ?? []).filter((p) => p.kind === "workout");
   const nutrition = (programs ?? []).filter((p) => p.kind === "nutrition");
   const monthCount = Number(visits?.[0]?.month_count ?? 0);
+  const total = Number(streakRows?.[0]?.total_visits ?? 0);
+  const streak = Number(streakRows?.[0]?.streak_weeks ?? 0);
+  const best = Number(streakRows?.[0]?.best_weeks ?? 0);
+  const badges = [
+    [total >= 1, "🥇", "أول زيارة"], [total >= 10, "🔟", "10 زيارات"], [total >= 30, "💪", "30 زيارة"], [total >= 100, "🏆", "100 زيارة"],
+    [best >= 2, "🔥", "أسبوعين متواصلين"], [best >= 4, "⚡", "شهر التزام"], [best >= 8, "👑", "8 أسابيع التزام"],
+  ] as const;
+  const earned = badges.filter((b) => b[0]);
   const box = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
   const tile = "rounded-2xl bg-surface p-4 text-center ring-1 ring-white/10";
   const program = (kindLabel: string, icon: string, list: typeof workout, id: string) => (
@@ -68,6 +78,19 @@ export default async function MemberPage({ params }: PageProps<"/me/[token]">) {
         <div className={tile}><p className="text-2xl font-extrabold text-accent">{monthCount}</p><p className="text-xs text-muted">حضور هالشهر</p></div>
         <div className={tile}><p className="text-sm font-bold text-accent">{visits?.[0] ? new Intl.DateTimeFormat("ar-JO", { timeZone: "Asia/Amman", day: "numeric", month: "short" }).format(new Date(visits[0].checked_in_at)) : "—"}</p><p className="mt-1 text-xs text-muted">آخر زيارة</p></div>
       </div>
+
+      <section data-sec className={box}>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-bold">🔥 سلسلة التزامي</h2>
+            <p className="text-sm text-muted">{streak > 0 ? `${streak} ${streak === 1 ? "أسبوع" : "أسابيع"} متواصلة` : "ابدأ سلسلتك: زيارتين بالأسبوع"} · أفضل سلسلة {best}</p>
+          </div>
+          {earned.length > 0 && <ShareButton url={`https://jordan-gym-reviews.vercel.app`} text={`🔥 ${total} زيارة وسلسلة التزام ${streak} أسابيع في ${m.org_name}! ${earned.map((b) => b[1]).join("")}`} />}
+        </div>
+        <ul className="mt-3 flex flex-wrap gap-2 text-sm">
+          {badges.map(([ok, icon, label]) => <li key={label} className={`rounded-full px-3 py-1 ring-1 ${ok ? "bg-accent/15 text-accent ring-accent/40" : "bg-background/40 text-muted opacity-50 ring-white/10"}`}>{icon} {label}</li>)}
+        </ul>
+      </section>
 
       <section id="sec-qr" data-sec className={`${box} text-center`}>
         <div className="mb-3 flex items-center justify-between gap-2">

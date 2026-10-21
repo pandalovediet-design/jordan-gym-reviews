@@ -108,3 +108,11 @@ export const dayLabelAr = (isoDate: string) => {
   const d = new Date(`${isoDate}T12:00:00Z`);
   return `${WEEKDAYS[d.getUTCDay()]} ${isoDate.slice(5).replace("-", "/")}`;
 };
+
+/** First day (YYYY-MM-DD) of the month in Jordan time, `offsetMonths` from the current one. */
+export const ammanMonthStart = (offsetMonths = 0) => {
+  const d = new Date(Date.now() + 3 * 3_600_000);
+  d.setUTCDate(1);
+  d.setUTCMonth(d.getUTCMonth() + offsetMonths);
+  return d.toISOString().slice(0, 10);
+};

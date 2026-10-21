@@ -129,6 +129,10 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             <input name="maps_url" defaultValue={org.maps_url ?? ""} dir="ltr" placeholder="https://maps.app.goo.gl/..." className={field} />
             <span className="block text-xs">افتح قوقل ماب، دوّر على مكانك، اضغط «مشاركة» ثم «نسخ الرابط» والصقه هون. بنستعمله للعنوان وللمسافة بميزة «قريب مني».</span>
           </label>
+          <label className={lbl}>🎬 فيديو جولة (اختياري)
+            <input name="video_url" defaultValue={org.video_url ?? ""} dir="ltr" placeholder="https://www.youtube.com/watch?v=..." className={field} />
+            <span className="block text-xs">رابط فيديو يعرّف بمكانك (يوتيوب بيظهر مدمج بصفحتك، وإنستغرام/تيك توك بيظهر كزر).</span>
+          </label>
           <label className={lbl}>🎟 عرض يوم تجريبي (اختياري)
             <input name="free_trial_note" defaultValue={org.free_trial_note ?? ""} maxLength={120} placeholder="مثال: يوم تجريبي مجاني" className={field} />
             <span className="block text-xs">لو كتبت شي، بيظهر زر «احجز يوم تجريبي» بصفحتك وشارة على بطاقتك، وبيوصل الطلب على واتساب. اتركه فاضي لإخفائه.</span>

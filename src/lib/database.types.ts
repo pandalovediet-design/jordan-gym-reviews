@@ -756,11 +756,25 @@ export type Database = {
         }
         Relationships: []
       }
+      monthly_votes: {
+        Row: { category: string; created_at: string; id: string; nominee_org_id: string; vote_month: string; voter_id: string }
+        Insert: { category: string; created_at?: string; id?: string; nominee_org_id: string; vote_month?: string; voter_id?: string }
+        Update: { category?: string; created_at?: string; id?: string; nominee_org_id?: string; vote_month?: string; voter_id?: string }
+        Relationships: []
+      }
       facility_slots: {
         Row: { created_at: string; ends_at: string; id: string; note: string | null; organization_id: string; slot_date: string; starts_at: string; status: string }
         Insert: { created_at?: string; ends_at: string; id?: string; note?: string | null; organization_id: string; slot_date: string; starts_at: string; status?: string }
         Update: { created_at?: string; ends_at?: string; id?: string; note?: string | null; organization_id?: string; slot_date?: string; starts_at?: string; status?: string }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "facility_slots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       coach_profiles: {
         Row: { certificates: string | null; created_at: string; education: string | null; education_place: string | null; experience_years: number | null; organization_id: string; role_label: string | null; session_mode: string | null; specialties: string | null; updated_at: string }
@@ -944,6 +958,7 @@ export type Database = {
           type: Database["public"]["Enums"]["org_type"]
           updated_at: string
           verified_at: string | null
+          video_url: string | null
           verified_until: string | null
           website: string | null
           whatsapp: string | null
@@ -976,6 +991,7 @@ export type Database = {
           type: Database["public"]["Enums"]["org_type"]
           updated_at?: string
           verified_at?: string | null
+          video_url?: string | null
           verified_until?: string | null
           website?: string | null
           whatsapp?: string | null
@@ -1008,6 +1024,7 @@ export type Database = {
           type?: Database["public"]["Enums"]["org_type"]
           updated_at?: string
           verified_at?: string | null
+          video_url?: string | null
           verified_until?: string | null
           website?: string | null
           whatsapp?: string | null
@@ -1378,6 +1395,14 @@ export type Database = {
       get_member_by_token: {
         Args: { p_token: string }
         Returns: { coach_note: string | null; days_left: number; ends_on: string; member_name: string; org_name: string; org_slug: string; org_whatsapp: string | null; plan_name: string | null; starts_on: string }[]
+      }
+      get_member_streak: {
+        Args: { p_token: string }
+        Returns: { best_weeks: number; streak_weeks: number; total_visits: number }[]
+      }
+      get_vote_results: {
+        Args: { p_category: string; p_month?: string }
+        Returns: { city: string; name_ar: string; slug: string; votes: number }[]
       }
       get_gym_coaches: {
         Args: { p_gym: string }

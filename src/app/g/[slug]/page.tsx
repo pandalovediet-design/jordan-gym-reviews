@@ -269,6 +269,18 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </div>
       )}
 
+      {org.video_url && (() => {
+        const yt = org.video_url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+        return (
+          <Section title="🎬 جولة بالمكان">
+            {yt ? (
+              <div className="aspect-video overflow-hidden rounded-2xl ring-1 ring-white/10">
+                <iframe src={`https://www.youtube-nocookie.com/embed/${yt[1]}`} title={`جولة ${org.name_ar}`} loading="lazy" allowFullScreen className="size-full" />
+              </div>
+            ) : <a href={org.video_url} target="_blank" rel="noopener noreferrer" className="inline-block rounded-xl bg-surface px-5 py-3 font-bold ring-1 ring-white/10 hover:ring-accent">شاهد الفيديو ↗</a>}
+          </Section>
+        );
+      })()}
       {org.type === "nutritionist" && (
         <div className="mt-6 rounded-2xl bg-surface p-4 text-sm ring-1 ring-white/10">
           {org.license_number && <p>الترخيص: <span dir="ltr">{org.license_number}</span>{org.license_authority && ` — ${org.license_authority}`}{!isVerified(org) && <span className="text-muted"> (لم تتم مراجعته بعد)</span>}</p>}

@@ -906,3 +906,40 @@ test("facility slots + product old price", async () => {
     await rejects(() => db.query(`insert into public.facility_slots (organization_id, slot_date, starts_at, ends_at) values ($1, (now() at time zone 'Asia/Amman')::date + 1, '10:00', '11:00')`, [gym]), /facilities only/);
   });
 });
+
+test("monthly votes + member streak", async () => {
+  const gymId = (await db.query(`select id from public.organizations where slug = 'cg-gym'`)).rows[0].id;
+  // BOB's account is brand new -> cannot vote; backdate it
+  await asBob(async () => {
+    await rejects(() => db.query(`insert into public.monthly_votes (category, nominee_org_id) values ('gym', $1)`, [gymId]), /too new/);
+  });
+  await db.exec(`update auth.users set created_at = now() - interval '3 days'`);
+  await asBob(async () => {
+    await db.query(`insert into public.monthly_votes (category, nominee_org_id) values ('gym', $1)`, [gymId]);
+    await rejects(() => db.query(`insert into public.monthly_votes (category, nominee_org_id) values ('gym', $1)`, [gymId])); // one per month
+    await rejects(() => db.query(`insert into public.monthly_votes (category, nominee_org_id) values ('coach', $1)`, [gymId]), /mismatch/);
+  });
+  await asAlice(async () => {
+    await rejects(() => db.query(`insert into public.monthly_votes (category, nominee_org_id) values ('gym', $1)`, [gymId]), /own organization/);
+  });
+  await asAnon(async () => {
+    const r = (await db.query(`select * from public.get_vote_results('gym')`)).rows;
+    assert.equal(r.length, 1);
+    assert.equal(Number(r[0].votes), 1);
+    await rejects(() => db.query(`insert into public.monthly_votes (category, nominee_org_id) values ('gym', $1)`, [gymId]));
+  });
+  // streak: two weeks with 2 visits each
+  const org = (await db.query(`select id from public.organizations where slug = 'nutri-test'`)).rows[0].id;
+  const m = (await db.query(`select id, access_token from public.org_members where organization_id = $1 order by created_at limit 1`, [org])).rows[0];
+  await db.exec(`delete from public.member_checkins where member_id = '${m.id}'`);
+  for (const h of [7 * 24 - 22, 7 * 24 - 46, 14 * 24 - 22, 14 * 24 - 46]) { // two visits in each of the 2 previous weeks (Jordan time)
+    await db.query(`insert into public.member_checkins (organization_id, member_id, checked_in_at)
+      values ($1, $2, (date_trunc('week', now() at time zone 'Asia/Amman') + ($3 || ' hours')::interval) at time zone 'Asia/Amman' - interval '7 days' + interval '0 hours')`, [org, m.id, String(h - 7 * 24 + 7 * 24)]);
+  }
+  await asAnon(async () => {
+    const r = (await db.query(`select * from public.get_member_streak($1)`, [m.access_token])).rows[0];
+    assert.equal(Number(r.total_visits), 4);
+    assert.equal(Number(r.best_weeks), 2);
+    assert.equal(Number(r.streak_weeks), 2);
+  });
+});

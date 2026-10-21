@@ -64,6 +64,7 @@ const profileSchema = z.object({
   women_hours_note: opt(200),
   maps_url: opt(500),
   free_trial_note: opt(120),
+  video_url: opt(300),
   delivery_areas: opt(300),
   license_number: opt(60),
   license_authority: opt(120),
@@ -75,6 +76,7 @@ export async function updateProfile(id: string, _: FormState, fd: FormData): Pro
   const { supabase } = await requireUser();
   const data = { ...p.data, phone: intl(p.data.phone), whatsapp: intl(p.data.whatsapp), instagram: p.data.instagram?.replace(/^@/, "") ?? null };
   if (data.maps_url && !/^https:\/\/(maps\.app\.goo\.gl\/|goo\.gl\/maps\/|(www\.|maps\.)?google\.[a-z.]+\/maps)/i.test(data.maps_url)) return { error: "رابط الموقع لازم يكون من قوقل ماب (maps.app.goo.gl أو google.com/maps)." };
+  if (data.video_url && !/^https:\/\/(www\.)?(youtube\.com|youtu\.be|instagram\.com|tiktok\.com)\//i.test(data.video_url)) return { error: "رابط الفيديو لازم يكون من يوتيوب أو إنستغرام أو تيك توك (يبدأ بـ https://)." };
   if (data.women_access !== "women_hours") data.women_hours_note = null;
   const extra = fd.has("delivery_present") ? { delivery_modes: fd.getAll("delivery_modes").map(String).filter((m) => ["own_delivery", "apps", "pickup"].includes(m)) } : {};
   const coords = data.maps_url ? await resolveMapsCoords(data.maps_url) : null;
