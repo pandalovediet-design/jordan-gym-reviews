@@ -840,3 +840,44 @@ test("member files: staff only, 10 per member, member sees the list and a file p
     assert.equal((await db.query(`select id from public.member_files`).catch(() => ({ rows: [] }))).rows.length, 0);
   });
 });
+
+test("coach-gym links: complete profile required, gym approves, either side removes, public sees approved only", async () => {
+  const gym = (await db.query(`insert into public.organizations (type, slug, name_ar, created_by, status) values ('gym', 'cg-gym', 'نادي الربط', $1, 'published') returning id`, [ALICE])).rows[0].id;
+  const coach = (await db.query(`insert into public.organizations (type, slug, name_ar, created_by, status) values ('independent_coach', 'cg-coach', 'كابتن ربط', $1, 'published') returning id`, [BOB])).rows[0].id;
+  let linkId;
+  await asBob(async () => {
+    // no profile yet -> refused
+    await rejects(() => db.query(`insert into public.coach_gym_links (gym_org_id, coach_org_id) values ($1, $2)`, [gym, coach]), /incomplete/);
+    await db.query(`insert into public.coach_profiles (organization_id, role_label, experience_years, education, education_place, specialties) values ($1, 'مدرب لياقة', 5, 'بكالوريوس تربية رياضية', 'الجامعة الأردنية', 'لياقة، تضخيم')`, [coach]);
+    // still no photo
+    await rejects(() => db.query(`insert into public.coach_gym_links (gym_org_id, coach_org_id) values ($1, $2)`, [gym, coach]), /incomplete/);
+  });
+  await db.query(`insert into public.organization_media (organization_id, storage_path) values ($1, $2)`, [coach, `${coach}/p.jpg`]);
+  await asBob(async () => {
+    // tries to self-approve on insert: forced back to pending
+    linkId = (await db.query(`insert into public.coach_gym_links (gym_org_id, coach_org_id, status) values ($1, $2, 'approved') returning id, status`, [gym, coach])).rows[0].id;
+    assert.equal((await db.query(`select status from public.coach_gym_links where id = $1`, [linkId])).rows[0].status, "pending");
+    // coach cannot approve
+    await db.query(`update public.coach_gym_links set status = 'approved' where id = $1`, [linkId]).catch(() => {});
+    assert.equal((await db.query(`select status from public.coach_gym_links where id = $1`, [linkId])).rows[0].status, "pending");
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select * from public.get_gym_coaches($1)`, [gym])).rows.length, 0);
+  });
+  await asAlice(async () => {
+    assert.equal((await db.query(`select * from public.list_gym_coach_links($1)`, [gym])).rows.length, 1);
+    await db.query(`update public.coach_gym_links set status = 'approved' where id = $1`, [linkId]);
+  });
+  await asAnon(async () => {
+    const r = (await db.query(`select * from public.get_gym_coaches($1)`, [gym])).rows;
+    assert.equal(r.length, 1);
+    assert.equal(r[0].coach_slug, "cg-coach");
+    assert.equal(r[0].photo_path, `${coach}/p.jpg`);
+    assert.equal((await db.query(`select * from public.get_coach_gyms($1)`, [coach])).rows[0].gym_slug, "cg-gym");
+    await rejects(() => db.query(`select * from public.list_gym_coach_links($1)`, [gym]));
+  });
+  await asBob(async () => {
+    await db.query(`delete from public.coach_gym_links where id = $1`, [linkId]);
+    assert.equal((await db.query(`select * from public.list_coach_gym_links($1)`, [coach])).rows.length, 0);
+  });
+});

@@ -1,7 +1,7 @@
 import { createPublicClient } from "@/lib/supabase/public";
 import { asGlow, cleanQuery } from "@/lib/format";
 import { distanceKm } from "@/lib/maps";
-import type { Enums, Tables } from "@/lib/database.types";
+import type { Database, Enums, Tables } from "@/lib/database.types";
 
 export const PAGE_SIZE = 12;
 const ORG_TYPES = ["gym", "independent_coach", "sports_facility", "store", "nutritionist", "healthy_food", "sports_health"] as const;
@@ -135,7 +135,7 @@ export async function getOrgBySlug(slug: string) {
     .from("organizations").select("*").eq("slug", slug).eq("status", "published").maybeSingle();
   if (!org) return null;
   const now = new Date().toISOString();
-  const [hours, services, media, offers, products, classes, branches, trainers, promo, menu] = await Promise.all([
+  const [hours, services, media, offers, products, classes, branches, trainers, promo, menu, coaches, coachGyms] = await Promise.all([
     db.from("organization_hours").select("*").eq("organization_id", org.id).order("weekday"),
     db.from("organization_services").select("*").eq("organization_id", org.id).eq("is_active", true).order("sort_order"),
     db.from("organization_media").select("*").eq("organization_id", org.id).order("sort_order"),
@@ -150,9 +150,17 @@ export async function getOrgBySlug(slug: string) {
     org.type === "healthy_food"
       ? db.from("menu_items").select("*").eq("organization_id", org.id).order("sort_order").order("created_at")
       : Promise.resolve({ data: [] }),
+    org.type === "gym" ? db.rpc("get_gym_coaches", { p_gym: org.id }) : Promise.resolve({ data: [] }),
+    org.type === "independent_coach" ? db.rpc("get_coach_gyms", { p_coach: org.id }) : Promise.resolve({ data: [] }),
   ]);
+  const coachProfile = org.type === "independent_coach"
+    ? (await db.from("coach_profiles").select("*").eq("organization_id", org.id).maybeSingle()).data
+    : null;
   return {
     org,
+    coaches: (coaches.data ?? []) as Database["public"]["Functions"]["get_gym_coaches"]["Returns"],
+    coachGyms: (coachGyms.data ?? []) as Database["public"]["Functions"]["get_coach_gyms"]["Returns"],
+    coachProfile,
     hours: hours.data ?? [],
     services: services.data ?? [],
     media: media.data ?? [],

@@ -220,6 +220,9 @@ const trainerSchema = z.object({
   title_ar: opt(80),
   bio_ar: opt(1000),
   specialties: opt(200),
+  education: opt(80),
+  education_place: opt(80),
+  is_head: z.string().optional().transform((v) => v === "on"),
   experience_years: z.string().optional().transform((v) => (v ? Number(v) : null)).pipe(z.number().int("سنوات الخبرة رقم صحيح").min(0, "سنوات الخبرة من 0 إلى 60").max(60, "سنوات الخبرة من 0 إلى 60").nullable()),
   branch_id: branchField,
 });
@@ -237,6 +240,7 @@ export async function addTrainer(id: string, _: FormState, fd: FormData): Promis
     if (up.error) return { error: up.error };
     photo_path = up.path!;
   }
+  if (p.data.is_head) await supabase.from("org_trainers").update({ is_head: false }).eq("organization_id", id);
   const { error } = await supabase.from("org_trainers").insert({ ...p.data, organization_id: id, photo_path, sort_order: count ?? 0 });
   if (error) {
     if (photo_path) await supabase.storage.from("org-media").remove([photo_path]);
@@ -497,4 +501,54 @@ export async function setInquiryStatus(id: string, inquiryId: string, status: "s
   const { supabase } = await requireUser();
   await supabase.from("inquiries").update({ status }).eq("id", inquiryId).eq("organization_id", id);
   revalidatePath(`/dashboard/${id}/inquiries`);
+}
+
+export async function setHeadTrainer(id: string, trainerId: string, on: boolean): Promise<void> {
+  const { supabase } = await requireUser();
+  if (on) await supabase.from("org_trainers").update({ is_head: false }).eq("organization_id", id);
+  await supabase.from("org_trainers").update({ is_head: on }).eq("id", trainerId).eq("organization_id", id);
+  revalidatePath(`/dashboard/${id}`);
+}
+
+// ---------------------------------------------------------------- coach profile + gym links
+const coachProfileSchema = z.object({
+  role_label: opt(60),
+  education: z.string().trim().min(2, "اكتب مؤهلك الدراسي").max(80),
+  education_place: opt(80),
+  specialties: z.string().trim().min(2, "اكتب مجالات خبرتك").max(200),
+  experience_years: z.string().min(1, "اكتب سنوات الخبرة").transform(Number).pipe(z.number().int("سنوات الخبرة رقم صحيح").min(0, "سنوات الخبرة من 0 إلى 60").max(60, "سنوات الخبرة من 0 إلى 60")),
+});
+
+export async function saveCoachProfile(id: string, _: FormState, fd: FormData): Promise<FormState> {
+  const p = coachProfileSchema.safeParse(Object.fromEntries(fd));
+  if (!p.success) return { error: p.error.issues[0].message };
+  const { supabase } = await requireUser();
+  const { error } = await supabase.from("coach_profiles").upsert({ organization_id: id, ...p.data });
+  if (error) return { error: "تعذّر حفظ الملف" };
+  revalidatePath(`/dashboard/${id}`);
+  return { ok: "تم حفظ ملفك كمدرب" };
+}
+
+export async function requestJoinGym(id: string, _: FormState, fd: FormData): Promise<FormState> {
+  const q = String(fd.get("gym") ?? "").trim().replace(/[%,()]/g, "");
+  if (q.length < 2) return { error: "اكتب اسم النادي" };
+  const { supabase } = await requireUser();
+  const { data: gyms } = await supabase.from("organizations").select("id,name_ar").eq("type", "gym").eq("status", "published").ilike("name_ar", `%${q}%`).limit(5);
+  if (!gyms?.length) return { error: "ما لقينا نادي بهالاسم (لازم يكون منشور)" };
+  if (gyms.length > 1) return { error: `في ${gyms.length} نوادي قريبة من هالاسم، اكتب الاسم أدق` };
+  const { error } = await supabase.from("coach_gym_links").insert({ gym_org_id: gyms[0].id, coach_org_id: id });
+  if (error) {
+    if (error.code === "23505") return { error: "طلبت الانضمام لهالنادي من قبل" };
+    if (/incomplete/.test(error.message)) return { error: "كمّل ملفك كمدرب (صورة، خبرة، مؤهل، تخصصات) قبل ما تطلب" };
+    return { error: "تعذّر إرسال الطلب" };
+  }
+  revalidatePath(`/dashboard/${id}`);
+  return { ok: `انرسل طلبك لـ ${gyms[0].name_ar}، بانتظار موافقتهم` };
+}
+
+export async function respondCoachLink(orgId: string, linkId: string, approve: boolean): Promise<void> {
+  const { supabase } = await requireUser();
+  if (approve) await supabase.from("coach_gym_links").update({ status: "approved" }).eq("id", linkId).eq("gym_org_id", orgId);
+  else await supabase.from("coach_gym_links").delete().eq("id", linkId).or(`gym_org_id.eq.${orgId},coach_org_id.eq.${orgId}`);
+  revalidatePath(`/dashboard/${orgId}`);
 }

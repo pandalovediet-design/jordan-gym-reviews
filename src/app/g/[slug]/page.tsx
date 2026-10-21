@@ -1,6 +1,7 @@
 import { baseUrl } from "@/lib/base-url";
 import { cache } from "react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/ProductCard";
 import { PageView, TrackedLink } from "@/components/Track";
@@ -80,22 +81,34 @@ function Classes({ items }: { items: Tables<"org_classes">[] }) {
     })}</div>
   );
 }
-function Trainers({ items }: { items: Tables<"org_trainers">[] }) {
+type TrainerCard = {
+  key: string; name: string; role: string | null; years: number | null; education: string | null; place: string | null;
+  specialties: string | null; bio: string | null; photo: string | null; head: boolean; href: string | null;
+};
+const splitTags = (v: string | null) => (v ?? "").split(/[,،]/).map((x) => x.trim()).filter(Boolean).slice(0, 8);
+function Trainers({ items }: { items: TrainerCard[] }) {
   if (!items.length) return null;
   return (
-    <div className="grid gap-3 sm:grid-cols-2">{items.map((t) => (
-      <div key={t.id} className={`${card} flex gap-4`}>
-        {t.photo_path ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={publicMediaUrl(t.photo_path)} alt={t.name_ar} loading="lazy" className="size-20 shrink-0 rounded-full object-cover" />
-        ) : <div className="flex size-20 shrink-0 items-center justify-center rounded-full bg-background/40 text-2xl">🏋️</div>}
-        <div className="min-w-0">
-          <h3 className="font-bold">{t.name_ar}</h3>
-          <p className="text-sm text-accent">{[t.title_ar, t.experience_years != null ? `${t.experience_years} سنة خبرة` : null].filter(Boolean).join(" · ")}</p>
-          {t.specialties && <p className="mt-1 text-xs text-muted">{t.specialties}</p>}
-          {t.bio_ar && <p className="mt-2 whitespace-pre-line text-sm leading-6">{t.bio_ar}</p>}
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{items.map((t) => (
+      <article key={t.key} className={`${card} flex flex-col overflow-hidden !p-0`}>
+        <div className="relative aspect-[4/3] w-full bg-background/40">
+          {t.photo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={publicMediaUrl(t.photo)} alt={t.name} loading="lazy" className="size-full object-cover" />
+          ) : <div className="flex size-full items-center justify-center text-5xl">🏋️</div>}
+          {t.head && <span className="absolute start-3 top-3 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">⭐ المدرب الرئيسي</span>}
         </div>
-      </div>))}</div>
+        <div className="flex flex-1 flex-col gap-2 p-4">
+          {t.role && <span className="w-fit rounded-full bg-accent/15 px-3 py-0.5 text-xs font-bold text-accent">{t.role}</span>}
+          <h3 className="text-lg font-bold">{t.name}</h3>
+          {t.years != null && <p className="text-sm text-muted">🏅 {t.years} سنة خبرة</p>}
+          {(t.education || t.place) && <p className="text-sm text-muted">🎓 {[t.education, t.place].filter(Boolean).join(" — ")}</p>}
+          {splitTags(t.specialties).length > 0 && (
+            <div className="flex flex-wrap gap-1.5">{splitTags(t.specialties).map((x) => <span key={x} className="rounded-full bg-background/50 px-2.5 py-0.5 text-xs ring-1 ring-white/10">{x}</span>)}</div>)}
+          {t.bio && <p className="line-clamp-4 whitespace-pre-line text-sm leading-6">{t.bio}</p>}
+          {t.href && <Link href={t.href} className="mt-auto rounded-xl bg-accent px-4 py-2 text-center text-sm font-bold text-accent-foreground">عرض الملف الشخصي</Link>}
+        </div>
+      </article>))}</div>
   );
 }
 function Menu({ items }: { items: Tables<"menu_items">[] }) {
@@ -133,7 +146,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   const { slug } = await params;
   const d = await load(decodeURIComponent(slug));
   if (!d) notFound();
-  const { org, hours, services, media, offers, products, classes, branches, trainers, glow, menu } = d;
+  const { org, hours, services, media, offers, products, classes, branches, trainers, glow, menu, coaches, coachGyms, coachProfile } = d;
   const mainRow = branches.find((b) => b.is_main);
   const orgMaps = org.maps_url ?? (org.latitude != null && org.longitude != null ? `https://www.google.com/maps?q=${org.latitude},${org.longitude}` : null);
   const views: BV[] = [
@@ -184,8 +197,17 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
     ],
   };
   const showTrainers = org.type === "gym" || org.type === "sports_facility";
+  const trainerCard = (t: Tables<"org_trainers">): TrainerCard => ({
+    key: t.id, name: t.name_ar, role: t.title_ar, years: t.experience_years, education: t.education, place: t.education_place,
+    specialties: t.specialties, bio: t.bio_ar, photo: t.photo_path, head: t.is_head, href: null });
+  const coachCards: TrainerCard[] = coaches.map((c) => ({
+    key: `c-${c.coach_slug}`, name: c.name_ar, role: c.role_label, years: c.experience_years, education: c.education, place: c.education_place,
+    specialties: c.specialties, bio: c.bio_ar, photo: c.photo_path, head: false, href: `/g/${c.coach_slug}` }));
+  const byHead = (xs: TrainerCard[]) => [...xs].sort((a, b) => Number(b.head) - Number(a.head));
+  const allCards = byHead([...trainers.map(trainerCard), ...coachCards]);
   const shared = <T extends { branch_id: string | null }>(xs: T[]) => xs.filter((x) => x.branch_id == null);
   const own = <T extends { branch_id: string | null }>(xs: T[], id: string) => xs.filter((x) => x.branch_id === id);
+  const sharedCards = byHead([...shared(trainers).map(trainerCard), ...coachCards]);
   const womenBanner = (v: BV) => (
     <>
       {v.women_access === "women_only" && <div className="mb-3 rounded-xl bg-pink-500 px-4 py-2 text-center font-bold text-white">💗 {WOMEN_LABEL.women_only} — خاص بالنساء</div>}
@@ -215,6 +237,10 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       <div className={glow ? `glow glow-${glow} rounded-2xl bg-surface p-5` : ""}>
       {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
       <p className="text-sm text-muted">{category ?? ORG_TYPE_LABEL[org.type]}{isVerified(org) && <span className="text-accent"> · ✓ موثّق</span>}{multi && <span> · {views.length} فروع</span>}</p>
+      {coachProfile && (coachProfile.education || coachProfile.experience_years != null) && (
+        <p className="mt-1 text-sm text-muted">{[coachProfile.experience_years != null ? `🏅 ${coachProfile.experience_years} سنة خبرة` : null, coachProfile.education ? `🎓 ${[coachProfile.education, coachProfile.education_place].filter(Boolean).join(" — ")}` : null].filter(Boolean).join("  ·  ")}</p>)}
+      {coachGyms.length > 0 && (
+        <p className="mt-1 text-sm">يتدرب في: {coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
       <h1 className="mt-1 text-3xl font-extrabold">{org.name_ar}</h1>
       {!multi && <p className="mt-1 text-muted">{[org.address, org.area, org.city].filter(Boolean).join("، ")}</p>}
       </div>
@@ -273,7 +299,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
             <section><h2 className="mb-3 text-xl font-bold">ساعات الدوام</h2><Hours items={hours} /></section>
           </div>
           {classes.length > 0 && <Section title="جدول الحصص"><Classes items={classes} /></Section>}
-          {showTrainers && trainers.length > 0 && <Section title="المدربون"><Trainers items={trainers} /></Section>}
+          {showTrainers && allCards.length > 0 && <Section title="المدربون"><Trainers items={allCards} /></Section>}
           {org.type === "store" && <Section title="المنتجات"><Products items={products} /></Section>}
         </>
       ) : (
@@ -287,7 +313,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
               {org.type === "store" && shared(products).length > 0 && <Section title="المنتجات"><Products items={shared(products)} /></Section>}
             </div>
           )}
-          {showTrainers && shared(trainers).length > 0 && <Section title="المدربون"><Trainers items={shared(trainers)} /></Section>}
+          {showTrainers && sharedCards.length > 0 && <Section title="المدربون"><Trainers items={sharedCards} /></Section>}
           {views.map((v) => {
             const o = own(offers, v.id), sv = own(services, v.id), cl = own(classes, v.id), pr = own(products, v.id), tr = own(trainers, v.id);
             return (
@@ -302,7 +328,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
                   <div><h3 className="mb-3 text-lg font-bold">ساعات الدوام</h3><Hours items={hours.filter((h) => h.branch_id === v.id)} /></div>
                 </div>
                 {cl.length > 0 && <Section title="جدول الحصص"><Classes items={cl} /></Section>}
-                {showTrainers && tr.length > 0 && <Section title="مدربو الفرع"><Trainers items={tr} /></Section>}
+                {showTrainers && tr.length > 0 && <Section title="مدربو الفرع"><Trainers items={byHead(tr.map(trainerCard))} /></Section>}
                 {org.type === "store" && pr.length > 0 && <Section title="منتجات الفرع"><Products items={pr} /></Section>}
               </section>
             );

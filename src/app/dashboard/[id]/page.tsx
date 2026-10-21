@@ -7,7 +7,7 @@ import { ActionForm, field } from "@/components/Form";
 import { AVAILABILITY_LABEL, BILLING_LABEL, DELIVERY_LABEL, publicMediaUrl, WEEKDAYS, hhmm, jod } from "@/lib/format";
 import { CityAreaPicker } from "@/components/CityAreaPicker";
 import { missingForPublish, suggestionsFor } from "@/lib/completeness";
-import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setProductAvailability, addMenuItem, deleteMenuItem, setMenuAvailability, setMenuImage, setMainImage } from "../actions";
+import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setHeadTrainer, saveCoachProfile, requestJoinGym, respondCoachLink, setProductAvailability, addMenuItem, deleteMenuItem, setMenuAvailability, setMenuImage, setMainImage } from "../actions";
 
 export const metadata: Metadata = { title: "تعديل النشاط", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -17,7 +17,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
   const { id } = await params;
   if (!UUID.test(id)) notFound();
   const { supabase } = await requireUser();
-  const [{ data: org }, { data: services }, { data: hours }, { data: media }, { data: offers }, { data: products }, { data: cats }, { data: orgCats }, { data: classes }, { data: branches }, { data: trainers }, { data: menu }] = await Promise.all([
+  const [{ data: org }, { data: services }, { data: hours }, { data: media }, { data: offers }, { data: products }, { data: cats }, { data: orgCats }, { data: classes }, { data: branches }, { data: trainers }, { data: menu }, { data: coachProfile }] = await Promise.all([
     supabase.from("organizations").select("*").eq("id", id).maybeSingle(),
     supabase.from("organization_services").select("*").eq("organization_id", id).order("sort_order").order("created_at"),
     supabase.from("organization_hours").select("*").eq("organization_id", id),
@@ -30,8 +30,11 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
     supabase.from("org_branches").select("*").eq("organization_id", id).order("is_main", { ascending: false }).order("sort_order"),
     supabase.from("org_trainers").select("*").eq("organization_id", id).order("sort_order"),
     supabase.from("menu_items").select("*").eq("organization_id", id).order("sort_order").order("created_at"),
+    supabase.from("coach_profiles").select("*").eq("organization_id", id).maybeSingle(),
   ]);
   if (!org) notFound();
+  const gymLinks = org.type === "gym" ? ((await supabase.rpc("list_gym_coach_links", { p_gym: id })).data ?? []) : [];
+  const coachLinks = org.type === "independent_coach" ? ((await supabase.rpc("list_coach_gym_links", { p_coach: id })).data ?? []) : [];
   const missing = org.status === "draft" ? await missingForPublish(supabase, id) : [];
   const mainImage = (media ?? []).find((m) => m.sort_order < 0) ?? null;
   const galleryMedia = (media ?? []).filter((m) => m.sort_order >= 0);
@@ -188,8 +191,9 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={publicMediaUrl(t.photo_path)} alt={t.name_ar} className="size-14 shrink-0 rounded-full object-cover" />
               ) : <div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-background/40 text-xs text-muted">بلا صورة</div>}
-              <div className="flex-1"><p className="font-semibold">{t.name_ar} {bTag(t.branch_id)}</p>
+              <div className="flex-1"><p className="font-semibold">{t.name_ar} {t.is_head && <span className="text-accent">⭐ رئيسي</span>} {bTag(t.branch_id)}</p>
                 <p className="text-muted">{[t.title_ar, t.experience_years != null ? `${t.experience_years} سنة خبرة` : null].filter(Boolean).join(" · ")}</p></div>
+              <form action={setHeadTrainer.bind(null, id, t.id, !t.is_head)}><button className="text-accent underline">{t.is_head ? "إلغاء الرئيسي" : "اجعله رئيسي"}</button></form>
               <form action={deleteTrainer.bind(null, id, t.id)}><button className="text-red-300 underline">حذف</button></form></li>))}
             {(trainers ?? []).length === 0 && <li className="text-sm text-muted">ما أضفت مدربين بعد.</li>}</ul>
           <ActionForm action={addTrainer.bind(null, id)} submit="إضافة مدرب">
@@ -197,13 +201,55 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
               <input name="name_ar" required placeholder="اسم المدرب" className={field} />
               <input name="title_ar" placeholder="التخصص (مثال: مدرب كمال أجسام)" className={field} />
               <input name="experience_years" type="number" min="0" max="60" placeholder="سنوات الخبرة" className={field} />
-              <input name="specialties" placeholder="مجالات الخبرة (مثال: تضخيم، تنشيف، إصابات)" className={field} />
+              <input name="specialties" placeholder="مجالات الخبرة، افصل بفاصلة (تضخيم، تنشيف، إصابات)" className={field} />
+              <input name="education" placeholder="المؤهل (مثال: بكالوريوس تربية رياضية)" className={field} />
+              <input name="education_place" placeholder="الجامعة / الجهة" className={field} />
             </div>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="is_head" /> ⭐ المدرب الرئيسي (بيطلع أول واحد)</label>
             <textarea name="bio_ar" rows={3} placeholder="نبذة وخبرات وشهادات" className={field} />
             {branchSelect}
             <label className={lbl}>صورة المدرب<ImageInput name="photo" accept="image/jpeg,image/png,image/webp" className="text-sm" /></label>
           </ActionForm>
         </section>
+      )}
+
+      {org.type === "gym" && (
+        <section className={box}><h2 className="mb-1 text-lg font-bold">مدربون مستقلون عندك</h2>
+          <p className="mb-3 text-xs text-muted">المدرب المستقل بيطلب ينضم لناديك، وما بيظهر إلا لما توافق. بطاقته بتنبني من ملفه الشخصي.</p>
+          <ul className="space-y-2">{gymLinks.map((l) => (
+            <li key={l.link_id} className="flex flex-wrap items-center gap-3 text-sm">
+              <span className="flex-1">{l.coach_name} <span className={l.status === "approved" ? "text-accent" : "text-yellow-300"}>{l.status === "approved" ? "✓ معتمد" : "بانتظار موافقتك"}</span></span>
+              {l.status === "pending" && <form action={respondCoachLink.bind(null, id, l.link_id, true)}><button className="font-bold text-accent underline">قبول</button></form>}
+              <form action={respondCoachLink.bind(null, id, l.link_id, false)}><button className="text-red-300 underline">{l.status === "pending" ? "رفض" : "إزالة"}</button></form></li>))}
+            {gymLinks.length === 0 && <li className="text-sm text-muted">ما في طلبات بعد.</li>}</ul>
+        </section>
+      )}
+
+      {org.type === "independent_coach" && (
+        <>
+          <section className={box}><h2 className="mb-1 text-lg font-bold">ملفي كمدرب</h2>
+            <p className="mb-3 text-xs text-muted">لازم تكمّله (وتضيف صورة شخصية بالصور) قبل ما تطلب الانضمام لأي نادي. هاد بيظهر ببطاقتك بكل نادي.</p>
+            <ActionForm action={saveCoachProfile.bind(null, id)}>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <input name="role_label" defaultValue={coachProfile?.role_label ?? ""} placeholder="المسمى (مثال: مدرب كمال أجسام)" className={field} />
+                <input name="experience_years" type="number" min="0" max="60" required defaultValue={coachProfile?.experience_years ?? ""} placeholder="سنوات الخبرة" className={field} />
+                <input name="education" required defaultValue={coachProfile?.education ?? ""} placeholder="المؤهل (مثال: بكالوريوس تربية رياضية)" className={field} />
+                <input name="education_place" defaultValue={coachProfile?.education_place ?? ""} placeholder="الجامعة / الجهة" className={field} />
+              </div>
+              <input name="specialties" required defaultValue={coachProfile?.specialties ?? ""} placeholder="مجالات الخبرة، افصل بفاصلة (تضخيم، تنشيف، إصابات)" className={field} />
+            </ActionForm>
+          </section>
+          <section className={box}><h2 className="mb-1 text-lg font-bold">النوادي اللي بتدرّب فيها</h2>
+            <ul className="mb-4 space-y-2">{coachLinks.map((l) => (
+              <li key={l.link_id} className="flex items-center gap-3 text-sm">
+                <span className="flex-1">{l.gym_name} <span className={l.status === "approved" ? "text-accent" : "text-yellow-300"}>{l.status === "approved" ? "✓ معتمد" : "بانتظار موافقة النادي"}</span></span>
+                <form action={respondCoachLink.bind(null, id, l.link_id, false)}><button className="text-red-300 underline">{l.status === "pending" ? "إلغاء الطلب" : "إزالة نفسي"}</button></form></li>))}
+              {coachLinks.length === 0 && <li className="text-sm text-muted">ما انضممت لأي نادي بعد.</li>}</ul>
+            <ActionForm action={requestJoinGym.bind(null, id)} submit="طلب انضمام">
+              <input name="gym" required placeholder="اسم النادي" className={field} />
+            </ActionForm>
+          </section>
+        </>
       )}
 
       {org.type === "healthy_food" && (

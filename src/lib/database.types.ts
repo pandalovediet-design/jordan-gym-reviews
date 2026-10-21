@@ -756,14 +756,29 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_profiles: {
+        Row: { created_at: string; education: string | null; education_place: string | null; experience_years: number | null; organization_id: string; role_label: string | null; specialties: string | null; updated_at: string }
+        Insert: { created_at?: string; education?: string | null; education_place?: string | null; experience_years?: number | null; organization_id: string; role_label?: string | null; specialties?: string | null; updated_at?: string }
+        Update: { created_at?: string; education?: string | null; education_place?: string | null; experience_years?: number | null; organization_id?: string; role_label?: string | null; specialties?: string | null; updated_at?: string }
+        Relationships: []
+      }
+      coach_gym_links: {
+        Row: { approved_at: string | null; coach_org_id: string; created_at: string; gym_org_id: string; id: string; status: string }
+        Insert: { approved_at?: string | null; coach_org_id: string; created_at?: string; gym_org_id: string; id?: string; status?: string }
+        Update: { approved_at?: string | null; coach_org_id?: string; created_at?: string; gym_org_id?: string; id?: string; status?: string }
+        Relationships: []
+      }
       org_trainers: {
         Row: {
           bio_ar: string | null
           branch_id: string | null
           created_at: string
+          education: string | null
+          education_place: string | null
           experience_years: number | null
           id: string
           is_active: boolean
+          is_head: boolean
           name_ar: string
           organization_id: string
           photo_path: string | null
@@ -776,9 +791,12 @@ export type Database = {
           bio_ar?: string | null
           branch_id?: string | null
           created_at?: string
+          education?: string | null
+          education_place?: string | null
           experience_years?: number | null
           id?: string
           is_active?: boolean
+          is_head?: boolean
           name_ar: string
           organization_id: string
           photo_path?: string | null
@@ -791,9 +809,12 @@ export type Database = {
           bio_ar?: string | null
           branch_id?: string | null
           created_at?: string
+          education?: string | null
+          education_place?: string | null
           experience_years?: number | null
           id?: string
           is_active?: boolean
+          is_head?: boolean
           name_ar?: string
           organization_id?: string
           photo_path?: string | null
@@ -1348,6 +1369,22 @@ export type Database = {
       get_member_by_token: {
         Args: { p_token: string }
         Returns: { coach_note: string | null; days_left: number; ends_on: string; member_name: string; org_name: string; org_slug: string; org_whatsapp: string | null; plan_name: string | null; starts_on: string }[]
+      }
+      get_gym_coaches: {
+        Args: { p_gym: string }
+        Returns: { bio_ar: string | null; coach_slug: string; education: string | null; education_place: string | null; experience_years: number | null; name_ar: string; photo_path: string | null; role_label: string | null; specialties: string | null }[]
+      }
+      get_coach_gyms: {
+        Args: { p_coach: string }
+        Returns: { gym_name: string; gym_slug: string }[]
+      }
+      list_gym_coach_links: {
+        Args: { p_gym: string }
+        Returns: { coach_name: string; coach_slug: string; created_at: string; link_id: string; status: string }[]
+      }
+      list_coach_gym_links: {
+        Args: { p_coach: string }
+        Returns: { created_at: string; gym_name: string; gym_slug: string; link_id: string; status: string }[]
       }
       get_member_files: {
         Args: { p_token: string }
