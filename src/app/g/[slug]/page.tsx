@@ -83,7 +83,7 @@ function Classes({ items }: { items: Tables<"org_classes">[] }) {
 }
 type TrainerCard = {
   key: string; name: string; role: string | null; years: number | null; education: string | null; place: string | null;
-  specialties: string | null; bio: string | null; photo: string | null; head: boolean; href: string | null;
+  specialties: string | null; bio: string | null; photo: string | null; head: boolean; href: string | null; licensed?: boolean; wa?: string | null;
 };
 const splitTags = (v: string | null) => (v ?? "").split(/[,،]/).map((x) => x.trim()).filter(Boolean).slice(0, 8);
 function Trainers({ items }: { items: TrainerCard[] }) {
@@ -97,6 +97,7 @@ function Trainers({ items }: { items: TrainerCard[] }) {
             <img src={publicMediaUrl(t.photo)} alt={t.name} loading="lazy" className="size-full object-cover" />
           ) : <div className="flex size-full items-center justify-center text-5xl">🏋️</div>}
           {t.head && <span className="absolute start-3 top-3 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">⭐ المدرب الرئيسي</span>}
+          {t.licensed && <span className="absolute start-3 top-3 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">✓ مرخّص</span>}
         </div>
         <div className="flex flex-1 flex-col gap-2 p-4">
           {t.role && <span className="w-fit rounded-full bg-accent/15 px-3 py-0.5 text-xs font-bold text-accent">{t.role}</span>}
@@ -106,6 +107,7 @@ function Trainers({ items }: { items: TrainerCard[] }) {
           {splitTags(t.specialties).length > 0 && (
             <div className="flex flex-wrap gap-1.5">{splitTags(t.specialties).map((x) => <span key={x} className="rounded-full bg-background/50 px-2.5 py-0.5 text-xs ring-1 ring-white/10">{x}</span>)}</div>)}
           {t.bio && <p className="line-clamp-4 whitespace-pre-line text-sm leading-6">{t.bio}</p>}
+          {t.wa && waNumber(t.wa) && <a href={`https://wa.me/${waNumber(t.wa)}?text=${encodeURIComponent("مرحبا، شفت ملفك على Jordan Gym Reviews وبدي أحجز استشارة")}`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-accent/15 px-4 py-2 text-center text-sm font-bold text-accent ring-1 ring-accent/40">احجز استشارة واتساب</a>}
           {t.href && <Link href={t.href} className="mt-auto rounded-xl bg-accent px-4 py-2 text-center text-sm font-bold text-accent-foreground">عرض الملف الشخصي</Link>}
         </div>
       </article>))}</div>
@@ -200,9 +202,11 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   const trainerCard = (t: Tables<"org_trainers">): TrainerCard => ({
     key: t.id, name: t.name_ar, role: t.title_ar, years: t.experience_years, education: t.education, place: t.education_place,
     specialties: t.specialties, bio: t.bio_ar, photo: t.photo_path, head: t.is_head, href: null });
-  const coachCards: TrainerCard[] = coaches.map((c) => ({
-    key: `c-${c.coach_slug}`, name: c.name_ar, role: c.role_label, years: c.experience_years, education: c.education, place: c.education_place,
-    specialties: c.specialties, bio: c.bio_ar, photo: c.photo_path, head: false, href: `/g/${c.coach_slug}` }));
+  const partnerCard = (c: (typeof coaches)[number]): TrainerCard => ({
+    key: `c-${c.coach_slug}`, name: c.name_ar, role: c.role_label ?? (c.partner_type === "nutritionist" ? "أخصائي تغذية" : null), years: c.experience_years, education: c.education, place: c.education_place,
+    specialties: c.specialties, bio: c.bio_ar, photo: c.photo_path, head: false, href: `/g/${c.coach_slug}`, licensed: c.partner_type === "nutritionist" && c.verified, wa: c.whatsapp });
+  const coachCards: TrainerCard[] = coaches.filter((c) => c.partner_type !== "nutritionist").map(partnerCard);
+  const nutriCards: TrainerCard[] = coaches.filter((c) => c.partner_type === "nutritionist").map(partnerCard);
   const byHead = (xs: TrainerCard[]) => [...xs].sort((a, b) => Number(b.head) - Number(a.head));
   const allCards = byHead([...trainers.map(trainerCard), ...coachCards]);
   const shared = <T extends { branch_id: string | null }>(xs: T[]) => xs.filter((x) => x.branch_id == null);
@@ -241,7 +245,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         <p className="mt-1 text-sm text-muted">{[coachProfile.experience_years != null ? `🏅 ${coachProfile.experience_years} سنة خبرة` : null, coachProfile.education ? `🎓 ${[coachProfile.education, coachProfile.education_place].filter(Boolean).join(" — ")}` : null, coachProfile.session_mode ? { onsite: "حضوري", online: "أونلاين", both: "حضوري وأونلاين" }[coachProfile.session_mode] ?? null : null].filter(Boolean).join("  ·  ")}</p>)}
       {coachProfile?.certificates && <p className="mt-1 text-sm text-muted">📜 {coachProfile.certificates}</p>}
       {coachGyms.length > 0 && (
-        <p className="mt-1 text-sm">يتدرب في: {coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
+        <p className="mt-1 text-sm">{org.type === "nutritionist" ? "يتعاون مع: " : "يتدرب في: "}{coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
       <h1 className="mt-1 text-3xl font-extrabold">{org.name_ar}</h1>
       {!multi && <p className="mt-1 text-muted">{[org.address, org.area, org.city].filter(Boolean).join("، ")}</p>}
       </div>
@@ -328,6 +332,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           )}
           {classes.length > 0 && <Section title="جدول الحصص"><Classes items={classes} /></Section>}
           {showTrainers && allCards.length > 0 && <Section title="المدربون"><Trainers items={allCards} /></Section>}
+          {nutriCards.length > 0 && <Section title="🥗 أخصائيو التغذية الشركاء"><Trainers items={nutriCards} /></Section>}
           {org.type === "store" && <Section title="المنتجات"><Products items={products} /></Section>}
         </>
       ) : (
@@ -342,6 +347,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
             </div>
           )}
           {showTrainers && sharedCards.length > 0 && <Section title="المدربون"><Trainers items={sharedCards} /></Section>}
+          {nutriCards.length > 0 && <Section title="🥗 أخصائيو التغذية الشركاء"><Trainers items={nutriCards} /></Section>}
           {views.map((v) => {
             const o = own(offers, v.id), sv = own(services, v.id), cl = own(classes, v.id), pr = own(products, v.id), tr = own(trainers, v.id);
             return (

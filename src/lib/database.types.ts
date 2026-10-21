@@ -1404,6 +1404,10 @@ export type Database = {
         Args: { p_category: string; p_month?: string }
         Returns: { city: string; name_ar: string; slug: string; votes: number }[]
       }
+      get_gym_partners: {
+        Args: { p_gym: string }
+        Returns: { bio_ar: string | null; certificates: string | null; coach_slug: string; education: string | null; education_place: string | null; experience_years: number | null; name_ar: string; partner_type: string; photo_path: string | null; role_label: string | null; specialties: string | null; verified: boolean; whatsapp: string | null }[]
+      }
       get_gym_coaches: {
         Args: { p_gym: string }
         Returns: { bio_ar: string | null; coach_slug: string; education: string | null; education_place: string | null; experience_years: number | null; name_ar: string; photo_path: string | null; role_label: string | null; specialties: string | null }[]

@@ -150,19 +150,19 @@ export async function getOrgBySlug(slug: string) {
     org.type === "healthy_food"
       ? db.from("menu_items").select("*").eq("organization_id", org.id).order("sort_order").order("created_at")
       : Promise.resolve({ data: [] }),
-    org.type === "gym" ? db.rpc("get_gym_coaches", { p_gym: org.id }) : Promise.resolve({ data: [] }),
-    org.type === "independent_coach" ? db.rpc("get_coach_gyms", { p_coach: org.id }) : Promise.resolve({ data: [] }),
+    org.type === "gym" ? db.rpc("get_gym_partners", { p_gym: org.id }) : Promise.resolve({ data: [] }),
+    (org.type === "independent_coach" || org.type === "nutritionist") ? db.rpc("get_coach_gyms", { p_coach: org.id }) : Promise.resolve({ data: [] }),
   ]);
   const slots = org.type === "sports_facility"
     ? ((await db.from("facility_slots").select("id,slot_date,starts_at,ends_at,status").eq("organization_id", org.id)
         .gte("slot_date", ammanDate(0)).lte("slot_date", ammanDate(14)).order("slot_date").order("starts_at")).data ?? [])
     : [];
-  const coachProfile = org.type === "independent_coach"
+  const coachProfile = (org.type === "independent_coach" || org.type === "nutritionist")
     ? (await db.from("coach_profiles").select("*").eq("organization_id", org.id).maybeSingle()).data
     : null;
   return {
     org,
-    coaches: (coaches.data ?? []) as Database["public"]["Functions"]["get_gym_coaches"]["Returns"],
+    coaches: (coaches.data ?? []) as Database["public"]["Functions"]["get_gym_partners"]["Returns"],
     coachGyms: (coachGyms.data ?? []) as Database["public"]["Functions"]["get_coach_gyms"]["Returns"],
     coachProfile,
     slots,

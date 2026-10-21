@@ -57,7 +57,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
     ? ((await supabase.from("facility_slots").select("*").eq("organization_id", id).gte("slot_date", ammanDate(0)).order("slot_date").order("starts_at")).data ?? [])
     : [];
   const slotDays = [...new Set(slots.map((x) => x.slot_date))];
-  const coachLinks = org.type === "independent_coach" ? ((await supabase.rpc("list_coach_gym_links", { p_coach: id })).data ?? []) : [];
+  const coachLinks = (org.type === "independent_coach" || org.type === "nutritionist") ? ((await supabase.rpc("list_coach_gym_links", { p_coach: id })).data ?? []) : [];
   const missing = org.status === "draft" ? await missingForPublish(supabase, id) : [];
   const mainImage = (media ?? []).find((m) => m.sort_order < 0) ?? null;
   const galleryMedia = (media ?? []).filter((m) => m.sort_order >= 0);
@@ -241,8 +241,8 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
       )}
 
       {org.type === "gym" && (
-        <section className={box}><h2 className="mb-1 text-lg font-bold">مدربون مستقلون عندك</h2>
-          <p className="mb-3 text-xs text-muted">المدرب المستقل بيطلب ينضم لناديك، وما بيظهر إلا لما توافق. بطاقته بتنبني من ملفه الشخصي.</p>
+        <section className={box}><h2 className="mb-1 text-lg font-bold">مدربون وأخصائيو تغذية شركاء</h2>
+          <p className="mb-3 text-xs text-muted">المدرب المستقل أو أخصائي التغذية بيطلب ينضم لناديك، وما بيظهر إلا لما توافق. بطاقته بتنبني من ملفه الشخصي.</p>
           <ul className="space-y-2">{gymLinks.map((l) => (
             <li key={l.link_id} className="flex flex-wrap items-center gap-3 text-sm">
               <span className="flex-1">{l.coach_name} <span className={l.status === "approved" ? "text-accent" : "text-yellow-300"}>{l.status === "approved" ? "✓ معتمد" : "بانتظار موافقتك"}</span></span>
@@ -252,9 +252,9 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
         </section>
       )}
 
-      {org.type === "independent_coach" && (
+      {(org.type === "independent_coach" || org.type === "nutritionist") && (
         <>
-          <section className={box}><h2 className="mb-1 text-lg font-bold">ملفي كمدرب</h2>
+          <section className={box}><h2 className="mb-1 text-lg font-bold">{org.type === "nutritionist" ? "ملفي كأخصائي تغذية" : "ملفي كمدرب"}</h2>
             <p className="mb-3 text-xs text-muted">لازم تكمّله (وتضيف صورة شخصية بالصور) قبل ما تطلب الانضمام لأي نادي. هاد بيظهر ببطاقتك بكل نادي.</p>
             <ActionForm action={saveCoachProfile.bind(null, id)}>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -272,7 +272,8 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
               </label>
             </ActionForm>
           </section>
-          <section className={box}><h2 className="mb-1 text-lg font-bold">النوادي اللي بتدرّب فيها</h2>
+          <section className={box}><h2 className="mb-1 text-lg font-bold">{org.type === "nutritionist" ? "النوادي اللي بتتعاون معها" : "النوادي اللي بتدرّب فيها"}</h2>
+            <p className="mb-3 text-xs text-muted">بتقدر تطلب الانضمام لأي عدد نوادي. الاتفاق المالي بينك وبين النادي.</p>
             <ul className="mb-4 space-y-2">{coachLinks.map((l) => (
               <li key={l.link_id} className="flex items-center gap-3 text-sm">
                 <span className="flex-1">{l.gym_name} <span className={l.status === "approved" ? "text-accent" : "text-yellow-300"}>{l.status === "approved" ? "✓ معتمد" : "بانتظار موافقة النادي"}</span></span>

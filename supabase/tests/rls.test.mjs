@@ -943,3 +943,31 @@ test("monthly votes + member streak", async () => {
     assert.equal(Number(r.streak_weeks), 2);
   });
 });
+
+test("nutritionist can partner with several gyms", async () => {
+  const gym1 = (await db.query(`select id from public.organizations where slug = 'cg-gym'`)).rows[0].id;
+  let nut, gym2;
+  await asBob(async () => {
+    nut = (await db.query(`insert into public.organizations (type, slug, name_ar, created_by) values ('nutritionist', 'nut-partner', 'أخصائي شريك', $1) returning id`, [BOB])).rows[0].id;
+    await rejects(() => db.query(`insert into public.coach_gym_links (gym_org_id, coach_org_id) values ($1, $2)`, [gym1, nut]), /incomplete/);
+    await db.query(`insert into public.coach_profiles (organization_id, experience_years, education, specialties) values ($1, 4, 'ماجستير تغذية', 'تنزيل وزن، تغذية رياضية')`, [nut]);
+  });
+  await db.query(`insert into public.organization_media (organization_id, storage_path) values ($1, $2)`, [nut, `${nut}/p.jpg`]);
+  await asAdmin(async () => { await db.exec(`update public.organizations set status = 'published' where id = '${nut}'`); });
+  await asAdmin(async () => {
+    gym2 = (await db.query(`insert into public.organizations (type, slug, name_ar, created_by) values ('gym', 'cg-gym-2', 'نادي ثاني', $1) returning id`, [ADMIN])).rows[0].id;
+  });
+  await asAdmin(async () => { await db.exec(`update public.organizations set status = 'published' where id = '${gym2}'`); });
+  let l1, l2;
+  await asBob(async () => {
+    l1 = (await db.query(`insert into public.coach_gym_links (gym_org_id, coach_org_id) values ($1, $2) returning id`, [gym1, nut])).rows[0].id;
+    l2 = (await db.query(`insert into public.coach_gym_links (gym_org_id, coach_org_id) values ($1, $2) returning id`, [gym2, nut])).rows[0].id;
+  });
+  await asAlice(async () => { await db.query(`update public.coach_gym_links set status = 'approved' where id = $1`, [l1]); });
+  await asAdmin(async () => { await db.query(`update public.coach_gym_links set status = 'approved' where id = $1`, [l2]); });
+  await asAnon(async () => {
+    const a = (await db.query(`select partner_type, coach_slug from public.get_gym_partners($1)`, [gym1])).rows;
+    assert.deepEqual(a.map((r) => r.partner_type), ["nutritionist"]);
+    assert.equal((await db.query(`select * from public.get_coach_gyms($1)`, [nut])).rows.length, 2);
+  });
+});

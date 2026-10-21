@@ -29,6 +29,9 @@ export default async function MemberPage({ params }: PageProps<"/me/[token]">) {
   ]);
   const m = data?.[0];
   if (!m) notFound();
+  const { data: gymRow } = await db.from("organizations").select("id").eq("slug", m.org_slug).maybeSingle();
+  const { data: partners } = gymRow ? await db.rpc("get_gym_partners", { p_gym: gymRow.id }) : { data: [] };
+  const nutritionists = (partners ?? []).filter((p) => p.partner_type === "nutritionist");
   const qr = await QRCode.toString(`${await siteUrl()}/c/${token}`, { type: "svg", errorCorrectionLevel: "M", margin: 1, color: { dark: "#07211c", light: "#ffffff" } });
   const wa = waNumber(m.org_whatsapp);
   const left = m.days_left;
@@ -111,6 +114,20 @@ export default async function MemberPage({ params }: PageProps<"/me/[token]">) {
 
       {program("برنامج التمرين", "🏋️", workout, "sec-workout")}
       {program("البرنامج الغذائي", "🥗", nutrition, "sec-nutrition")}
+
+      {nutritionists.length > 0 && (
+        <section data-sec className={box}>
+          <h2 className="mb-3 text-lg font-bold">🥗 أخصائيو التغذية بناديك</h2>
+          <ul className="space-y-3">{nutritionists.map((n) => {
+            const num = waNumber(n.whatsapp);
+            return (
+              <li key={n.coach_slug} className="flex items-center justify-between gap-3 text-sm">
+                <span><a href={`/g/${n.coach_slug}`} className="font-semibold hover:text-accent">{n.name_ar}</a>{n.verified && <span className="text-accent"> ✓ مرخّص</span>}{n.specialties && <span className="block text-xs text-muted">{n.specialties}</span>}</span>
+                {num && <a href={`https://wa.me/${num}?text=${encodeURIComponent(`مرحباً، أنا ${m.member_name} من ${m.org_name} وبدي أحجز استشارة تغذية`)}`} target="_blank" rel="noopener noreferrer" className="no-print shrink-0 rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-accent-foreground">احجز استشارة</a>}
+              </li>);
+          })}</ul>
+        </section>
+      )}
 
       {(files ?? []).length > 0 && (
         <section data-sec className={box}>
