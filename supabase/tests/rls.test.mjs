@@ -805,3 +805,38 @@ test("member page v2: coach note and own attendance by token only", async () => 
     assert.equal((await db.query(`select * from public.get_member_attendance('00000000-0000-4000-8000-000000000000')`)).rows.length, 0);
   });
 });
+
+test("member files: staff only, 10 per member, member sees the list and a file path only with the token", async () => {
+  const org = (await db.query(`select id from public.organizations where slug = 'nutri-test'`)).rows[0].id;
+  const m = (await db.query(`select id, access_token from public.org_members where organization_id = $1 order by created_at limit 1`, [org])).rows[0];
+  const other = (await db.query(`select access_token from public.org_members where organization_id = $1 order by created_at desc limit 1`, [org])).rows[0];
+  let fid;
+  await asAlice(async () => {
+    fid = (await db.query(
+      `insert into public.member_files (organization_id, member_id, title, storage_path, size_bytes)
+       values ($1, $2, 'برنامجي', $3, 1000) returning id`, [org, m.id, `${org}/a.pdf`])).rows[0].id;
+    // path must live in the org's folder
+    await rejects(() => db.query(
+      `insert into public.member_files (organization_id, member_id, title, storage_path, size_bytes)
+       values ($1, $2, 'غلط', 'other/b.pdf', 1000)`, [org, m.id]));
+    for (let i = 0; i < 9; i++) {
+      await db.query(`insert into public.member_files (organization_id, member_id, title, storage_path, size_bytes)
+        values ($1, $2, 'ملف ' || $3::text, $4, 500)`, [org, m.id, i, `${org}/f${i}.pdf`]);
+    }
+    await rejects(() => db.query(`insert into public.member_files (organization_id, member_id, title, storage_path, size_bytes)
+      values ($1, $2, 'الحادي عشر', $3, 500)`, [org, m.id, `${org}/z.pdf`]), /too many files/);
+  });
+  await asBob(async () => {
+    assert.equal((await db.query(`select id from public.member_files`)).rows.length, 0);
+    await rejects(() => db.query(`insert into public.member_files (organization_id, member_id, title, storage_path, size_bytes)
+      values ($1, $2, 'دخيل', $3, 500)`, [org, m.id, `${org}/x.pdf`]));
+  });
+  await db.exec(`update public.organizations set status = 'published' where id = '${org}'`);
+  await asAnon(async () => {
+    assert.equal((await db.query(`select * from public.get_member_files($1)`, [m.access_token])).rows.length, 10);
+    assert.equal((await db.query(`select public.get_member_file_path($1, $2) as p`, [m.access_token, fid])).rows[0].p, `${org}/a.pdf`);
+    // another member's token cannot reach this file
+    assert.equal((await db.query(`select public.get_member_file_path($1, $2) as p`, [other.access_token, fid])).rows[0].p, null);
+    assert.equal((await db.query(`select id from public.member_files`).catch(() => ({ rows: [] }))).rows.length, 0);
+  });
+});

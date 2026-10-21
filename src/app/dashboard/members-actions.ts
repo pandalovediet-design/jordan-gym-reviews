@@ -103,3 +103,35 @@ export async function deleteProgram(id: string, programId: string): Promise<void
   await supabase.from("member_programs").delete().eq("id", programId).eq("organization_id", id);
   refresh(id);
 }
+
+// ---------------------------------------------------------------- member PDF files
+const MAX_PDF = 4 * 1024 * 1024;
+export async function uploadMemberFile(id: string, memberId: string, _: FormState, fd: FormData): Promise<FormState> {
+  const title = String(fd.get("title") ?? "").trim();
+  if (title.length < 2 || title.length > 120) return { error: "اكتب عنوان الملف" };
+  const file = fd.get("file");
+  if (!(file instanceof File) || file.size === 0) return { error: "اختر ملف PDF" };
+  if (file.type !== "application/pdf") return { error: "الملف لازم يكون PDF" };
+  if (file.size > MAX_PDF) return { error: "حجم الملف أكبر من 4MB" };
+  const { supabase } = await requireUser();
+  const { data: m } = await supabase.from("org_members").select("id").eq("id", memberId).eq("organization_id", id).maybeSingle();
+  if (!m) return { error: "العضو غير موجود" };
+  const path = `${id}/${crypto.randomUUID()}.pdf`;
+  const { error: upErr } = await supabase.storage.from("member-files").upload(path, file, { contentType: "application/pdf", upsert: false });
+  if (upErr) return { error: "تعذّر رفع الملف" };
+  const { error } = await supabase.from("member_files").insert({ organization_id: id, member_id: memberId, title, storage_path: path, size_bytes: file.size });
+  if (error) {
+    await supabase.storage.from("member-files").remove([path]);
+    return { error: error.message.includes("too many") ? "الحد الأقصى 10 ملفات لكل عضو" : "تعذّر حفظ الملف" };
+  }
+  refresh(id);
+  return { ok: "تم رفع الملف، وبيظهر للعضو بصفحته" };
+}
+export async function deleteMemberFile(id: string, fileId: string): Promise<void> {
+  const { supabase } = await requireUser();
+  const { data } = await supabase.from("member_files").select("storage_path").eq("id", fileId).eq("organization_id", id).maybeSingle();
+  if (!data) return;
+  await supabase.from("member_files").delete().eq("id", fileId).eq("organization_id", id);
+  await supabase.storage.from("member-files").remove([data.storage_path]);
+  refresh(id);
+}

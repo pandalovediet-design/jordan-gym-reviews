@@ -19,10 +19,11 @@ export default async function MemberPage({ params }: PageProps<"/me/[token]">) {
   const { token } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(token)) notFound();
   const db = createPublicClient();
-  const [{ data }, { data: programs }, { data: visits }] = await Promise.all([
+  const [{ data }, { data: programs }, { data: visits }, { data: files }] = await Promise.all([
     db.rpc("get_member_page", { p_token: token }),
     db.rpc("get_member_programs", { p_token: token }),
     db.rpc("get_member_attendance", { p_token: token }),
+    db.rpc("get_member_files", { p_token: token }),
   ]);
   const m = data?.[0];
   if (!m) notFound();
@@ -87,6 +88,17 @@ export default async function MemberPage({ params }: PageProps<"/me/[token]">) {
 
       {program("برنامج التمرين", "🏋️", workout, "sec-workout")}
       {program("البرنامج الغذائي", "🥗", nutrition, "sec-nutrition")}
+
+      {(files ?? []).length > 0 && (
+        <section data-sec className={box}>
+          <h2 className="mb-3 text-lg font-bold">📄 ملفاتي</h2>
+          <ul className="space-y-2">{(files ?? []).map((f) => (
+            <li key={f.id} className="flex items-center justify-between gap-3 text-sm">
+              <span>{f.title} <span className="text-xs text-muted">· {dateAr(f.created_at)}</span></span>
+              <a href={`/me/${token}/file/${f.id}`} className="no-print shrink-0 rounded-lg bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">تنزيل</a>
+            </li>))}</ul>
+        </section>
+      )}
 
       <section data-sec className={box}>
         <h2 className="mb-3 text-lg font-bold">🗓️ سجل حضوري</h2>

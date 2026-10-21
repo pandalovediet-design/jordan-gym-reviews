@@ -241,6 +241,12 @@ export type Database = {
         }
         Relationships: []
       }
+      member_files: {
+        Row: { created_at: string; id: string; member_id: string; organization_id: string; size_bytes: number; storage_path: string; title: string }
+        Insert: { created_at?: string; id?: string; member_id: string; organization_id: string; size_bytes: number; storage_path: string; title: string }
+        Update: { created_at?: string; id?: string; member_id?: string; organization_id?: string; size_bytes?: number; storage_path?: string; title?: string }
+        Relationships: []
+      }
       member_checkins: {
         Row: { checked_in_at: string; checked_in_by: string | null; id: string; member_id: string; organization_id: string; was_expired: boolean }
         Insert: { checked_in_at?: string; checked_in_by?: string | null; id?: string; member_id: string; organization_id: string; was_expired?: boolean }
@@ -1342,6 +1348,14 @@ export type Database = {
       get_member_by_token: {
         Args: { p_token: string }
         Returns: { coach_note: string | null; days_left: number; ends_on: string; member_name: string; org_name: string; org_slug: string; org_whatsapp: string | null; plan_name: string | null; starts_on: string }[]
+      }
+      get_member_files: {
+        Args: { p_token: string }
+        Returns: { created_at: string; id: string; size_bytes: number; title: string }[]
+      }
+      get_member_file_path: {
+        Args: { p_file: string; p_token: string }
+        Returns: string
       }
       get_member_page: {
         Args: { p_token: string }
