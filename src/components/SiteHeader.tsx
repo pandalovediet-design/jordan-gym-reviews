@@ -4,8 +4,10 @@ export function SiteHeader() {
   return (
     <header className="border-b border-white/10 print:hidden">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-        <Link href="/" className="text-lg font-extrabold">
-          Jordan <span className="text-accent">Gym</span> Reviews
+        <Link href="/" className="flex items-center gap-2 text-lg font-extrabold">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-mark.png" alt="" width={44} height={44} className="size-11 rounded-full object-cover" />
+          <span>Jordan <span className="text-accent">Gym</span> Reviews</span>
         </Link>
         <nav className="flex gap-4 text-sm text-muted">
           <Link href="/search" className="hover:text-foreground">البحث</Link>
