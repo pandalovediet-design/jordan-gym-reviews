@@ -881,3 +881,28 @@ test("coach-gym links: complete profile required, gym approves, either side remo
     assert.equal((await db.query(`select * from public.list_coach_gym_links($1)`, [coach])).rows.length, 0);
   });
 });
+
+test("facility slots + product old price", async () => {
+  let fac;
+  await asAdmin(async () => { fac = (await db.query(`insert into public.organizations (type, slug, name_ar, created_by) values ('sports_facility', 'slot-fac', 'ملعب المواعيد', $1) returning id`, [ADMIN])).rows[0].id; });
+  await db.exec(`update public.organizations set status = 'published' where id = '${fac}'`);
+  await asAdmin(async () => {
+    await db.query(`insert into public.facility_slots (organization_id, slot_date, starts_at, ends_at) values ($1, (now() at time zone 'Asia/Amman')::date + 1, '18:00', '19:00')`, [fac]);
+    await rejects(() => db.query(`insert into public.facility_slots (organization_id, slot_date, starts_at, ends_at) values ($1, (now() at time zone 'Asia/Amman')::date + 1, '18:00', '19:30')`, [fac]));
+    await rejects(() => db.query(`insert into public.facility_slots (organization_id, slot_date, starts_at, ends_at) values ($1, (now() at time zone 'Asia/Amman')::date + 1, '20:00', '19:00')`, [fac]));
+    await rejects(() => db.query(`insert into public.facility_slots (organization_id, slot_date, starts_at, ends_at) values ($1, (now() at time zone 'Asia/Amman')::date + 200, '10:00', '11:00')`, [fac]));
+    await db.query(`update public.facility_slots set status = 'booked' where organization_id = $1`, [fac]);
+  });
+  await asBob(async () => {
+    assert.equal((await db.query(`update public.facility_slots set status = 'available' where organization_id = $1 returning id`, [fac])).rows.length, 0);
+  });
+  await asAnon(async () => {
+    const r = (await db.query(`select status from public.facility_slots where organization_id = $1`, [fac])).rows;
+    assert.deepEqual(r.map((x) => x.status), ["booked"]);
+  });
+  // not a facility -> refused
+  const gym = (await db.query(`select id from public.organizations where slug = 'cg-gym'`)).rows[0].id;
+  await asAlice(async () => {
+    await rejects(() => db.query(`insert into public.facility_slots (organization_id, slot_date, starts_at, ends_at) values ($1, (now() at time zone 'Asia/Amman')::date + 1, '10:00', '11:00')`, [gym]), /facilities only/);
+  });
+});

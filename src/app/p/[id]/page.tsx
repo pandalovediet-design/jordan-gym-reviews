@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { PriceTag } from "@/components/PriceTag";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProduct } from "@/lib/queries";
-import { AVAILABILITY_LABEL, dateAr, jod, publicMediaUrl } from "@/lib/format";
+import { AVAILABILITY_LABEL, dateAr, publicMediaUrl } from "@/lib/format";
 
 export const revalidate = 120;
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -26,7 +27,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[id]">) {
       )}
       <p className="text-sm text-muted">{p.product_categories?.name_ar}</p>
       <h1 className="mt-1 text-3xl font-extrabold">{p.name_ar}</h1>
-      <p className="mt-3 text-2xl text-accent">{jod(p.price_jod)}</p>
+      <p className="mt-3 text-2xl"><PriceTag price={p.price_jod} oldPrice={p.old_price_jod} /></p>
       <p className="text-sm text-muted">{AVAILABILITY_LABEL[p.availability]} · آخر تحديث للسعر {dateAr(p.price_updated_at)} · للتوفر {dateAr(p.availability_updated_at)}</p>
       {p.description_ar && <p className="mt-5 whitespace-pre-line leading-8">{p.description_ar}</p>}
       <dl className="mt-5 rounded-2xl bg-surface px-5 py-2 ring-1 ring-white/10">

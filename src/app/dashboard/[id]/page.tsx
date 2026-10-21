@@ -4,14 +4,33 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { ImageInput } from "@/components/ImageInput";
 import { ActionForm, field } from "@/components/Form";
-import { AVAILABILITY_LABEL, BILLING_LABEL, DELIVERY_LABEL, publicMediaUrl, WEEKDAYS, hhmm, jod } from "@/lib/format";
+import { AVAILABILITY_LABEL, BILLING_LABEL, DELIVERY_LABEL, ammanDate, dayLabelAr, publicMediaUrl, WEEKDAYS, hhmm, jod } from "@/lib/format";
+import { PriceTag } from "@/components/PriceTag";
 import { CityAreaPicker } from "@/components/CityAreaPicker";
 import { missingForPublish, suggestionsFor } from "@/lib/completeness";
-import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setHeadTrainer, saveCoachProfile, requestJoinGym, respondCoachLink, setProductAvailability, addMenuItem, deleteMenuItem, setMenuAvailability, setMenuImage, setMainImage } from "../actions";
+import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setHeadTrainer, addFacilitySlots, setSlotStatus, deleteSlot, clearSlotsDay, saveCoachProfile, requestJoinGym, respondCoachLink, setProductAvailability, addMenuItem, deleteMenuItem, setMenuAvailability, setMenuImage, setMainImage } from "../actions";
 
 export const metadata: Metadata = { title: "تعديل النشاط", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
 const STATUS = { draft: "مسودة (غير ظاهرة للعامة)", pending: "بانتظار مراجعة الإدارة", published: "منشور", suspended: "موقوف" } as const;
+
+const SERVICES_TITLE: Record<string, string> = {
+  gym: "الاشتراكات والأسعار", independent_coach: "الباقات والجلسات", sports_facility: "أسعار الحجز", store: "خدمات المتجر",
+  nutritionist: "الاستشارات والخطط", healthy_food: "الأسعار والباقات", sports_health: "الجلسات والعلاجات",
+};
+const SERVICES_HINT: Record<string, string> = {
+  gym: "اشتراكاتك: شهري، 3 شهور، سنوي، أو دخول يومي. هاي اللي بيقارن فيها الزائر.",
+  independent_coach: "جلسة وحدة، باقة 12 جلسة، أو تدريب أونلاين شهري.",
+  sports_facility: "سعر الساعة أو الفترة (مثال: ملعب خماسي ساعة).",
+  store: "خدمات إضافية بس (تركيب، توصيل). المنتجات بقسم المنتجات تحت.",
+  nutritionist: "استشارة أولى، خطة غذائية، متابعة شهرية.",
+  healthy_food: "باقات الوجبات الأسبوعية أو الشهرية.",
+  sports_health: "جلسة علاج طبيعي، تدليك رياضي، تقييم إصابة.",
+};
+const SERVICES_EXAMPLE: Record<string, string> = {
+  gym: "مثال: اشتراك شهري", independent_coach: "مثال: باقة 12 جلسة", sports_facility: "مثال: ملعب خماسي (ساعة)", store: "مثال: تركيب جهاز",
+  nutritionist: "مثال: استشارة أولى", healthy_food: "مثال: باقة أسبوعية", sports_health: "مثال: جلسة علاج طبيعي",
+};
 
 export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) {
   const { id } = await params;
@@ -23,7 +42,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
     supabase.from("organization_hours").select("*").eq("organization_id", id),
     supabase.from("organization_media").select("*").eq("organization_id", id).order("sort_order"),
     supabase.from("offers").select("*").eq("organization_id", id).order("ends_at", { ascending: false }),
-    supabase.from("products").select("id,name_ar,price_jod,availability,moderation_status,image_path,branch_id").eq("organization_id", id).order("created_at", { ascending: false }),
+    supabase.from("products").select("id,name_ar,price_jod,old_price_jod,availability,moderation_status,image_path,branch_id").eq("organization_id", id).order("created_at", { ascending: false }),
     supabase.from("product_categories").select("id,name_ar").order("sort_order"),
     supabase.from("org_categories").select("id,org_type,name_ar,slug").eq("is_active", true).order("sort_order"),
     supabase.from("org_classes").select("*").eq("organization_id", id).order("weekday").order("starts_at"),
@@ -34,6 +53,10 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
   ]);
   if (!org) notFound();
   const gymLinks = org.type === "gym" ? ((await supabase.rpc("list_gym_coach_links", { p_gym: id })).data ?? []) : [];
+  const slots = org.type === "sports_facility"
+    ? ((await supabase.from("facility_slots").select("*").eq("organization_id", id).gte("slot_date", ammanDate(0)).order("slot_date").order("starts_at")).data ?? [])
+    : [];
+  const slotDays = [...new Set(slots.map((x) => x.slot_date))];
   const coachLinks = org.type === "independent_coach" ? ((await supabase.rpc("list_coach_gym_links", { p_coach: id })).data ?? []) : [];
   const missing = org.status === "draft" ? await missingForPublish(supabase, id) : [];
   const mainImage = (media ?? []).find((m) => m.sort_order < 0) ?? null;
@@ -135,9 +158,9 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             </label>
             <p className="text-xs text-muted">اختار «خاص بالنساء بالكامل» فقط إذا النشاط كله للنساء. الإدارة بتراجع وبتقدر تشيل الشارة عند أي إساءة.</p>
           </div>
-          {org.type === "nutritionist" && (
+          {(org.type === "nutritionist" || org.type === "sports_health") && (
             <div className="grid gap-3 rounded-xl border border-white/10 p-3 sm:grid-cols-2">
-              <label className={lbl}>رقم الترخيص<input name="license_number" defaultValue={org.license_number ?? ""} dir="ltr" className={field} /></label>
+              <label className={lbl}>{org.type === "sports_health" ? "رقم الترخيص / عضوية النقابة" : "رقم الترخيص"}<input name="license_number" defaultValue={org.license_number ?? ""} dir="ltr" className={field} /></label>
               <label className={lbl}>الجهة المرخِّصة<input name="license_authority" defaultValue={org.license_authority ?? ""} className={field} /></label>
               <p className="text-xs text-muted sm:col-span-2">بنراجع الترخيص قبل ما نعطي علامة «موثّق». كتابة الترخيص لحاله ما بتعني توثيق.</p>
             </div>
@@ -237,6 +260,12 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
                 <input name="education_place" defaultValue={coachProfile?.education_place ?? ""} placeholder="الجامعة / الجهة" className={field} />
               </div>
               <input name="specialties" required defaultValue={coachProfile?.specialties ?? ""} placeholder="مجالات الخبرة، افصل بفاصلة (تضخيم، تنشيف، إصابات)" className={field} />
+              <input name="certificates" defaultValue={coachProfile?.certificates ?? ""} placeholder="شهاداتك (مثال: ACE، NASM، مدرب معتمد)" className={field} />
+              <label className={lbl}>طريقة التدريب
+                <select name="session_mode" defaultValue={coachProfile?.session_mode ?? "onsite"} className={field}>
+                  <option value="onsite">حضوري</option><option value="online">أونلاين</option><option value="both">حضوري وأونلاين</option>
+                </select>
+              </label>
             </ActionForm>
           </section>
           <section className={box}><h2 className="mb-1 text-lg font-bold">النوادي اللي بتدرّب فيها</h2>
@@ -288,14 +317,15 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
         </section>
       )}
 
-      <section className={box}><h2 className="mb-3 text-lg font-bold">الأسعار والخدمات</h2>
+      <section className={box}><h2 className="mb-1 text-lg font-bold">{SERVICES_TITLE[org.type]}</h2>
+        <p className="mb-3 text-xs text-muted">{SERVICES_HINT[org.type]}</p>
         <ul className="mb-4 space-y-2">{(services ?? []).map((s) => (
           <li key={s.id} className="flex items-center justify-between gap-3 text-sm">
             <span>{s.name_ar} — <span className="text-accent">{jod(s.price_jod)}</span> {s.billing_period && BILLING_LABEL[s.billing_period]} {bTag(s.branch_id)}</span>
             <form action={deleteService.bind(null, id, s.id)}><button className="text-red-300 underline">حذف</button></form></li>))}
           {(services ?? []).length === 0 && <li className="text-sm text-muted">ما أضفت خدمات بعد.</li>}</ul>
         <ActionForm action={addService.bind(null, id)} submit="إضافة" className="grid gap-3 sm:grid-cols-[2fr_1fr_1fr_auto] sm:items-start">
-          <input name="name_ar" required placeholder="مثال: اشتراك شهري" className={field} />
+          <input name="name_ar" required placeholder={SERVICES_EXAMPLE[org.type]} className={field} />
           <input name="price_jod" type="number" step="0.01" min="0" placeholder="السعر (د.أ)" className={field} />
           <select name="billing_period" className={field}><option value="">—</option>{Object.entries(BILLING_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
           {branchSelect && <div className="sm:col-span-4">{branchSelect}</div>}
@@ -322,6 +352,31 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
         </section>
       )}
 
+
+      {org.type === "sports_facility" && (
+        <section className={box}><h2 className="mb-1 text-lg font-bold">المواعيد المتاحة والمحجوزة</h2>
+          <p className="mb-3 text-xs text-muted">أضف فترات اليوم، ولما تنحجز اضغط «محجوز». الزائر بيشوف المتاح والمحجوز وبحجز بالواتساب. (بالدفع والتأكيد التلقائي لاحقاً.)</p>
+          <div className="mb-4 space-y-4">{slotDays.map((day) => (
+            <div key={day}>
+              <div className="mb-2 flex items-center justify-between"><h3 className="font-bold text-accent">{dayLabelAr(day)}</h3>
+                <form action={clearSlotsDay.bind(null, id, day)}><button className="text-xs text-red-300 underline">مسح اليوم</button></form></div>
+              <ul className="grid gap-2 sm:grid-cols-2">{slots.filter((x) => x.slot_date === day).map((x) => (
+                <li key={x.id} className={`flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm ${x.status === "booked" ? "bg-red-400/15" : "bg-accent/10"}`}>
+                  <span dir="ltr">{hhmm(x.starts_at)}–{hhmm(x.ends_at)}</span>
+                  <span className="flex gap-3">
+                    <form action={setSlotStatus.bind(null, id, x.id, x.status === "booked" ? "available" : "booked")}><button className={x.status === "booked" ? "text-red-200 underline" : "text-accent underline"}>{x.status === "booked" ? "محجوز ← متاح" : "متاح ← محجوز"}</button></form>
+                    <form action={deleteSlot.bind(null, id, x.id)}><button className="text-red-300">✕</button></form>
+                  </span></li>))}</ul>
+            </div>))}
+            {slotDays.length === 0 && <p className="text-sm text-muted">ما في فترات بعد.</p>}</div>
+          <ActionForm action={addFacilitySlots.bind(null, id)} submit="إضافة الفترات" className="grid gap-3 sm:grid-cols-4">
+            <label className={lbl}>التاريخ<input name="slot_date" type="date" required min={ammanDate(0)} max={ammanDate(60)} className={field} /></label>
+            <label className={lbl}>من<input name="from" type="time" required className={field} /></label>
+            <label className={lbl}>إلى<input name="to" type="time" required className={field} /></label>
+            <label className={lbl}>مدة الفترة<select name="length" defaultValue="60" className={field}><option value="30">30 دقيقة</option><option value="60">ساعة</option><option value="90">ساعة ونص</option><option value="120">ساعتين</option></select></label>
+          </ActionForm>
+        </section>
+      )}
 
       <section className={box}><h2 className="mb-3 text-lg font-bold">ساعات الدوام</h2>
         <div className="space-y-3">
@@ -367,7 +422,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
                 <img src={publicMediaUrl(p.image_path)} alt="" className="size-16 shrink-0 rounded-lg object-cover" />
               ) : <div className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-background/40 text-xs text-muted">بلا صورة</div>}
               <div className="flex-1 space-y-1">
-                <p>{p.name_ar} — <span className="text-accent">{jod(p.price_jod)}</span> · {AVAILABILITY_LABEL[p.availability]}{p.moderation_status !== "approved" && <span className="text-muted"> · {p.moderation_status === "pending" ? "بانتظار الموافقة" : "مرفوض"}</span>} {bTag(p.branch_id)}</p>
+                <p>{p.name_ar} — <PriceTag price={p.price_jod} oldPrice={p.old_price_jod} /> · {AVAILABILITY_LABEL[p.availability]}{p.moderation_status !== "approved" && <span className="text-muted"> · {p.moderation_status === "pending" ? "بانتظار الموافقة" : "مرفوض"}</span>} {bTag(p.branch_id)}</p>
                 <div className="flex flex-wrap gap-2 text-xs">
                   {p.availability !== "available" && <form action={setProductAvailability.bind(null, id, p.id, "available")}><button className="rounded-lg bg-accent/20 px-2 py-1 text-accent">✔ متوفر</button></form>}
                   {p.availability !== "limited" && <form action={setProductAvailability.bind(null, id, p.id, "limited")}><button className="rounded-lg bg-white/10 px-2 py-1">كمية محدودة</button></form>}
@@ -384,7 +439,8 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             <div className="grid gap-3 sm:grid-cols-2">
               <input name="brand" placeholder="الماركة" className={field} />
               <select name="category_id" required className={field}><option value="">الفئة</option>{(cats ?? []).map((c) => <option key={c.id} value={c.id}>{c.name_ar}</option>)}</select>
-              <input name="price_jod" type="number" step="0.01" min="0" required placeholder="السعر (د.أ)" className={field} />
+              <input name="price_jod" type="number" step="0.01" min="0" required placeholder="السعر الحالي (د.أ)" className={field} />
+              <input name="old_price_jod" type="number" step="0.01" min="0" placeholder="السعر قبل الخصم (اختياري، بينشطب)" className={field} />
               <select name="availability" className={field}>{Object.entries(AVAILABILITY_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
             </div>
             <label className={lbl}>صورة المنتج<ImageInput name="image" accept="image/jpeg,image/png,image/webp" className="text-sm" /></label>

@@ -336,6 +336,7 @@ const productSchema = z.object({
   brand: opt(80),
   category_id: z.string().uuid("اختر الفئة"),
   price_jod: z.coerce.number({ message: "اكتب السعر" }).min(0).max(100000),
+  old_price_jod: z.string().optional().transform((v) => (v ? Number(v) : null)).pipe(z.number().min(0).max(100000).nullable()),
   availability: z.enum(["available", "limited", "out_of_stock", "unknown"]),
   description_ar: opt(2000),
   ingredients: opt(2000),
@@ -357,6 +358,7 @@ export async function addProduct(id: string, _: FormState, fd: FormData): Promis
   const { image, ...rest } = Object.fromEntries(fd);
   const p = productSchema.safeParse(rest);
   if (!p.success) return { error: p.error.issues[0].message };
+  if (p.data.old_price_jod != null && p.data.old_price_jod <= p.data.price_jod) return { error: "السعر قبل الخصم لازم يكون أكبر من السعر الحالي" };
   const { supabase } = await requireUser();
   let image_path: string | null = null;
   if (image instanceof File && image.size > 0) {
@@ -516,6 +518,8 @@ const coachProfileSchema = z.object({
   education: z.string().trim().min(2, "اكتب مؤهلك الدراسي").max(80),
   education_place: opt(80),
   specialties: z.string().trim().min(2, "اكتب مجالات خبرتك").max(200),
+  certificates: opt(300),
+  session_mode: z.enum(["onsite", "online", "both"]).catch("onsite"),
   experience_years: z.string().min(1, "اكتب سنوات الخبرة").transform(Number).pipe(z.number().int("سنوات الخبرة رقم صحيح").min(0, "سنوات الخبرة من 0 إلى 60").max(60, "سنوات الخبرة من 0 إلى 60")),
 });
 
@@ -551,4 +555,49 @@ export async function respondCoachLink(orgId: string, linkId: string, approve: b
   if (approve) await supabase.from("coach_gym_links").update({ status: "approved" }).eq("id", linkId).eq("gym_org_id", orgId);
   else await supabase.from("coach_gym_links").delete().eq("id", linkId).or(`gym_org_id.eq.${orgId},coach_org_id.eq.${orgId}`);
   revalidatePath(`/dashboard/${orgId}`);
+}
+
+// ---------------------------------------------------------------- facility time slots
+const hm = (v: string) => { const [h, m] = v.split(":").map(Number); return h * 60 + m; };
+const toTime = (min: number) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+
+export async function addFacilitySlots(id: string, _: FormState, fd: FormData): Promise<FormState> {
+  const date = String(fd.get("slot_date") ?? "");
+  const from = String(fd.get("from") ?? "");
+  const to = String(fd.get("to") ?? "");
+  const len = Number(fd.get("length") ?? 60);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(from) || !/^\d{2}:\d{2}$/.test(to)) return { error: "اختر التاريخ والوقت" };
+  if (![30, 60, 90, 120].includes(len)) return { error: "مدة الفترة غير صحيحة" };
+  const start = hm(from), end = hm(to);
+  if (end <= start) return { error: "وقت النهاية لازم يكون بعد البداية" };
+  const rows: { organization_id: string; slot_date: string; starts_at: string; ends_at: string }[] = [];
+  for (let t = start; t + len <= end && rows.length < 24; t += len) {
+    rows.push({ organization_id: id, slot_date: date, starts_at: toTime(t), ends_at: toTime(t + len) });
+  }
+  if (rows.length === 0) return { error: "المدة بين البداية والنهاية أقصر من طول الفترة" };
+  const { supabase } = await requireUser();
+  const { error } = await supabase.from("facility_slots").upsert(rows, { onConflict: "organization_id,slot_date,starts_at", ignoreDuplicates: true });
+  if (error) return { error: /range/.test(error.message) ? "التاريخ لازم يكون خلال الـ 60 يوم القادمة" : /too many/.test(error.message) ? "وصلت الحد الأقصى من الفترات" : "تعذّرت الإضافة (للملاعب فقط)" };
+  revalidatePath(`/dashboard/${id}`);
+  return { ok: `تمت إضافة ${rows.length} فترة` };
+}
+
+export async function setSlotStatus(id: string, slotId: string, status: "available" | "booked"): Promise<void> {
+  if (status !== "available" && status !== "booked") return;
+  const { supabase } = await requireUser();
+  await supabase.from("facility_slots").update({ status }).eq("id", slotId).eq("organization_id", id);
+  revalidatePath(`/dashboard/${id}`);
+}
+
+export async function deleteSlot(id: string, slotId: string): Promise<void> {
+  const { supabase } = await requireUser();
+  await supabase.from("facility_slots").delete().eq("id", slotId).eq("organization_id", id);
+  revalidatePath(`/dashboard/${id}`);
+}
+
+export async function clearSlotsDay(id: string, date: string): Promise<void> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+  const { supabase } = await requireUser();
+  await supabase.from("facility_slots").delete().eq("organization_id", id).eq("slot_date", date);
+  revalidatePath(`/dashboard/${id}`);
 }

@@ -9,7 +9,7 @@ import { InquiryForm, ReportForm } from "@/components/PublicForms";
 import { sendInquiry, sendReport } from "./actions";
 import { getOrgBySlug } from "@/lib/queries";
 import { createPublicClient } from "@/lib/supabase/public";
-import { BILLING_LABEL, DELIVERY_LABEL, GLOW_LABEL, ORG_TYPE_LABEL, WEEKDAYS, WOMEN_LABEL, dateAr, hhmm, isVerified, jod, publicMediaUrl, waNumber } from "@/lib/format";
+import { BILLING_LABEL, DELIVERY_LABEL, GLOW_LABEL, ORG_TYPE_LABEL, WEEKDAYS, WOMEN_LABEL, ammanDate, dateAr, dayLabelAr, hhmm, isVerified, jod, publicMediaUrl, waNumber } from "@/lib/format";
 import type { Tables } from "@/lib/database.types";
 
 export const revalidate = 120;
@@ -146,7 +146,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   const { slug } = await params;
   const d = await load(decodeURIComponent(slug));
   if (!d) notFound();
-  const { org, hours, services, media, offers, products, classes, branches, trainers, glow, menu, coaches, coachGyms, coachProfile } = d;
+  const { org, hours, services, media, offers, products, classes, branches, trainers, glow, menu, coaches, coachGyms, coachProfile, slots } = d;
   const mainRow = branches.find((b) => b.is_main);
   const orgMaps = org.maps_url ?? (org.latitude != null && org.longitude != null ? `https://www.google.com/maps?q=${org.latitude},${org.longitude}` : null);
   const views: BV[] = [
@@ -238,7 +238,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
       <p className="text-sm text-muted">{category ?? ORG_TYPE_LABEL[org.type]}{isVerified(org) && <span className="text-accent"> · ✓ موثّق</span>}{multi && <span> · {views.length} فروع</span>}</p>
       {coachProfile && (coachProfile.education || coachProfile.experience_years != null) && (
-        <p className="mt-1 text-sm text-muted">{[coachProfile.experience_years != null ? `🏅 ${coachProfile.experience_years} سنة خبرة` : null, coachProfile.education ? `🎓 ${[coachProfile.education, coachProfile.education_place].filter(Boolean).join(" — ")}` : null].filter(Boolean).join("  ·  ")}</p>)}
+        <p className="mt-1 text-sm text-muted">{[coachProfile.experience_years != null ? `🏅 ${coachProfile.experience_years} سنة خبرة` : null, coachProfile.education ? `🎓 ${[coachProfile.education, coachProfile.education_place].filter(Boolean).join(" — ")}` : null, coachProfile.session_mode ? { onsite: "حضوري", online: "أونلاين", both: "حضوري وأونلاين" }[coachProfile.session_mode] ?? null : null].filter(Boolean).join("  ·  ")}</p>)}
+      {coachProfile?.certificates && <p className="mt-1 text-sm text-muted">📜 {coachProfile.certificates}</p>}
       {coachGyms.length > 0 && (
         <p className="mt-1 text-sm">يتدرب في: {coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
       <h1 className="mt-1 text-3xl font-extrabold">{org.name_ar}</h1>
@@ -298,6 +299,21 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
               {services.length === 0 ? <p className="text-muted">لم تُضف الأسعار بعد.</p> : <Services items={services} />}</section>}
             <section><h2 className="mb-3 text-xl font-bold">ساعات الدوام</h2><Hours items={hours} /></section>
           </div>
+          {org.type === "sports_facility" && slots.length > 0 && (
+            <Section title="المواعيد المتاحة">
+              <div className="space-y-4">{[...new Set(slots.map((x) => x.slot_date))].map((day) => (
+                <div key={day}><h3 className="mb-2 font-bold text-accent">{day === ammanDate(0) ? "اليوم" : dayLabelAr(day)}</h3>
+                  <ul className="flex flex-wrap gap-2">{slots.filter((x) => x.slot_date === day).map((x) => {
+                    const label = `${hhmm(x.starts_at)}–${hhmm(x.ends_at)}`;
+                    return x.status === "booked"
+                      ? <li key={x.id} className="rounded-xl bg-red-400/15 px-3 py-1.5 text-sm text-red-200 line-through" dir="ltr">{label} · محجوز</li>
+                      : <li key={x.id}>{wa
+                        ? <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${encodeURIComponent(`مرحبا، بدي أحجز ${org.name_ar} يوم ${dayLabelAr(day)} الساعة ${label}`)}`} className="block rounded-xl bg-accent/15 px-3 py-1.5 text-sm font-bold text-accent ring-1 ring-accent/40" >{label} · متاح</TrackedLink>
+                        : <span className="block rounded-xl bg-accent/15 px-3 py-1.5 text-sm font-bold text-accent" dir="ltr">{label} · متاح</span>}</li>;
+                  })}</ul></div>))}</div>
+              <p className="mt-3 text-xs text-muted">اضغط على الوقت المتاح لتحجز عبر واتساب. الحجز بيتأكد من صاحب الملعب.</p>
+            </Section>
+          )}
           {classes.length > 0 && <Section title="جدول الحصص"><Classes items={classes} /></Section>}
           {showTrainers && allCards.length > 0 && <Section title="المدربون"><Trainers items={allCards} /></Section>}
           {org.type === "store" && <Section title="المنتجات"><Products items={products} /></Section>}

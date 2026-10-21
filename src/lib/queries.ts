@@ -1,5 +1,5 @@
 import { createPublicClient } from "@/lib/supabase/public";
-import { asGlow, cleanQuery } from "@/lib/format";
+import { ammanDate, asGlow, cleanQuery } from "@/lib/format";
 import { distanceKm } from "@/lib/maps";
 import type { Database, Enums, Tables } from "@/lib/database.types";
 
@@ -119,7 +119,7 @@ export async function searchProducts(opts: { q?: string; page: number }) {
   const db = createPublicClient();
   let query = db
     .from("products")
-    .select("id,name_ar,brand,price_jod,availability,description_ar,image_path,organization_id,organizations(slug,name_ar,city)", { count: "exact" })
+    .select("id,name_ar,brand,price_jod,old_price_jod,availability,description_ar,image_path,organization_id,organizations(slug,name_ar,city)", { count: "exact" })
     .order("created_at", { ascending: false })
     .range((opts.page - 1) * PAGE_SIZE, opts.page * PAGE_SIZE - 1);
   const q = cleanQuery(opts.q ?? "");
@@ -141,7 +141,7 @@ export async function getOrgBySlug(slug: string) {
     db.from("organization_media").select("*").eq("organization_id", org.id).order("sort_order"),
     db.from("offers").select("*").eq("organization_id", org.id).eq("is_active", true).lte("starts_at", now).gte("ends_at", now),
     org.type === "store"
-      ? db.from("products").select("id,name_ar,brand,price_jod,availability,description_ar,image_path,branch_id").eq("organization_id", org.id).order("created_at", { ascending: false }).limit(48)
+      ? db.from("products").select("id,name_ar,brand,price_jod,old_price_jod,availability,description_ar,image_path,branch_id").eq("organization_id", org.id).order("created_at", { ascending: false }).limit(48)
       : Promise.resolve({ data: [] }),
     db.from("org_classes").select("*").eq("organization_id", org.id).eq("is_active", true).order("weekday").order("starts_at"),
     db.from("org_branches").select("*").eq("organization_id", org.id).eq("is_active", true).order("is_main", { ascending: false }).order("sort_order"),
@@ -153,6 +153,10 @@ export async function getOrgBySlug(slug: string) {
     org.type === "gym" ? db.rpc("get_gym_coaches", { p_gym: org.id }) : Promise.resolve({ data: [] }),
     org.type === "independent_coach" ? db.rpc("get_coach_gyms", { p_coach: org.id }) : Promise.resolve({ data: [] }),
   ]);
+  const slots = org.type === "sports_facility"
+    ? ((await db.from("facility_slots").select("id,slot_date,starts_at,ends_at,status").eq("organization_id", org.id)
+        .gte("slot_date", ammanDate(0)).lte("slot_date", ammanDate(14)).order("slot_date").order("starts_at")).data ?? [])
+    : [];
   const coachProfile = org.type === "independent_coach"
     ? (await db.from("coach_profiles").select("*").eq("organization_id", org.id).maybeSingle()).data
     : null;
@@ -161,6 +165,7 @@ export async function getOrgBySlug(slug: string) {
     coaches: (coaches.data ?? []) as Database["public"]["Functions"]["get_gym_coaches"]["Returns"],
     coachGyms: (coachGyms.data ?? []) as Database["public"]["Functions"]["get_coach_gyms"]["Returns"],
     coachProfile,
+    slots,
     hours: hours.data ?? [],
     services: services.data ?? [],
     media: media.data ?? [],

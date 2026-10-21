@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { AVAILABILITY_LABEL, jod, publicMediaUrl } from "@/lib/format";
+import { AVAILABILITY_LABEL, publicMediaUrl } from "@/lib/format";
+import { PriceTag } from "@/components/PriceTag";
 import type { Enums } from "@/lib/database.types";
 
 export function ProductCard({ p, store }: {
-  p: { id: string; name_ar: string; brand: string | null; price_jod: number; availability: Enums<"availability_status">;
+  p: { id: string; name_ar: string; brand: string | null; price_jod: number; old_price_jod?: number | null; availability: Enums<"availability_status">;
     description_ar: string | null; image_path: string | null };
   store?: string | null;
 }) {
@@ -20,7 +21,7 @@ export function ProductCard({ p, store }: {
       <div className="p-4">
         <h3 className="font-bold">{p.name_ar}</h3>
         {p.brand && <p className="text-sm text-muted">{p.brand}</p>}
-        <p className="mt-1 text-accent">{jod(p.price_jod)}</p>
+        <p className="mt-1"><PriceTag price={p.price_jod} oldPrice={p.old_price_jod} /></p>
         {p.description_ar && <p className="mt-2 line-clamp-3 text-sm leading-6">{p.description_ar}</p>}
         <p className="mt-2 text-xs text-muted">{AVAILABILITY_LABEL[p.availability]}{store ? ` · ${store}` : ""}</p>
       </div>

@@ -756,10 +756,16 @@ export type Database = {
         }
         Relationships: []
       }
+      facility_slots: {
+        Row: { created_at: string; ends_at: string; id: string; note: string | null; organization_id: string; slot_date: string; starts_at: string; status: string }
+        Insert: { created_at?: string; ends_at: string; id?: string; note?: string | null; organization_id: string; slot_date: string; starts_at: string; status?: string }
+        Update: { created_at?: string; ends_at?: string; id?: string; note?: string | null; organization_id?: string; slot_date?: string; starts_at?: string; status?: string }
+        Relationships: []
+      }
       coach_profiles: {
-        Row: { created_at: string; education: string | null; education_place: string | null; experience_years: number | null; organization_id: string; role_label: string | null; specialties: string | null; updated_at: string }
-        Insert: { created_at?: string; education?: string | null; education_place?: string | null; experience_years?: number | null; organization_id: string; role_label?: string | null; specialties?: string | null; updated_at?: string }
-        Update: { created_at?: string; education?: string | null; education_place?: string | null; experience_years?: number | null; organization_id?: string; role_label?: string | null; specialties?: string | null; updated_at?: string }
+        Row: { certificates: string | null; created_at: string; education: string | null; education_place: string | null; experience_years: number | null; organization_id: string; role_label: string | null; session_mode: string | null; specialties: string | null; updated_at: string }
+        Insert: { certificates?: string | null; created_at?: string; education?: string | null; education_place?: string | null; experience_years?: number | null; organization_id: string; role_label?: string | null; session_mode?: string | null; specialties?: string | null; updated_at?: string }
+        Update: { certificates?: string | null; created_at?: string; education?: string | null; education_place?: string | null; experience_years?: number | null; organization_id?: string; role_label?: string | null; session_mode?: string | null; specialties?: string | null; updated_at?: string }
         Relationships: []
       }
       coach_gym_links: {
@@ -1067,6 +1073,7 @@ export type Database = {
           moderation_status: Database["public"]["Enums"]["moderation_status"]
           name_ar: string
           name_en: string | null
+          old_price_jod: number | null
           net_size: string | null
           nutrition_facts: Json | null
           organization_id: string
@@ -1091,6 +1098,7 @@ export type Database = {
           moderation_status?: Database["public"]["Enums"]["moderation_status"]
           name_ar: string
           name_en?: string | null
+          old_price_jod?: number | null
           net_size?: string | null
           nutrition_facts?: Json | null
           organization_id: string
@@ -1115,6 +1123,7 @@ export type Database = {
           moderation_status?: Database["public"]["Enums"]["moderation_status"]
           name_ar?: string
           name_en?: string | null
+          old_price_jod?: number | null
           net_size?: string | null
           nutrition_facts?: Json | null
           organization_id?: string

@@ -101,3 +101,10 @@ export const TRAIL_TYPE = { hiking: "هايكنق", walking: "مشي", running: 
 export const isVerified = (o: { verified_at: string | null; verified_until?: string | null }) =>
   !!o.verified_at && (!o.verified_until || +new Date(o.verified_until) > Date.now());
 export const REPORT_REASON = { wrong_info: "معلومات خاطئة", fake: "نشاط وهمي", inappropriate: "محتوى غير لائق", closed: "النشاط مغلق", other: "سبب آخر" } as const;
+
+/** Calendar date (YYYY-MM-DD) in Jordan time, `offsetDays` from today. */
+export const ammanDate = (offsetDays = 0) => new Date(Date.now() + 3 * 3_600_000 + offsetDays * 86_400_000).toISOString().slice(0, 10);
+export const dayLabelAr = (isoDate: string) => {
+  const d = new Date(`${isoDate}T12:00:00Z`);
+  return `${WEEKDAYS[d.getUTCDay()]} ${isoDate.slice(5).replace("-", "/")}`;
+};

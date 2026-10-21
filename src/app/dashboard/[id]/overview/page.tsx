@@ -37,7 +37,7 @@ export default async function Overview({ params }: PageProps<"/dashboard/[id]/ov
   const featured = promo.data?.featured_until && +new Date(promo.data.featured_until) > msAgo(0) ? promo.data.featured_until : null;
   const base = await siteUrl();
   const box = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
-  const showMembers = ["gym", "independent_coach", "sports_facility"].includes(org.type);
+  const showMembers = ["gym", "independent_coach", "sports_facility", "nutritionist"].includes(org.type);
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
       <Link href="/dashboard" className="text-sm text-muted underline">← أنشطتي</Link>

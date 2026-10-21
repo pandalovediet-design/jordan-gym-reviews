@@ -16,7 +16,7 @@ export default async function DashLayout({ children, params }: LayoutProps<"/das
     ]);
     const { count } = await supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("organization_id", id).eq("status", "new");
     newInquiries = count ?? 0;
-    showMembers = !!org && ["gym", "independent_coach", "sports_facility"].includes(org.type); // private subscriber tool only for places with subscribers
+    showMembers = !!org && ["gym", "independent_coach", "sports_facility", "nutritionist"].includes(org.type); // private subscriber tool only for places with subscribers
     if (org && isAdmin && auth.user) {
       const { data: mine } = await supabase.from("organization_members").select("user_id").eq("organization_id", id).eq("user_id", auth.user.id).maybeSingle();
       if (!mine) adminView = { orgName: org.name_ar };
