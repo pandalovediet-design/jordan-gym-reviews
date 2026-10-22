@@ -166,7 +166,7 @@ export function RestTimer({ content, quranClass }: { content: RestContent; quran
           <details open={!isLong} className="rounded-2xl bg-surface p-4 ring-1 ring-white/10">
             <summary className="cursor-pointer text-sm font-bold">📖 التفسير الميسر <span className="font-normal text-muted">(تفسير وليس من القرآن)</span></summary>
             <div className="mt-3 space-y-2 text-sm leading-relaxed text-muted" dir="rtl">
-              {passage.verses.map((v) => <p key={v.n}>{passage.verses.length > 1 && <b className="text-foreground">({ar(v.n)}) </b>}{v.tafsir}</p>)}
+              {passage.verses.filter((v) => v.tafsir).map((v) => <p key={v.n}>{passage.verses.length > 1 && <b className="text-foreground">({ar(v.n)}) </b>}{v.tafsir}</p>)}
             </div>
           </details>
         </div>

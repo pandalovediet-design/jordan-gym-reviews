@@ -32,27 +32,28 @@ function withoutBasmala(text: string, surah: number, n: number): string {
 type ApiAyah = { numberInSurah: number; text: string };
 type ApiEdition = { name: string; ayahs: ApiAyah[]; edition: { identifier: string } };
 
-async function surah(n: number): Promise<{ name: string; text: Map<number, string>; tafsir: Map<number, string> } | null> {
+async function surah(n: number, errs: string[]): Promise<{ name: string; text: Map<number, string>; tafsir: Map<number, string> } | null> {
   try {
-    const res = await fetch(`${API}/${n}/${EDITIONS}`, { next: { revalidate: 86400 } });
-    if (!res.ok) { console.error(`quran api ${n}: HTTP ${res.status}`); return null; }
+    const res = await fetch(`${API}/${n}/${EDITIONS}`, { headers: { accept: "application/json", "user-agent": "JordanGymReviews/1.0 (+https://jordan-gym-reviews.vercel.app)" }, next: { revalidate: 86400 } });
+    if (!res.ok) { errs.push(`${n}: HTTP ${res.status}`); console.error(`quran api ${n}: HTTP ${res.status}`); return null; }
     const j = (await res.json()) as { data?: ApiEdition[] };
     const q = j.data?.find((e) => e.edition.identifier === "quran-uthmani");
     const t = j.data?.find((e) => e.edition.identifier === "ar.muyassar");
-    if (!q || !t) { console.error(`quran api ${n}: editions missing`, j.data?.map((e) => e.edition?.identifier)); return null; }
+    if (!q || !t) { errs.push(`${n}: editions missing`); return null; }
     return {
       name: q.name.replace(/^سُورَةُ\s*/, "").replace(/^سورة\s*/, ""),
       text: new Map(q.ayahs.map((a) => [a.numberInSurah, withoutBasmala(a.text, n, a.numberInSurah)])),
       tafsir: new Map(t.ayahs.map((a) => [a.numberInSurah, a.text])),
     };
-  } catch (e) { console.error(`quran api ${n}: fetch failed`, e instanceof Error ? e.message : e); return null; }
+  } catch (e) { errs.push(`${n}: ${e instanceof Error ? e.message : String(e)}`); return null; }
 }
 
-export async function getRestContent(): Promise<RestContent> {
+export async function getRestContent(): Promise<RestContent & { errors: string[] }> {
+  const errors: string[] = [];
   const refs = [...SHORT, ...LONG];
   const nums = [...new Set(refs.map((r) => r[0]))];
   const loaded = new Map<number, NonNullable<Awaited<ReturnType<typeof surah>>>>();
-  await Promise.all(nums.map(async (n) => { const s = await surah(n); if (s) loaded.set(n, s); }));
+  await Promise.all(nums.map(async (n) => { const s = await surah(n, errors); if (s) loaded.set(n, s); }));
   const build = (list: [number, number, number][], kind: string): Passage[] =>
     list.flatMap(([s, from, to]) => {
       const d = loaded.get(s);
@@ -60,10 +61,10 @@ export async function getRestContent(): Promise<RestContent> {
       const verses: Verse[] = [];
       for (let a = from; a <= to; a++) {
         const text = d.text.get(a), tafsir = d.tafsir.get(a);
-        if (!text || !tafsir) return [];
-        verses.push({ n: a, text, tafsir });
+        if (!text) { errors.push(`${s}:${a}: no text`); return []; }
+        verses.push({ n: a, text, tafsir: tafsir ?? "" });
       }
       return [{ id: `${kind}-${s}-${from}-${to}`, surah: s, surahName: d.name, from, to, verses }];
     });
-  return { short: build(SHORT, "s"), long: build(LONG, "l") };
+  return { short: build(SHORT, "s"), long: build(LONG, "l"), errors };
 }
