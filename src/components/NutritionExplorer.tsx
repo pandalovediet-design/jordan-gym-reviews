@@ -10,7 +10,8 @@ import type { NutritionItem } from "@/lib/nutrition";
 const toggle = <T,>(s: Set<T>, v: T) => { const n = new Set(s); if (n.has(v)) n.delete(v); else n.add(v); return n; };
 const MAX_SERIES = 12;
 
-export function NutritionExplorer({ items }: { items: NutritionItem[] }) {
+export function NutritionExplorer({ items, presets = [] }: { items: NutritionItem[]; presets?: { id: string; title: string; description: string | null; ids: string[] }[] }) {
+  const [preset, setPreset] = useState<string | null>(null);
   const [meals, setMeals] = useState<Set<string>>(new Set());
   const [kind, setKind] = useState<"" | "video" | "plan">("");
   const [series, setSeries] = useState(false);
@@ -21,12 +22,33 @@ export function NutritionExplorer({ items }: { items: NutritionItem[] }) {
     const rank = (m: string) => MEALS.indexOf(m as (typeof MEALS)[number]);
     return [...shown].sort((a, b) => rank(a.meal) - rank(b.meal)).slice(0, MAX_SERIES);
   }, [shown]);
+  const presetList = useMemo(() => {
+    const p = presets.find((x) => x.id === preset);
+    const m = new Map(items.map((i) => [i.id, i]));
+    return p ? p.ids.map((id) => m.get(id)).filter((x): x is NutritionItem => !!x) : null;
+  }, [preset, presets, items]);
+  const list = presetList ?? routine;
   const filtered = meals.size > 0 || kind !== "";
   const pill = "whitespace-nowrap rounded-full px-4 py-1.5 text-sm ring-1 ring-white/10 transition-colors";
   return (
     <div className="mt-8 grid gap-8 md:grid-cols-[320px_1fr]">
       <div className="h-fit md:sticky md:top-4"><NutritionCalc /></div>
       <div ref={listRef} className="scroll-mt-4 min-w-0">
+        {presets.length > 0 && (
+          <div className="mb-5">
+            <p className="mb-2 text-sm font-bold text-muted">⭐ سلاسل جاهزة</p>
+            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+              {presets.map((p) => (
+                <button key={p.id} type="button" onClick={() => { setPreset(p.id); setSeries(true); requestAnimationFrame(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }}
+                  className="min-w-[200px] max-w-[260px] shrink-0 rounded-2xl bg-accent/10 p-3 text-start ring-1 ring-accent/40 transition hover:bg-accent/20">
+                  <span className="block text-sm font-extrabold">▶ {p.title}</span>
+                  {p.description && <span className="mt-0.5 block text-[11px] text-muted">{p.description}</span>}
+                  <span className="mt-1 block text-[10px] text-accent">{p.ids.length} عناصر</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <p className="mb-3 text-sm font-bold text-muted">شو بدك تاكل؟ <span className="font-normal">(اختار وجبة أو أكثر)</span></p>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
           {MEALS.map((m) => (
@@ -49,12 +71,12 @@ export function NutritionExplorer({ items }: { items: NutritionItem[] }) {
           </div>
           <div className="flex gap-2">
             {filtered && <button type="button" onClick={() => { setMeals(new Set()); setKind(""); setSeries(false); }} className="rounded-xl bg-white/10 px-4 py-2 text-sm hover:bg-white/20">مسح</button>}
-            <button type="button" disabled={!routine.length} onClick={() => { setSeries(true); requestAnimationFrame(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }}
+            <button type="button" disabled={!routine.length} onClick={() => { setPreset(null); setSeries(true); requestAnimationFrame(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }}
               className="rounded-xl bg-accent px-5 py-2 text-sm font-extrabold text-accent-foreground hover:brightness-110 disabled:opacity-40">▶ ابدأ السلسلة ({routine.length})</button>
           </div>
         </div>
-        {series && routine.length > 0 ? (
-          <div className="mt-5"><NutritionSeries key={routine.map((r) => r.id).join()} items={routine} onClose={() => setSeries(false)} /></div>
+        {series && list.length > 0 ? (
+          <div className="mt-5"><NutritionSeries key={list.map((r) => r.id).join()} items={list} onClose={() => setSeries(false)} /></div>
         ) : (
           <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
             {shown.map((w) => (

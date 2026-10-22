@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { listHomeWorkouts } from "@/lib/home-workouts";
+import { listSeries } from "@/lib/series";
 import { JsonLd } from "@/lib/jsonld";
 import { baseUrl } from "@/lib/base-url";
 import { SAFETY_NOTE } from "@/lib/exercise-meta";
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NoGym() {
-  const items = await listHomeWorkouts();
+  const [items, presets] = await Promise.all([listHomeWorkouts(), listSeries("home").catch(() => [])]);
   const steps = [["🪢", "اختار أدواتك"], ["🎯", "اختار عضلاتك"], ["▶", "شغّل السلسلة"]];
   return (
     <div className="mx-auto max-w-5xl px-4 pb-10">
@@ -30,7 +31,7 @@ export default async function NoGym() {
         </ol>
       </section>
 
-      {items.length > 0 ? <HomeExplorer items={items} /> : (
+      {items.length > 0 ? <HomeExplorer items={items} presets={presets} /> : (
         <p className="mt-10 rounded-2xl bg-surface p-8 text-center text-muted ring-1 ring-white/10">التمارين جاية قريباً، ارجع بعد شوي 💪</p>
       )}
 

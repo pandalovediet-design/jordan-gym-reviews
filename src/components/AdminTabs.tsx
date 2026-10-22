@@ -19,6 +19,7 @@ const TABS = [
   { href: "/admin/exercises", label: "التمارين" },
   { href: "/admin/home", label: "من غير جيم" },
   { href: "/admin/nutrition", label: "من غير حرمان" },
+  { href: "/admin/series", label: "سلاسل جاهزة" },
 ];
 
 export function AdminTabs() {

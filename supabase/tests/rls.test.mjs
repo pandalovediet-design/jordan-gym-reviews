@@ -1152,3 +1152,22 @@ test("nutrition: public read of active only, admin-only write, link allow-list, 
     assert.equal((await db.query(`delete from public.nutrition_products where item_id = $1 returning id`, [a.id])).rows.length, 0);
   });
 });
+
+test("named series: public read of active only, admin-only write, 1-12 items, kind check", async () => {
+  await asAdmin(async () => {
+    await db.query(`insert into public.named_series (slug, kind, title_ar, item_ids) values ('band-day', 'home', 'يوم حبال', array[gen_random_uuid(), gen_random_uuid()])`);
+    await db.query(`insert into public.named_series (slug, kind, title_ar, item_ids, is_active) values ('hidden-s', 'nutrition', 'مخفية', array[gen_random_uuid()], false)`);
+    await rejects(() => db.query(`insert into public.named_series (slug, kind, title_ar, item_ids) values ('empty-s', 'home', 'فاضية', '{}')`));
+    await rejects(() => db.query(`insert into public.named_series (slug, kind, title_ar, item_ids) values ('bad-kind', 'gym', 'سلسلة', array[gen_random_uuid()])`));
+    await rejects(() => db.query(`insert into public.named_series (slug, kind, title_ar, item_ids) values ('too-many', 'home', 'سلسلة', (select array_agg(gen_random_uuid()) from generate_series(1, 13)))`));
+  });
+  for (const as_ of [asAnon, asBob]) {
+    await as_(async () => {
+      assert.deepEqual((await db.query(`select slug from public.named_series`)).rows.map((r) => r.slug), ["band-day"]);
+    });
+  }
+  await asBob(async () => {
+    await rejects(() => db.query(`insert into public.named_series (slug, kind, title_ar, item_ids) values ('bob-s', 'home', 'سلسلة', array[gen_random_uuid()])`));
+    assert.equal((await db.query(`delete from public.named_series returning id`)).rows.length, 0);
+  });
+});

@@ -879,6 +879,12 @@ export type Database = {
           },
         ]
       }
+      named_series: {
+        Row: { created_at: string; description_ar: string | null; id: string; is_active: boolean; item_ids: string[]; kind: string; slug: string; sort_order: number; title_ar: string }
+        Insert: { created_at?: string; description_ar?: string | null; id?: string; is_active?: boolean; item_ids: string[]; kind: string; slug: string; sort_order?: number; title_ar: string }
+        Update: { created_at?: string; description_ar?: string | null; id?: string; is_active?: boolean; item_ids?: string[]; kind?: string; slug?: string; sort_order?: number; title_ar?: string }
+        Relationships: []
+      }
       nutrition_items: {
         Row: { body_ar: string | null; calories: number | null; carbs_g: number | null; cover_path: string | null; created_at: string; fat_g: number | null; id: string; is_active: boolean; kind: string; meal: string; platform: string | null; protein_g: number | null; slug: string; sort_order: number; summary_ar: string | null; title_ar: string; video_url: string | null }
         Insert: { body_ar?: string | null; calories?: number | null; carbs_g?: number | null; cover_path?: string | null; created_at?: string; fat_g?: number | null; id?: string; is_active?: boolean; kind?: string; meal: string; platform?: string | null; protein_g?: number | null; slug: string; sort_order?: number; summary_ar?: string | null; title_ar: string; video_url?: string | null }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { listNutrition } from "@/lib/nutrition";
+import { listSeries } from "@/lib/series";
 import { JsonLd } from "@/lib/jsonld";
 import { baseUrl } from "@/lib/base-url";
 import { NUTRITION_NOTE } from "@/lib/nutrition-meta";
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NoDeprivation() {
-  const items = await listNutrition();
+  const [items, presets] = await Promise.all([listNutrition(), listSeries("nutrition").catch(() => [])]);
   const steps = [["🧮", "احسب سعراتك"], ["🍽️", "اختار وجباتك"], ["▶", "شغّل السلسلة"]];
   return (
     <div className="mx-auto max-w-5xl px-4 pb-10">
@@ -29,7 +30,7 @@ export default async function NoDeprivation() {
           {steps.map(([i, t], k) => <li key={t} className="flex items-center gap-2 rounded-full bg-black/30 px-4 py-1.5 ring-1 ring-white/10"><span>{i}</span>{k + 1}. {t}</li>)}
         </ol>
       </section>
-      <NutritionExplorer items={items} />
+      <NutritionExplorer items={items} presets={presets} />
       <section className="mt-12 grid gap-3 md:grid-cols-2">
         <Link href="/no-gym" className="rounded-2xl bg-accent p-5 text-accent-foreground transition hover:brightness-110">
           <p className="text-lg font-extrabold">كمّل بتمارين من البيت</p>

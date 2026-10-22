@@ -14,7 +14,8 @@ const FRONT_SIDE = ["chest", "biceps", "abs", "quads"];
 const toggle = <T,>(s: Set<T>, v: T) => { const n = new Set(s); if (n.has(v)) n.delete(v); else n.add(v); return n; };
 const MAX_SERIES = 12;
 
-export function HomeExplorer({ items }: { items: HomeWorkout[] }) {
+export function HomeExplorer({ items, presets = [] }: { items: HomeWorkout[]; presets?: { id: string; title: string; description: string | null; ids: string[] }[] }) {
+  const [preset, setPreset] = useState<string | null>(null);
   const [eq, setEq] = useState<Set<Equipment>>(new Set());
   const [focus, setFocus] = useState<Set<string>>(new Set());
   const [view, setView] = useState<"front" | "back">("front");
@@ -47,6 +48,12 @@ export function HomeExplorer({ items }: { items: HomeWorkout[] }) {
     }
   };
   const clear = () => { setEq(new Set()); setFocus(new Set()); setSeries(false); };
+  const presetList = useMemo(() => {
+    const p = presets.find((x) => x.id === preset);
+    const m = new Map(items.map((i) => [i.id, i]));
+    return p ? p.ids.map((id) => m.get(id)).filter((x): x is HomeWorkout => !!x) : null;
+  }, [preset, presets, items]);
+  const list = presetList ?? routine;
   const filtered = eq.size > 0 || focus.size > 0;
 
   return (
@@ -63,6 +70,21 @@ export function HomeExplorer({ items }: { items: HomeWorkout[] }) {
       </div>
 
       <div ref={listRef} className="scroll-mt-4 min-w-0">
+        {presets.length > 0 && (
+          <div className="mb-5">
+            <p className="mb-2 text-sm font-bold text-muted">⭐ سلاسل جاهزة</p>
+            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+              {presets.map((p) => (
+                <button key={p.id} type="button" onClick={() => { setPreset(p.id); setSeries(true); requestAnimationFrame(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }}
+                  className="min-w-[200px] max-w-[260px] shrink-0 rounded-2xl bg-accent/10 p-3 text-start ring-1 ring-accent/40 transition hover:bg-accent/20">
+                  <span className="block text-sm font-extrabold">▶ {p.title}</span>
+                  {p.description && <span className="mt-0.5 block text-[11px] text-muted">{p.description}</span>}
+                  <span className="mt-1 block text-[10px] text-accent">{p.ids.length} عناصر</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <p className="mb-3 text-sm font-bold text-muted">بدك تتمرن بشو؟ <span className="font-normal">(اختار أداة أو أكثر)</span></p>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {EQUIPMENT.filter((e) => eqCount.has(e)).map((e) => (
@@ -87,13 +109,13 @@ export function HomeExplorer({ items }: { items: HomeWorkout[] }) {
           </div>
           <div className="flex gap-2">
             {filtered && <button type="button" onClick={clear} className="rounded-xl bg-white/10 px-4 py-2 text-sm hover:bg-white/20">مسح</button>}
-            <button type="button" disabled={!routine.length} onClick={() => { setSeries(true); requestAnimationFrame(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }}
+            <button type="button" disabled={!routine.length} onClick={() => { setPreset(null); setSeries(true); requestAnimationFrame(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }}
               className="rounded-xl bg-accent px-5 py-2 text-sm font-extrabold text-accent-foreground hover:brightness-110 disabled:opacity-40">▶ ابدأ السلسلة ({routine.length})</button>
           </div>
         </div>
 
-        {series && routine.length > 0 ? (
-          <div className="mt-5"><HomeSeries key={routine.map((r) => r.id).join()} items={routine} onClose={() => setSeries(false)} /></div>
+        {series && list.length > 0 ? (
+          <div className="mt-5"><HomeSeries key={list.map((r) => r.id).join()} items={list} onClose={() => setSeries(false)} /></div>
         ) : (
           <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
             {shown.map((w) => (
