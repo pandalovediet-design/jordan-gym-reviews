@@ -128,6 +128,8 @@ export function QuranAudioProvider({ children }: { children: ReactNode }) {
     el.src = a.audio;
     el.play().then(() => { setPlaying(true); setErr(""); }).catch(() => setPlaying(false));
     setMedia();
+    // warm the browser cache with the next two ayahs so there is no download wait between them
+    warm.current = [1, 2].map((d) => q.current.ayahs[i + d]).filter(Boolean).map((n) => { const w = new Audio(); w.preload = "auto"; w.src = n.audio; return w; });
   };
 
   const onEnded = async () => {
@@ -145,6 +147,7 @@ export function QuranAudioProvider({ children }: { children: ReactNode }) {
       playAt(0);
     } catch { setPlaying(false); setErr("انقطع الاتصال. اضغط تشغيل مرة ثانية."); }
   };
+  const warm = useRef<HTMLAudioElement[]>([]);
   const endedRef = useRef(onEnded);
   useEffect(() => { endedRef.current = onEnded; });
 
