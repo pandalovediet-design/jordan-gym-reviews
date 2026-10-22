@@ -13,6 +13,14 @@ export const RECITERS = [
   { id: "ar.abdurrahmaansudais", name: "عبدالرحمن السديس" },
   { id: "ar.saoodshuraym", name: "سعود الشريم" },
   { id: "ar.mahermuaiqly", name: "ماهر المعيقلي" },
+  { id: "ar.hudhaify", name: "علي الحذيفي" },
+  { id: "ar.muhammadayyoub", name: "محمد أيوب" },
+  { id: "ar.muhammadjibreel", name: "محمد جبريل" },
+  { id: "ar.abdullahbasfar", name: "عبدالله بصفر" },
+  { id: "ar.shaatree", name: "أبو بكر الشاطري" },
+  { id: "ar.ahmedajamy", name: "أحمد العجمي" },
+  { id: "ar.hanirifai", name: "هاني الرفاعي" },
+  { id: "ar.aymanswoaid", name: "أيمن سويد" },
 ] as const;
 export const TIMERS = [15, 30, 45, 0] as const;
 const KEY = "jgr-quran-player-v1";
@@ -117,7 +125,7 @@ export function QuranAudioProvider({ children }: { children: ReactNode }) {
     const a = s.ayahs[s.idx];
     if (!a) return;
     const rec = RECITERS.find((r) => r.id === s.reciter)?.name ?? "";
-    navigator.mediaSession.metadata = new MediaMetadata({ title: `${nameIn(surahsRef.current, s.surah)} — آية ${a.numberInSurah}`, artist: rec, album: "Jordan Gym Reviews — روح وجسد" });
+    navigator.mediaSession.metadata = new MediaMetadata({ title: `${nameIn(surahsRef.current, s.surah)} — آية ${a.numberInSurah}`, artist: rec, album: "Jordan Gym Reviews — روح وجسد", artwork: [{ src: "/logo-mark.png", sizes: "512x512", type: "image/png" }] });
   };
 
   const playAt = (i: number) => {
