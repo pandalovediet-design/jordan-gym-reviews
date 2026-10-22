@@ -18,6 +18,7 @@ export function SiteHeader() {
           <Link href="/exercises" className="hover:text-foreground">🏋️ التمارين</Link>
           <Link href="/no-gym" className="hover:text-foreground">🏠 من غير جيم</Link>
           <Link href="/no-deprivation" className="hover:text-foreground">🥗 من غير حرمان</Link>
+          <Link href="/rooh-w-jasad" className="hover:text-foreground">🕌 روح وجسد</Link>
           <Link href="/reels" className="hover:text-foreground">🎬 ريلز</Link>
           <Link href="/deals" className="hover:text-foreground">🎟️ أكواد خصم</Link>
           <Link href="/market" className="hover:text-foreground">🔄 سوق المعدات</Link>

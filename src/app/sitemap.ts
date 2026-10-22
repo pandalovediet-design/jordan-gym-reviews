@@ -42,6 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...exercises.map((e) => ({ url: `${base}/exercises/${e.slug}` })),
     { url: `${base}/no-gym` },
     { url: `${base}/no-deprivation` },
+    { url: `${base}/rooh-w-jasad` },
     ...nutrition.map((w) => ({ url: `${base}/no-deprivation/${w.slug}` })),
     ...homeWorkouts.map((w) => ({ url: `${base}/no-gym/${w.slug}` })),
     { url: `${base}/market` },
