@@ -34,7 +34,7 @@ type ApiEdition = { name: string; ayahs: ApiAyah[]; edition: { identifier: strin
 
 async function surah(n: number, errs: string[]): Promise<{ name: string; text: Map<number, string>; tafsir: Map<number, string> } | null> {
   try {
-    const res = await fetch(`${API}/${n}/${EDITIONS}`, { headers: { accept: "application/json", "user-agent": "JordanGymReviews/1.0 (+https://jordan-gym-reviews.vercel.app)" }, next: { revalidate: 86400 } });
+    const res = await fetch(`${API}/${n}/editions/${EDITIONS}`, { headers: { accept: "application/json", "user-agent": "JordanGymReviews/1.0 (+https://jordan-gym-reviews.vercel.app)" }, next: { revalidate: 86400 } });
     if (!res.ok) { errs.push(`${n}: HTTP ${res.status}`); console.error(`quran api ${n}: HTTP ${res.status}`); return null; }
     const j = (await res.json()) as { data?: ApiEdition[] };
     const q = j.data?.find((e) => e.edition.identifier === "quran-uthmani");
