@@ -24,6 +24,13 @@ export const RECITERS = [
 ] as const;
 export const TIMERS = [15, 30, 45, 0] as const;
 const KEY = "jgr-quran-player-v1";
+const POS = "jgr-quran-pos-v1"; // last ayah played, so the next start resumes there
+function readPos(surah: number, reciter: string): number {
+  try {
+    const d = JSON.parse(localStorage.getItem(POS) ?? "null");
+    return d && d.surah === surah && d.reciter === reciter && Number.isInteger(d.i) && d.i > 0 ? d.i : 0;
+  } catch { return 0; }
+}
 const ar = (n: number) => n.toLocaleString("ar-EG");
 
 export type SurahMeta = { number: number; name: string; numberOfAyahs: number };
@@ -132,7 +139,8 @@ export function QuranAudioProvider({ children }: { children: ReactNode }) {
     const el = audio.current;
     const a = q.current.ayahs[i];
     if (!el || !a) return;
-    q.current.idx = i; setIdx(i); setCurSurah(q.current.surah); setCurReciter(q.current.reciter);
+    q.current.idx = i; setIdx(i);
+    try { localStorage.setItem(POS, JSON.stringify({ surah: q.current.surah, reciter: q.current.reciter, i })); } catch {} setCurSurah(q.current.surah); setCurReciter(q.current.reciter);
     el.src = a.audio;
     el.play().then(() => { setPlaying(true); setErr(""); }).catch(() => setPlaying(false));
     setMedia();
@@ -182,9 +190,10 @@ export function QuranAudioProvider({ children }: { children: ReactNode }) {
   };
 
   const begin = (list: Ayah[]) => {
+    const from = Math.min(readPos(prefs.surah, prefs.reciter), list.length - 1);
     q.current = { ...q.current, ayahs: list, surah: prefs.surah, reciter: prefs.reciter, timer: prefs.timer, endAt: prefs.timer ? Date.now() + prefs.timer * 60_000 : 0 };
     setAyahs(list); setActive(true); setLeft(prefs.timer * 60);
-    playAt(0);
+    playAt(Math.max(0, from));
   };
   const start = async () => {
     setErr(""); setDone(false);
