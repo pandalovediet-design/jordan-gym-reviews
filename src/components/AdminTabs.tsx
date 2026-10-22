@@ -17,6 +17,7 @@ const TABS = [
   { href: "/admin/market", label: "السوق" },
   { href: "/admin/videos", label: "الفيديو" },
   { href: "/admin/exercises", label: "التمارين" },
+  { href: "/admin/home", label: "من غير جيم" },
 ];
 
 export function AdminTabs() {

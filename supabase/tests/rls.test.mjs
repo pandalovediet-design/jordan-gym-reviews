@@ -1096,3 +1096,30 @@ test("exercises: admin-only list, coach explanations are pending until approved,
   });
   await asAdmin(async () => { await db.query(`update public.exercises set is_active = true where id = $1`, [ex]); });
 });
+
+test("home workouts: public read of active only, admin-only write, link allow-list, 4 products max", async () => {
+  let w, hidden;
+  await asAdmin(async () => {
+    w = (await db.query(`insert into public.home_workouts (slug, title_ar, focus, equipment, video_url, steps_ar) values ('band-row', 'سحب بحبل المقاومة', 'back', 'bands', 'https://www.instagram.com/reel/abc123/', array['خطوة اولى','خطوة ثانية']) returning id, platform`)).rows[0];
+    assert.equal(w.platform, "instagram");
+    hidden = (await db.query(`insert into public.home_workouts (slug, title_ar, focus, video_url, steps_ar, is_active) values ('hidden-one', 'تمرين مخفي', 'abs', 'https://youtu.be/abcdefghijk', array['خطوة اولى'], false) returning id`)).rows[0].id;
+    await rejects(() => db.query(`insert into public.home_workouts (slug, title_ar, focus, video_url, steps_ar) values ('bad-link', 'تمرين', 'abs', 'https://evil.example.com/x', array['خطوة اولى'])`), /unsupported/);
+    await rejects(() => db.query(`insert into public.home_workouts (slug, title_ar, focus, video_url, steps_ar) values ('bad-step', 'تمرين', 'abs', 'https://youtu.be/abcdefghijk', array['خ'])`), /invalid step/);
+    await rejects(() => db.query(`insert into public.home_workouts (slug, title_ar, focus, equipment, video_url, steps_ar) values ('bad-eq', 'تمرين', 'abs', 'rocket', 'https://youtu.be/abcdefghijk', array['خطوة اولى'])`));
+    for (let i = 0; i < 4; i++) await db.query(`insert into public.home_workout_products (workout_id, name_ar, url) values ($1, $2, 'https://example.com/p')`, [w.id, `منتج ${i}`]);
+    await rejects(() => db.query(`insert into public.home_workout_products (workout_id, name_ar, url) values ($1, 'منتج خامس', 'https://example.com/p')`, [w.id]), /too many/);
+    await rejects(() => db.query(`insert into public.home_workout_products (workout_id, name_ar, url) values ($1, 'منتج', 'http://example.com/p')`, [hidden]));
+    await db.query(`insert into public.home_workout_products (workout_id, name_ar, url) values ($1, 'منتج مخفي', 'https://example.com/p')`, [hidden]);
+  });
+  for (const as_ of [asAnon, asBob]) {
+    await as_(async () => {
+      assert.deepEqual((await db.query(`select slug from public.home_workouts`)).rows.map((r) => r.slug), ["band-row"]);
+      assert.equal((await db.query(`select id from public.home_workout_products`)).rows.length, 4); // hidden workout's product is not visible
+    });
+  }
+  await asBob(async () => {
+    await rejects(() => db.query(`insert into public.home_workouts (slug, title_ar, focus, video_url, steps_ar) values ('bob-one', 'تمرين', 'abs', 'https://youtu.be/abcdefghijk', array['خطوة اولى'])`));
+    assert.equal((await db.query(`update public.home_workouts set title_ar = 'تعديل' where id = $1 returning id`, [w.id])).rows.length, 0);
+    assert.equal((await db.query(`delete from public.home_workout_products where workout_id = $1 returning id`, [w.id])).rows.length, 0);
+  });
+});

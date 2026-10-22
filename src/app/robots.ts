@@ -1,7 +1,7 @@
 import { baseUrl } from "@/lib/base-url";
 import type { MetadataRoute } from "next";
 
-const PRIVATE = ["/dashboard", "/admin", "/api", "/login", "/forgot", "/auth/", "/a/", "/q/", "/m/"];
+const PRIVATE = ["/dashboard", "/admin", "/api", "/login", "/forgot", "/auth/", "/a/", "/go/", "/q/", "/m/"];
 // Answer engines and AI assistants are welcome: the whole point is to be quoted accurately.
 const AI_BOTS = ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-SearchBot", "Claude-User", "PerplexityBot", "Perplexity-User", "Google-Extended", "Applebot-Extended", "CCBot", "Bingbot"];
 

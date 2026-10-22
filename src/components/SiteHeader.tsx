@@ -16,6 +16,7 @@ export function SiteHeader() {
           <Link href="/now" className="hover:text-foreground">⏱️ هسا</Link>
           <Link href="/awards" className="hover:text-foreground">🏆 نادي الشهر</Link>
           <Link href="/exercises" className="hover:text-foreground">🏋️ التمارين</Link>
+          <Link href="/no-gym" className="hover:text-foreground">🏠 من غير جيم</Link>
           <Link href="/reels" className="hover:text-foreground">🎬 ريلز</Link>
           <Link href="/deals" className="hover:text-foreground">🎟️ أكواد خصم</Link>
           <Link href="/market" className="hover:text-foreground">🔄 سوق المعدات</Link>

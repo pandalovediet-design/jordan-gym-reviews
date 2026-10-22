@@ -859,6 +859,26 @@ export type Database = {
           },
         ]
       }
+      home_workouts: {
+        Row: { cover_path: string | null; created_at: string; equipment: string; focus: string; id: string; is_active: boolean; level: string; mistake_ar: string | null; platform: string | null; slug: string; sets_ar: string | null; sort_order: number; steps_ar: string[]; summary_ar: string | null; title_ar: string; video_url: string }
+        Insert: { cover_path?: string | null; created_at?: string; equipment?: string; focus: string; id?: string; is_active?: boolean; level?: string; mistake_ar?: string | null; platform?: string | null; slug: string; sets_ar?: string | null; sort_order?: number; steps_ar: string[]; summary_ar?: string | null; title_ar: string; video_url: string }
+        Update: { cover_path?: string | null; created_at?: string; equipment?: string; focus?: string; id?: string; is_active?: boolean; level?: string; mistake_ar?: string | null; platform?: string | null; slug?: string; sets_ar?: string | null; sort_order?: number; steps_ar?: string[]; summary_ar?: string | null; title_ar?: string; video_url?: string }
+        Relationships: []
+      }
+      home_workout_products: {
+        Row: { clicks: number; created_at: string; id: string; image_path: string | null; name_ar: string; price_text: string | null; sort_order: number; store_label: string | null; url: string; workout_id: string }
+        Insert: { clicks?: number; created_at?: string; id?: string; image_path?: string | null; name_ar: string; price_text?: string | null; sort_order?: number; store_label?: string | null; url: string; workout_id: string }
+        Update: { clicks?: number; created_at?: string; id?: string; image_path?: string | null; name_ar?: string; price_text?: string | null; sort_order?: number; store_label?: string | null; url?: string; workout_id?: string }
+        Relationships: [
+          {
+            foreignKeyName: "home_workout_products_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "home_workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_votes: {
         Row: { category: string; created_at: string; id: string; nominee_org_id: string; vote_month: string; voter_id: string }
         Insert: { category: string; created_at?: string; id?: string; nominee_org_id: string; vote_month?: string; voter_id?: string }
