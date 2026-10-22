@@ -879,6 +879,26 @@ export type Database = {
           },
         ]
       }
+      nutrition_items: {
+        Row: { body_ar: string | null; calories: number | null; carbs_g: number | null; cover_path: string | null; created_at: string; fat_g: number | null; id: string; is_active: boolean; kind: string; meal: string; platform: string | null; protein_g: number | null; slug: string; sort_order: number; summary_ar: string | null; title_ar: string; video_url: string | null }
+        Insert: { body_ar?: string | null; calories?: number | null; carbs_g?: number | null; cover_path?: string | null; created_at?: string; fat_g?: number | null; id?: string; is_active?: boolean; kind?: string; meal: string; platform?: string | null; protein_g?: number | null; slug: string; sort_order?: number; summary_ar?: string | null; title_ar: string; video_url?: string | null }
+        Update: { body_ar?: string | null; calories?: number | null; carbs_g?: number | null; cover_path?: string | null; created_at?: string; fat_g?: number | null; id?: string; is_active?: boolean; kind?: string; meal?: string; platform?: string | null; protein_g?: number | null; slug?: string; sort_order?: number; summary_ar?: string | null; title_ar?: string; video_url?: string | null }
+        Relationships: []
+      }
+      nutrition_products: {
+        Row: { clicks: number; created_at: string; id: string; image_path: string | null; item_id: string; name_ar: string; price_text: string | null; sort_order: number; store_label: string | null; url: string }
+        Insert: { clicks?: number; created_at?: string; id?: string; image_path?: string | null; item_id: string; name_ar: string; price_text?: string | null; sort_order?: number; store_label?: string | null; url: string }
+        Update: { clicks?: number; created_at?: string; id?: string; image_path?: string | null; item_id?: string; name_ar?: string; price_text?: string | null; sort_order?: number; store_label?: string | null; url?: string }
+        Relationships: [
+          {
+            foreignKeyName: "nutrition_products_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "nutrition_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_votes: {
         Row: { category: string; created_at: string; id: string; nominee_org_id: string; vote_month: string; voter_id: string }
         Insert: { category: string; created_at?: string; id?: string; nominee_org_id: string; vote_month?: string; voter_id?: string }

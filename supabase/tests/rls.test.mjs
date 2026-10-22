@@ -1123,3 +1123,32 @@ test("home workouts: public read of active only, admin-only write, link allow-li
     assert.equal((await db.query(`delete from public.home_workout_products where workout_id = $1 returning id`, [w.id])).rows.length, 0);
   });
 });
+
+test("nutrition: public read of active only, admin-only write, link allow-list, content required, 4 products max", async () => {
+  let a, hidden;
+  await asAdmin(async () => {
+    a = (await db.query(`insert into public.nutrition_items (slug, title_ar, meal, video_url, body_ar, calories) values ('oat-bowl', 'شوفان بالموز', 'breakfast', 'https://www.tiktok.com/@x/video/1234567890123', 'شرح الوصفة', 350) returning id, platform`)).rows[0];
+    assert.equal(a.platform, "tiktok");
+    await db.query(`insert into public.nutrition_items (slug, title_ar, meal, kind, body_ar) values ('day-plan', 'خطة يوم', 'lunch', 'plan', E'# فطور\n- بيض')`);
+    hidden = (await db.query(`insert into public.nutrition_items (slug, title_ar, meal, body_ar, is_active) values ('hidden-n', 'مخفي', 'snack', 'x', false) returning id`)).rows[0].id;
+    await rejects(() => db.query(`insert into public.nutrition_items (slug, title_ar, meal, video_url) values ('bad-n', 'عنصر', 'snack', 'https://evil.example.com/x')`), /unsupported/);
+    await rejects(() => db.query(`insert into public.nutrition_items (slug, title_ar, meal) values ('empty-n', 'عنصر فاضي', 'snack')`)); // needs a video or text
+    await rejects(() => db.query(`insert into public.nutrition_items (slug, title_ar, meal, body_ar) values ('bad-meal', 'عنصر', 'brunch', 'x')`));
+    await rejects(() => db.query(`insert into public.nutrition_items (slug, title_ar, meal, body_ar, calories) values ('bad-cal', 'عنصر', 'snack', 'x', 99999)`));
+    for (let i = 0; i < 4; i++) await db.query(`insert into public.nutrition_products (item_id, name_ar, url) values ($1, $2, 'https://example.com/p')`, [a.id, `منتج ${i}`]);
+    await rejects(() => db.query(`insert into public.nutrition_products (item_id, name_ar, url) values ($1, 'خامس', 'https://example.com/p')`, [a.id]), /too many/);
+    await rejects(() => db.query(`insert into public.nutrition_products (item_id, name_ar, url) values ($1, 'منتج', 'http://example.com/p')`, [hidden]));
+    await db.query(`insert into public.nutrition_products (item_id, name_ar, url) values ($1, 'منتج مخفي', 'https://example.com/p')`, [hidden]);
+  });
+  for (const as_ of [asAnon, asBob]) {
+    await as_(async () => {
+      assert.deepEqual((await db.query(`select slug from public.nutrition_items order by slug`)).rows.map((r) => r.slug), ["day-plan", "oat-bowl"]);
+      assert.equal((await db.query(`select id from public.nutrition_products`)).rows.length, 4);
+    });
+  }
+  await asBob(async () => {
+    await rejects(() => db.query(`insert into public.nutrition_items (slug, title_ar, meal, body_ar) values ('bob-n', 'عنصر', 'snack', 'x')`));
+    assert.equal((await db.query(`update public.nutrition_items set title_ar = 'تعديل' where id = $1 returning id`, [a.id])).rows.length, 0);
+    assert.equal((await db.query(`delete from public.nutrition_products where item_id = $1 returning id`, [a.id])).rows.length, 0);
+  });
+});

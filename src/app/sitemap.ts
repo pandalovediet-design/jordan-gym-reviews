@@ -2,6 +2,7 @@ import { baseUrl } from "@/lib/base-url";
 import type { MetadataRoute } from "next";
 import { listExercises } from "@/lib/exercises";
 import { listHomeWorkouts } from "@/lib/home-workouts";
+import { listNutrition } from "@/lib/nutrition";
 import { listCities, listSitemapEntries, listTrails } from "@/lib/queries";
 import { ORG_TYPE_PLURAL } from "@/lib/format";
 import type { Enums } from "@/lib/database.types";
@@ -13,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const trails = await listTrails().catch(() => []);
   const exercises = await listExercises().catch(() => []);
   const homeWorkouts = await listHomeWorkouts().catch(() => []);
+  const nutrition = await listNutrition().catch(() => []);
   const types = Object.keys(ORG_TYPE_PLURAL) as Enums<"org_type">[];
   const dirs = (
     await Promise.all(
@@ -39,6 +41,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/exercises` },
     ...exercises.map((e) => ({ url: `${base}/exercises/${e.slug}` })),
     { url: `${base}/no-gym` },
+    { url: `${base}/no-deprivation` },
+    ...nutrition.map((w) => ({ url: `${base}/no-deprivation/${w.slug}` })),
     ...homeWorkouts.map((w) => ({ url: `${base}/no-gym/${w.slug}` })),
     { url: `${base}/market` },
     { url: `${base}/search` },

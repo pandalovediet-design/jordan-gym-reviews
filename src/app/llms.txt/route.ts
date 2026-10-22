@@ -1,6 +1,7 @@
 import { baseUrl } from "@/lib/base-url";
 import { listExercises } from "@/lib/exercises";
 import { listHomeWorkouts } from "@/lib/home-workouts";
+import { listNutrition } from "@/lib/nutrition";
 import { listSitemapEntries } from "@/lib/queries";
 
 export const revalidate = 3600;
@@ -8,9 +9,10 @@ export const revalidate = 3600;
 /** llms.txt: a plain-text map of the site for AI assistants (what it is, where the facts live, how to cite). */
 export async function GET() {
   const base = baseUrl();
-  const [ex, hw, { orgs }] = await Promise.all([
+  const [ex, hw, nu, { orgs }] = await Promise.all([
     listExercises().catch(() => []),
     listHomeWorkouts().catch(() => []),
+    listNutrition().catch(() => []),
     listSitemapEntries().catch(() => ({ orgs: [] as { slug: string }[], products: [] })),
   ]);
   const lines = [
@@ -27,6 +29,7 @@ export async function GET() {
     `- [الدليل (نوادي، مدربين، ملاعب، متاجر)](${base}/directory)`,
     `- [دليل التمارين بالعربي](${base}/exercises)`,
     `- [من غير جيم: تمارين منزلية بالفيديو](${base}/no-gym)`,
+    `- [من غير حرمان: حاسبة سعرات ووصفات وخطط أكل](${base}/no-deprivation)`,
     `- [ريلز رياضية](${base}/reels)`,
     `- [أكواد خصم](${base}/deals)`,
     `- [سوق المعدات](${base}/market)`,
@@ -38,6 +41,9 @@ export async function GET() {
     "",
     "## تمارين منزلية (من غير جيم)",
     ...hw.map((w) => `- [${w.title}](${base}/no-gym/${w.slug})`),
+    "",
+    "## وصفات وخطط أكل (من غير حرمان)",
+    ...nu.map((w) => `- [${w.title}](${base}/no-deprivation/${w.slug})`),
     "",
     "## الأنشطة",
     ...orgs.filter((o) => !o.slug.startsWith("demo-")).slice(0, 200).map((o) => `- ${base}/g/${o.slug}`),

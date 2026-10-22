@@ -18,6 +18,7 @@ const TABS = [
   { href: "/admin/videos", label: "الفيديو" },
   { href: "/admin/exercises", label: "التمارين" },
   { href: "/admin/home", label: "من غير جيم" },
+  { href: "/admin/nutrition", label: "من غير حرمان" },
 ];
 
 export function AdminTabs() {
