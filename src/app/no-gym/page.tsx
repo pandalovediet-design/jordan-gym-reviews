@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default async function NoGym() {
   const items = await listHomeWorkouts();
-  const steps = [["🎬", "شوف الفيديو"], ["🪢", "جهّز أداتك"], ["💪", "كرّر وارتاح"]];
+  const steps = [["🪢", "اختار أدواتك"], ["🎯", "اختار عضلاتك"], ["▶", "شغّل السلسلة"]];
   return (
     <div className="mx-auto max-w-5xl px-4 pb-10">
       <JsonLd data={{ "@context": "https://schema.org", "@type": "ItemList", name: "من غير جيم — تمارين منزلية", inLanguage: "ar", itemListElement: items.map((e, i) => ({ "@type": "ListItem", position: i + 1, name: e.title, url: `${baseUrl()}/no-gym/${e.slug}` })) }} />
