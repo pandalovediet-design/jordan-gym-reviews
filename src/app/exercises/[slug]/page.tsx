@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getExercise } from "@/lib/exercises";
+import { FaqSection, JsonLd, faqLd, type Faq } from "@/lib/jsonld";
+import { baseUrl } from "@/lib/base-url";
+import { parseVideoUrl } from "@/lib/video";
 import { ExplanationTabs } from "@/components/ExplanationTabs";
 import { LEVEL_LABEL, MUSCLE_LABEL, SAFETY_NOTE, type Muscle } from "@/lib/exercise-meta";
 
@@ -24,8 +27,30 @@ export default async function ExercisePage({ params }: PageProps<"/exercises/[sl
   if (!d) notFound();
   const { ex, explanations, related } = d;
   const chip = "rounded-full bg-white/10 px-3 py-1 text-xs";
+  const muscle = MUSCLE_LABEL[ex.muscle_group as Muscle];
+  const first = explanations[0];
+  const faq: Faq[] = [
+    { q: `شو العضلة اللي بيشتغلها تمرين ${ex.name_ar}؟`, a: `بيشتغل ${muscle}${ex.secondary_ar && ex.secondary_ar !== "—" ? `، ومعه عضلات مساندة: ${ex.secondary_ar}` : ""}.` },
+    ...(first ? [{ q: `كيف أعمل تمرين ${ex.name_ar}؟`, a: `${first.steps.map((s, i) => `${i + 1}) ${s}`).join(" ")} (شرح الكابتن ${first.coach.name})` }] : []),
+    ...(first?.mistake ? [{ q: `شو أشهر خطأ بتمرين ${ex.name_ar}؟`, a: first.mistake }] : []),
+    ...(ex.gear_ar ? [{ q: `شو المعدات المطلوبة لتمرين ${ex.name_ar}؟`, a: ex.gear_ar }] : []),
+    { q: `هل ${ex.name_ar} مناسب للمبتدئين؟`, a: `مستواه: ${LEVEL_LABEL[ex.level]}. ${SAFETY_NOTE}` },
+  ];
+  const url = `${baseUrl()}/exercises/${ex.slug}`;
+  const howTo = first ? {
+    "@context": "https://schema.org", "@type": "HowTo", name: `كيف تعمل تمرين ${ex.name_ar}`, inLanguage: "ar", url,
+    description: ex.summary_ar ?? undefined,
+    step: first.steps.map((t, i) => ({ "@type": "HowToStep", position: i + 1, text: t })),
+  } : null;
+  const videos = explanations.flatMap((e) => {
+    const v = e.video_url ? parseVideoUrl(e.video_url) : null;
+    return v ? [{ "@context": "https://schema.org", "@type": "VideoObject", name: `شرح ${ex.name_ar} — ${e.coach.name}`, description: ex.summary_ar ?? `شرح تمرين ${ex.name_ar}`, inLanguage: "ar", thumbnailUrl: v.thumb ?? undefined, embedUrl: v.embed?.replace("autoplay=1&", "") ?? undefined, contentUrl: v.url }] : [];
+  });
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
+      {howTo && <JsonLd data={howTo} />}
+      {videos.map((v, i) => <JsonLd key={i} data={v} />)}
+      <JsonLd data={faqLd(faq)} />
       <Link href="/exercises" className="text-sm text-accent hover:underline">← كل التمارين</Link>
       <h1 className="mt-3 text-3xl font-extrabold">{ex.name_ar}</h1>
       {ex.summary_ar && <p className="mt-2 text-muted">{ex.summary_ar}</p>}
@@ -50,6 +75,7 @@ export default async function ExercisePage({ params }: PageProps<"/exercises/[sl
           <div className="flex flex-wrap gap-2">{related.map((r) => <Link key={r.slug} href={`/exercises/${r.slug}`} className="rounded-full bg-surface px-4 py-1.5 text-sm ring-1 ring-white/10 hover:ring-accent">{r.name_ar}</Link>)}</div>
         </section>
       )}
+      <FaqSection items={faq} title={`أسئلة شائعة عن ${ex.name_ar}`} />
       <p className="mt-10 text-xs text-muted">⚠️ {SAFETY_NOTE}</p>
     </div>
   );

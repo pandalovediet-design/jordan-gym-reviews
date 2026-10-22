@@ -10,6 +10,8 @@ import { sendInquiry, sendReport } from "./actions";
 import { getOrgBySlug } from "@/lib/queries";
 import { createPublicClient } from "@/lib/supabase/public";
 import { listVideos } from "@/lib/videos";
+import { FaqSection, JsonLd, faqLd } from "@/lib/jsonld";
+import { orgFaq } from "@/lib/faq";
 import { VideoCard } from "@/components/VideoCard";
 import { BILLING_LABEL, DELIVERY_LABEL, GLOW_LABEL, ORG_TYPE_LABEL, WEEKDAYS, WOMEN_LABEL, ammanDate, dateAr, dayLabelAr, hhmm, isVerified, jod, publicMediaUrl, waNumber } from "@/lib/format";
 import type { Tables } from "@/lib/database.types";
@@ -194,6 +196,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       address: { "@type": "PostalAddress", addressLocality: v.city, streetAddress: v.address ?? undefined, addressCountry: "JO" },
     })) : undefined,
   };
+  const faq = orgFaq({ name: org.name_ar, city: org.city, area: org.area, address: org.address, phone: org.phone, whatsapp: org.whatsapp, services, hours: hours.filter((h) => h.branch_id === views[0].id), womenAccess: views[0].women_access, womenNote: views[0].women_hours_note });
   const crumbs = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -242,6 +245,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       <PageView orgId={org.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs).replace(/</g, "\\u003c") }} />
+      {faqLd(faq) && <JsonLd data={faqLd(faq)} />}
       {!multi && womenBanner(views[0])}
       <div className={glow ? `glow glow-${glow} rounded-2xl bg-surface p-5` : ""}>
       {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
@@ -387,6 +391,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </>
       )}
 
+      <FaqSection items={faq} title={`أسئلة شائعة عن ${org.name_ar}`} />
       <section className="mt-8"><InquiryForm action={sendInquiry.bind(null, org.id, org.slug)} /><ReportForm action={sendReport.bind(null, org.id, org.slug)} /></section>
     </div>
   );
