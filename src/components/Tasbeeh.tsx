@@ -15,8 +15,8 @@ const KEY = "jgr-tasbeeh-v1";
 const ar = (n: number) => n.toLocaleString("ar-EG");
 const TARGETS = [33, 100, 0] as const;
 
-type State = { id: string; counts: Record<string, number>; target: number; reps: boolean; perSet: number; sets: number };
-const init: State = { id: ADHKAR[0].id, counts: {}, target: 33, reps: false, perSet: 12, sets: 0 };
+type State = { id: string; counts: Record<string, number>; target: number; reps: boolean; perSet: number; sets: number; haptic: boolean };
+const init: State = { id: ADHKAR[0].id, counts: {}, target: 33, reps: false, perSet: 12, sets: 0, haptic: true };
 
 export function Tasbeeh() {
   const [s, setS] = useState<State>(init);
@@ -35,6 +35,7 @@ export function Tasbeeh() {
             target: TARGETS.includes(d.target) ? d.target : init.target, reps: d.reps === true,
             perSet: Number.isInteger(d.perSet) && d.perSet >= 1 && d.perSet <= 100 ? d.perSet : init.perSet,
             sets: Number.isInteger(d.sets) && d.sets >= 0 && d.sets < 1000 ? d.sets : 0,
+            haptic: d.haptic !== false,
           });
         }
       } catch {}
@@ -51,13 +52,14 @@ export function Tasbeeh() {
   const count = s.counts[s.id] ?? 0;
   const goal = s.reps ? s.perSet : s.target;
 
+  const buzz = (p: number | number[]) => { if (s.haptic && typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate(p); };
   const tap = () => {
-    if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate(12);
+    buzz(30); // light tick on every dhikr tap
     setS((p) => {
       const next = (p.counts[p.id] ?? 0) + 1;
       const g = p.reps ? p.perSet : p.target;
       if (g > 0 && next >= g) {
-        if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate([120, 60, 120]);
+        buzz([120, 60, 120]);
         setFlash(true); setTimeout(() => setFlash(false), 900);
         return { ...p, counts: { ...p.counts, [p.id]: 0 }, sets: p.reps ? p.sets + 1 : p.sets };
       }
@@ -107,6 +109,12 @@ export function Tasbeeh() {
             </div>
           </div>
         )}
+      </div>
+      <div className="rounded-2xl bg-surface p-4 ring-1 ring-white/10">
+        <label className="flex cursor-pointer items-center justify-between gap-3">
+          <span><span className="block text-sm font-bold">📳 اهتزاز خفيف مع كل ذكر</span><span className="block text-xs text-muted">نبضة خفيفة مع كل ضغطة، واهتزاز أقوى لما تكمل الجولة. (بعض أجهزة الآيفون ما بتدعم الاهتزاز من المتصفح.)</span></span>
+          <input type="checkbox" checked={s.haptic} onChange={(e) => setS((p) => ({ ...p, haptic: e.target.checked }))} className="size-5 accent-emerald-500" />
+        </label>
       </div>
       <p className="text-center text-xs text-muted">مجموع اللي عدّيته بهالجهاز: {ar(total)}</p>
     </div>

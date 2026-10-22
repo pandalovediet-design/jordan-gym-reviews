@@ -9,8 +9,8 @@ const quran = Amiri_Quran({ subsets: ["arabic"], weight: "400", display: "swap" 
 // Rendered per request: a failed Quran API call must never be frozen into a cached page (fetches themselves are cached 24h).
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "روح وجسد — مؤقت راحة قرآني ومسبحة للرياضيين",
-  description: "استغل وقت الراحة بين الجولات بآية وتفسير ميسّر، وعدّ أذكارك مع العدّات بمسبحة إلكترونية مريحة لليد.",
+  title: "روح وجسد — مؤقت راحة قرآني، مسبحة، مواقيت الصلاة والقبلة",
+  description: "استغل وقت الراحة بين الجولات بآية وتفسير ميسّر، وعدّ أذكارك مع العدّات، وشوف مواقيت الصلاة واتجاه القبلة.",
   alternates: { canonical: "/rooh-w-jasad" },
 };
 
@@ -29,7 +29,7 @@ export default async function RuhWJasad() {
       <RuhTabs content={content} quranClass={quran.className} />
 
       <section className="mt-10 space-y-2 rounded-2xl bg-surface p-4 text-xs leading-relaxed text-muted ring-1 ring-white/10">
-        <p>نص الآيات بالرسم العثماني من <b>Tanzil.net</b> (Quran Academy)، والتفسير الميسر من مجمع الملك فهد، عبر واجهة <b>AlQuran.cloud</b>.</p>
+        <p>نص الآيات بالرسم العثماني من <b>Tanzil.net</b> (Quran Academy)، والتفسير الميسر من مجمع الملك فهد، عبر واجهة <b>AlQuran.cloud</b>. مواقيت الصلاة من <b>AlAdhan.com</b>.</p>
         <p>التفسير مكتوب بشكل منفصل عن الآية، وهو ليس من القرآن. لو لاحظت أي خطأ أو ملاحظة، تواصل معنا.</p>
       </section>
       <div className="mt-6 flex flex-wrap gap-2 text-sm">
