@@ -244,6 +244,14 @@ export async function clearWomenAccess(orgId: string): Promise<void> {
   revalidatePath("/");
 }
 
+export async function clearOrgBadge(orgId: string, badge: "has_mosque" | "no_music"): Promise<void> {
+  if (badge !== "has_mosque" && badge !== "no_music") return;
+  const { supabase } = await requireAdmin();
+  await supabase.from("organizations").update(badge === "has_mosque" ? { has_mosque: false } : { no_music: false }).eq("id", orgId);
+  revalidatePath("/admin", "layout");
+  revalidatePath("/");
+}
+
 export async function removeEquipment(id: string): Promise<void> {
   const { supabase } = await requireAdmin();
   await supabase.from("equipment_listings").update({ status: "removed" }).eq("id", id);

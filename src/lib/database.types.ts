@@ -1086,6 +1086,8 @@ export type Database = {
           women_access: string
           women_hours_note: string | null
           free_trial_note: string | null
+        has_mosque: boolean
+        no_music: boolean
           address: string | null
           area: string | null
           category_id: string | null
@@ -1120,6 +1122,8 @@ export type Database = {
           women_access?: string
           women_hours_note?: string | null
           free_trial_note?: string | null
+        has_mosque?: boolean
+        no_music?: boolean
           address?: string | null
           area?: string | null
           city?: string
@@ -1153,6 +1157,8 @@ export type Database = {
           women_access?: string
           women_hours_note?: string | null
           free_trial_note?: string | null
+        has_mosque?: boolean
+        no_music?: boolean
           address?: string | null
           area?: string | null
           city?: string
@@ -1463,6 +1469,8 @@ export type Database = {
     Views: {
       organizations_listing: {
         Row: {
+          has_mosque: boolean | null
+          no_music: boolean | null
           area: string | null
           category_id: string | null
           category_name: string | null

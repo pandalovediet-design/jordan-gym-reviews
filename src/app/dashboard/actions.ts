@@ -63,6 +63,8 @@ const profileSchema = z.object({
   category_id: z.string().uuid().optional().transform((v) => v || null),
   women_access: z.enum(["none", "women_only", "women_hours"]).default("none"),
   women_hours_note: opt(200),
+  has_mosque: z.string().optional().transform((v) => v === "on"),
+  no_music: z.string().optional().transform((v) => v === "on"),
   maps_url: opt(500),
   free_trial_note: opt(120),
   video_url: opt(300),

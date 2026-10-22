@@ -164,6 +164,12 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             </label>
             <p className="text-xs text-muted">اختار «خاص بالنساء بالكامل» فقط إذا النشاط كله للنساء. الإدارة بتراجع وبتقدر تشيل الشارة عند أي إساءة.</p>
           </div>
+          <div className="space-y-2 rounded-xl border border-emerald-400/30 bg-emerald-500/5 p-3">
+            <p className="text-sm font-semibold">🕌 مرافق وأجواء</p>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="has_mosque" defaultChecked={org.has_mosque} /> فيه مصلى أو مسجد جوا النشاط أو ملاصق له</label>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="no_music" defaultChecked={org.no_music} /> بدون موسيقى (أو بدون موسيقى أثناء أوقات الصلاة)</label>
+            <p className="text-xs text-muted">بتظهر للزوار كشارة «حسب صاحب النشاط». اختار بس اللي فعلاً موجود عندك، والإدارة بتقدر تشيل الشارة عند أي إساءة.</p>
+          </div>
           {(org.type === "nutritionist" || org.type === "sports_health") && (
             <div className="grid gap-3 rounded-xl border border-white/10 p-3 sm:grid-cols-2">
               <label className={lbl}>{org.type === "sports_health" ? "رقم الترخيص / عضوية النقابة" : "رقم الترخيص"}<input name="license_number" defaultValue={org.license_number ?? ""} dir="ltr" className={field} /></label>

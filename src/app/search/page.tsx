@@ -21,6 +21,8 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
   const maxPriceRaw = Number.parseFloat(one(sp.max) ?? "");
   const maxPrice = Number.isFinite(maxPriceRaw) && maxPriceRaw > 0 ? maxPriceRaw : 0;
   const trial = one(sp.trial) === "1";
+  const mosque = one(sp.mosque) === "1";
+  const quiet = one(sp.quiet) === "1";
   const lat = Number.parseFloat(one(sp.lat) ?? ""), lng = Number.parseFloat(one(sp.lng) ?? "");
   const near = Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lat, lng } : null;
   const mode = one(sp.in) === "products" ? "products" : "orgs";
@@ -28,7 +30,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
 
   let error = false;
   const categories = await listCategories().catch(() => []);
-  const orgs = mode === "orgs" ? await searchOrgs({ q, type, city, area, category, women, maxPrice, trial, near, page }).catch(() => (error = true, null)) : null;
+  const orgs = mode === "orgs" ? await searchOrgs({ q, type, city, area, category, women, maxPrice, trial, mosque, quiet, near, page }).catch(() => (error = true, null)) : null;
   const prods = mode === "products" ? await searchProducts({ q, page }).catch(() => (error = true, null)) : null;
   const total = (orgs ?? prods)?.total ?? 0;
   const pages = Math.ceil(total / PAGE_SIZE);
@@ -36,7 +38,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
     const u = new URLSearchParams();
     if (q) u.set("q", q); if (type) u.set("type", type); if (city) u.set("city", city); if (area) u.set("area", area);
     if (category) u.set("category", category); if (women) u.set("women", women);
-    if (maxPrice) u.set("max", String(maxPrice)); if (trial) u.set("trial", "1");
+    if (maxPrice) u.set("max", String(maxPrice)); if (trial) u.set("trial", "1"); if (mosque) u.set("mosque", "1"); if (quiet) u.set("quiet", "1");
     if (near) { u.set("lat", String(near.lat)); u.set("lng", String(near.lng)); }
     if (mode === "products") u.set("in", "products"); u.set("page", String(p));
     return `/search?${u}`;
@@ -66,6 +68,8 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
         <CityAreaPicker defaultCity={city} defaultArea={area} allowAll labels={false} />
         <input name="max" type="number" min="1" step="1" defaultValue={maxPrice || ""} placeholder="أقصى سعر شهري (د.أ)" className={field} />
         <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="trial" value="1" defaultChecked={trial} /> 🎟 يوم تجريبي مجاني</label>
+        <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="mosque" value="1" defaultChecked={mosque} /> 🕌 فيه مصلى</label>
+        <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="quiet" value="1" defaultChecked={quiet} /> 🔇 بدون موسيقى</label>
         <button className="rounded-xl bg-accent px-6 font-bold text-accent-foreground">بحث</button>
       </form>
 

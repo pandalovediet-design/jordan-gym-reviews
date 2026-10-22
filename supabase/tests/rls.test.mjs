@@ -1171,3 +1171,31 @@ test("named series: public read of active only, admin-only write, 1-12 items, ki
     assert.equal((await db.query(`delete from public.named_series returning id`)).rows.length, 0);
   });
 });
+
+test("gym badges: owner sets mosque / no-music, public listing shows them, strangers can't, admin can clear", async () => {
+  const org = (await db.query(`select id from public.organizations where slug = 'nutri-test'`)).rows[0].id;
+  await asAnon(async () => {
+    const r = (await db.query(`select has_mosque, no_music from public.organizations_listing where id = $1`, [org])).rows[0];
+    assert.equal(r.has_mosque, false);
+    assert.equal(r.no_music, false);
+  });
+  await asAlice(async () => {
+    await db.query(`update public.organizations set has_mosque = true, no_music = true where id = $1`, [org]);
+  });
+  await asAnon(async () => {
+    const r = (await db.query(`select has_mosque, no_music from public.organizations_listing where id = $1`, [org])).rows[0];
+    assert.equal(r.has_mosque, true);
+    assert.equal(r.no_music, true);
+  });
+  await asBob(async () => {
+    assert.equal((await db.query(`update public.organizations set has_mosque = false where id = $1 returning id`, [org])).rows.length, 0);
+  });
+  await asAdmin(async () => {
+    await db.query(`update public.organizations set has_mosque = false where id = $1`, [org]);
+  });
+  await asAnon(async () => {
+    const r = (await db.query(`select has_mosque, no_music from public.organizations_listing where id = $1`, [org])).rows[0];
+    assert.equal(r.has_mosque, false);
+    assert.equal(r.no_music, true);
+  });
+});
