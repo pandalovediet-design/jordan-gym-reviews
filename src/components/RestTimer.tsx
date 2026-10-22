@@ -81,7 +81,7 @@ export function RestTimer({ content, quranClass }: { content: RestContent; quran
     if (!running || !prefs.scroll || !isLong || !el) return;
     touched.current = false;
     el.scrollTop = 0;
-    const start = Date.now(), total = dur * 1000;
+    const start = Date.now(), total = Math.max(1000, endRef.current - start); // remaining time, so switching passage mid-timer still ends together with it
     let raf = 0;
     const tick = () => {
       if (!touched.current) {
@@ -92,7 +92,7 @@ export function RestTimer({ content, quranClass }: { content: RestContent; quran
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [running, prefs.scroll, isLong, dur]);
+  }, [running, prefs.scroll, isLong, dur, idx.long]);
 
   useEffect(() => () => releaseLock(), [releaseLock]);
 
@@ -154,7 +154,7 @@ export function RestTimer({ content, quranClass }: { content: RestContent; quran
           <div className="rounded-3xl bg-gradient-to-b from-emerald-950/60 to-surface p-5 ring-1 ring-accent/30">
             <div className="mb-3 flex items-center justify-between gap-2">
               <p className="text-xs font-bold text-accent">{ref(passage)}</p>
-              <button type="button" onClick={other} disabled={running} className="rounded-full bg-white/10 px-3 py-1 text-xs hover:bg-white/20 disabled:opacity-50">{isLong ? "مقطع آخر" : "آية أخرى"}</button>
+              <button type="button" onClick={other} className="rounded-full bg-white/10 px-3 py-1 text-xs hover:bg-white/20">{isLong ? "مقطع آخر" : "آية أخرى"}</button>
             </div>
             <div ref={boxRef} onTouchStart={() => { touched.current = true; }} onWheel={() => { touched.current = true; }}
               className={`${quranClass} ${isLong ? "max-h-72 overflow-y-auto pe-1" : ""}`} dir="rtl">
