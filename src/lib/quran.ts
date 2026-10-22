@@ -35,17 +35,17 @@ type ApiEdition = { name: string; ayahs: ApiAyah[]; edition: { identifier: strin
 async function surah(n: number): Promise<{ name: string; text: Map<number, string>; tafsir: Map<number, string> } | null> {
   try {
     const res = await fetch(`${API}/${n}/${EDITIONS}`, { next: { revalidate: 86400 } });
-    if (!res.ok) return null;
+    if (!res.ok) { console.error(`quran api ${n}: HTTP ${res.status}`); return null; }
     const j = (await res.json()) as { data?: ApiEdition[] };
     const q = j.data?.find((e) => e.edition.identifier === "quran-uthmani");
     const t = j.data?.find((e) => e.edition.identifier === "ar.muyassar");
-    if (!q || !t) return null;
+    if (!q || !t) { console.error(`quran api ${n}: editions missing`, j.data?.map((e) => e.edition?.identifier)); return null; }
     return {
       name: q.name.replace(/^سُورَةُ\s*/, "").replace(/^سورة\s*/, ""),
       text: new Map(q.ayahs.map((a) => [a.numberInSurah, withoutBasmala(a.text, n, a.numberInSurah)])),
       tafsir: new Map(t.ayahs.map((a) => [a.numberInSurah, a.text])),
     };
-  } catch { return null; }
+  } catch (e) { console.error(`quran api ${n}: fetch failed`, e instanceof Error ? e.message : e); return null; }
 }
 
 export async function getRestContent(): Promise<RestContent> {

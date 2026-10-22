@@ -6,7 +6,8 @@ import { RuhTabs } from "@/components/RuhTabs";
 
 const quran = Amiri_Quran({ subsets: ["arabic"], weight: "400", display: "swap" });
 
-export const revalidate = 3600;
+// Rendered per request: a failed Quran API call must never be frozen into a cached page (fetches themselves are cached 24h).
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "روح وجسد — مؤقت راحة قرآني ومسبحة للرياضيين",
   description: "استغل وقت الراحة بين الجولات بآية وتفسير ميسّر، وعدّ أذكارك مع العدّات بمسبحة إلكترونية مريحة لليد.",
