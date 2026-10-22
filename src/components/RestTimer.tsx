@@ -166,7 +166,7 @@ export function RestTimer({ content, quranClass }: { content: RestContent; quran
           <details open={!isLong} className="rounded-2xl bg-surface p-4 ring-1 ring-white/10">
             <summary className="cursor-pointer text-sm font-bold">📖 التفسير الميسر <span className="font-normal text-muted">(تفسير وليس من القرآن)</span></summary>
             <div className="mt-3 space-y-2 text-sm leading-relaxed text-muted" dir="rtl">
-              {passage.verses.filter((v) => v.tafsir).map((v) => <p key={v.n}>{passage.verses.length > 1 && <b className="text-foreground">({ar(v.n)}) </b>}{v.tafsir}</p>)}
+              {tafsirGroups(passage.verses).map((g) => <p key={g.from}>{passage.verses.length > 1 && <b className="text-foreground">({ar(g.from)}{g.to !== g.from ? `–${ar(g.to)}` : ""}) </b>}{g.text}</p>)}
             </div>
           </details>
         </div>
@@ -175,4 +175,16 @@ export function RestTimer({ content, quranClass }: { content: RestContent; quran
       )}
     </div>
   );
+}
+
+/** Muyassar explains several ayahs together; merge consecutive identical entries into one range. */
+function tafsirGroups(verses: { n: number; tafsir: string }[]) {
+  const out: { from: number; to: number; text: string }[] = [];
+  for (const v of verses) {
+    if (!v.tafsir) continue;
+    const last = out[out.length - 1];
+    if (last && last.text === v.tafsir) last.to = v.n;
+    else out.push({ from: v.n, to: v.n, text: v.tafsir });
+  }
+  return out;
 }

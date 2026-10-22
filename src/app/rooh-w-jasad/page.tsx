@@ -16,6 +16,7 @@ export const metadata: Metadata = {
 
 export default async function RuhWJasad() {
   const { errors, ...content } = await getRestContent();
+  if (errors.length) console.error("quran fetch errors:", errors.join(" | "));
   return (
     <div className="mx-auto max-w-2xl px-4 pb-12">
       <section className="relative mt-6 overflow-hidden rounded-[2rem] bg-surface px-6 py-9 ring-1 ring-white/10 md:px-10">
@@ -26,7 +27,6 @@ export default async function RuhWJasad() {
       </section>
 
       <RuhTabs content={content} quranClass={quran.className} />
-      {content.short.length === 0 && errors.length > 0 && <pre dir="ltr" className="mt-4 overflow-x-auto rounded-xl bg-black/40 p-3 text-[11px] text-red-200">{errors.join("\n")}</pre>}
 
       <section className="mt-10 space-y-2 rounded-2xl bg-surface p-4 text-xs leading-relaxed text-muted ring-1 ring-white/10">
         <p>نص الآيات بالرسم العثماني من <b>Tanzil.net</b> (Quran Academy)، والتفسير الميسر من مجمع الملك فهد، عبر واجهة <b>AlQuran.cloud</b>.</p>
