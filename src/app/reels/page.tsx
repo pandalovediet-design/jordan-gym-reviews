@@ -30,7 +30,7 @@ export default async function Reels({ searchParams }: PageProps<"/reels">) {
       </div>
       {reviews.length > 0 && (
         <section className="mt-8">
-          <h2 className="mb-3 text-xl font-bold">⭐ مراجعات عبدالله</h2>
+          <h2 className="mb-3 text-xl font-bold">⭐ مراجعات عبد الكريم</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">{reviews.map((v) => <VideoCard key={v.id} v={v} />)}</div>
         </section>
       )}

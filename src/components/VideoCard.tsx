@@ -48,7 +48,7 @@ export function VideoCard({ v, showOrg = true }: { v: VideoItem; showOrg?: boole
             <span className="absolute inset-0 bg-black/25 group-hover:bg-black/10" />
             <span className="relative flex size-14 items-center justify-center rounded-full bg-white/90 text-2xl text-black">▶</span>
             <span className="absolute start-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs">{PLATFORM_LABEL[platform]}</span>
-            {v.kind === "review" && <span className="absolute end-2 top-2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">مراجعة عبدالله</span>}
+            {v.kind === "review" && <span className="absolute end-2 top-2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">مراجعة عبد الكريم</span>}
           </button>
         )}
       </div>

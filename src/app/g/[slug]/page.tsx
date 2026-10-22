@@ -271,8 +271,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       </div>
       {reviewVideos.length > 0 && (
         <section className="mt-6 rounded-2xl bg-accent/10 p-4 ring-1 ring-accent/30">
-          <h2 className="mb-1 text-lg font-bold">🎬 مراجعة عبدالله</h2>
-          <p className="mb-3 text-xs text-muted">زرنا المكان وصوّرنا رأينا. عبدالله صاحب نادي، والمراجعة بدون مقابل ما لم يُذكر غير ذلك.</p>
+          <h2 className="mb-1 text-lg font-bold">🎬 مراجعة عبد الكريم</h2>
+          <p className="mb-3 text-xs text-muted">زرنا المكان وصوّرنا رأينا. عبد الكريم صاحب نادي، والمراجعة بدون مقابل ما لم يُذكر غير ذلك.</p>
           <div className="grid max-w-md grid-cols-2 gap-4">{reviewVideos.map((x) => <VideoCard key={x.id} v={x} showOrg={false} />)}</div>
         </section>
       )}

@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { BodyMap } from "@/components/BodyMap";
 import { LEVEL_LABEL, MUSCLES, MUSCLE_LABEL, demoCover, type Muscle } from "@/lib/exercise-meta";
 
@@ -14,6 +14,14 @@ export function ExerciseExplorer({ items }: { items: Item[] }) {
     if (g === "back" || g === "triceps" || g === "glutes" || g === "hamstrings") setView("back");
     else if (g === "chest" || g === "biceps" || g === "abs" || g === "quads") setView("front");
   };
+  const listRef = useRef<HTMLDivElement>(null);
+  // On phones the results sit below the figure: bring them into view after a tap on the body.
+  const fromBody = (g: Muscle) => {
+    setGroup(g === group ? null : g);
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches) {
+      requestAnimationFrame(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    }
+  };
   const list = items.filter((e) => !group || e.muscle_group === group);
   const chip = "rounded-full px-3 py-1 text-sm ring-1 ring-white/10";
   return (
@@ -24,10 +32,11 @@ export function ExerciseExplorer({ items }: { items: Item[] }) {
             <button key={v} onClick={() => setView(v)} className={`rounded-full px-4 py-1 ring-1 ring-white/10 ${view === v ? "bg-accent font-bold text-accent-foreground" : ""}`}>{v === "front" ? "أمامي" : "خلفي"}</button>
           ))}
         </div>
-        <BodyMap view={view} active={group} onPick={(g) => setGroup(g === group ? null : g)} />
+        <BodyMap view={view} active={group} onPick={fromBody} />
         <p className="mt-2 text-center text-sm text-muted">{group ? MUSCLE_LABEL[group] : "اضغط على عضلة"}</p>
       </div>
-      <div>
+      <div ref={listRef} className="scroll-mt-4">
+        <p className="mb-3 text-sm text-muted">{group ? `${MUSCLE_LABEL[group]} — ${list.length} ${list.length === 1 ? "تمرين" : "تمارين"}` : `كل التمارين — ${list.length}`}</p>
         <div className="mb-4 flex flex-wrap gap-2">
           <button onClick={() => pick(null)} className={`${chip} ${!group ? "bg-accent font-bold text-accent-foreground" : "bg-surface"}`}>الكل</button>
           {MUSCLES.map((m) => (
