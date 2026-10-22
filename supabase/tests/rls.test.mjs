@@ -1051,3 +1051,48 @@ test("videos: reviews are admin-only, reels pending until approved, link allow-l
     await db.query(`delete from public.videos where id = $1`, [reelId]);
   });
 });
+
+test("exercises: admin-only list, coach explanations are pending until approved, link allow-list, limits", async () => {
+  const coach = (await db.query(`select id from public.organizations where slug = 'cg-coach'`)).rows[0].id;
+  const gym = (await db.query(`select id from public.organizations where slug = 'cg-gym'`)).rows[0].id;
+  const ex = (await db.query(`select id from public.exercises where slug = 'squat'`)).rows[0].id;
+  assert.ok((await db.query(`select count(*)::int n from public.exercises`)).rows[0].n >= 30);
+  let expl;
+  await asBob(async () => {
+    await rejects(() => db.query(`insert into public.exercises (slug, name_ar, muscle_group) values ('x-ex', 'تمرين', 'abs')`));
+    await rejects(() => db.query(`insert into public.exercise_explanations (exercise_id, organization_id, steps_ar) values ($1, $2, array['خ'])`, [ex, coach]), /invalid step/);
+    await rejects(() => db.query(`insert into public.exercise_explanations (exercise_id, organization_id, video_url, steps_ar) values ($1, $2, 'https://evil.example.com/x', array['خطوة اولى'])`, [ex, coach]), /unsupported/);
+    expl = (await db.query(`insert into public.exercise_explanations (exercise_id, organization_id, video_url, steps_ar, mistake_ar, status) values ($1, $2, 'https://youtu.be/abcdefghijk', array['خطوة اولى','خطوة ثانية'], 'خطأ شائع', 'approved') returning id`, [ex, coach])).rows[0].id;
+    assert.equal((await db.query(`select status, platform from public.exercise_explanations where id = $1`, [expl])).rows[0].status, "pending");
+    await rejects(() => db.query(`insert into public.exercise_explanations (exercise_id, organization_id, steps_ar) values ($1, $2, array['خطوة اولى'])`, [ex, coach])); // one per exercise per coach
+    await db.query(`update public.exercise_explanations set status = 'approved' where id = $1`, [expl]);
+    assert.equal((await db.query(`select status from public.exercise_explanations where id = $1`, [expl])).rows[0].status, "pending");
+  });
+  await asAlice(async () => {
+    // a gym (not an independent coach) cannot write explanations
+    await rejects(() => db.query(`insert into public.exercise_explanations (exercise_id, organization_id, steps_ar) values ($1, $2, array['خطوة اولى'])`, [ex, gym]), /only coaches/);
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select id from public.exercise_explanations`)).rows.length, 0);
+    assert.ok((await db.query(`select id from public.exercises`)).rows.length >= 30);
+  });
+  await asAdmin(async () => {
+    await db.query(`update public.exercise_explanations set status = 'approved' where id = $1`, [expl]);
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select id from public.exercise_explanations`)).rows.length, 1);
+  });
+  await asBob(async () => {
+    // editing steps sends it back to review
+    await db.query(`update public.exercise_explanations set steps_ar = array['خطوة جديدة','وخطوة ثانية'] where id = $1`, [expl]);
+    assert.equal((await db.query(`select status from public.exercise_explanations where id = $1`, [expl])).rows[0].status, "pending");
+  });
+  await asAdmin(async () => {
+    await db.query(`update public.exercises set is_active = false where id = $1`, [ex]);
+    await db.query(`update public.exercise_explanations set status = 'approved' where id = $1`, [expl]);
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select id from public.exercise_explanations`)).rows.length, 0); // inactive exercise hides explanations
+  });
+  await asAdmin(async () => { await db.query(`update public.exercises set is_active = true where id = $1`, [ex]); });
+});

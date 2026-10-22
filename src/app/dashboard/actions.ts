@@ -728,3 +728,40 @@ export async function deleteVideo(id: string, videoId: string): Promise<void> {
   revalidatePath(`/dashboard/${id}/growth`);
   revalidatePath("/reels");
 }
+
+export async function saveExplanation(id: string, _prev: FormState, fd: FormData): Promise<FormState> {
+  const exerciseId = String(fd.get("exercise_id") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(exerciseId)) return { error: "اختر التمرين" };
+  const raw = String(fd.get("video_url") ?? "").trim();
+  let video_url: string | null = null;
+  if (raw) {
+    const parsed = parseVideoUrl(raw);
+    if (!parsed) return { error: "الرابط غير مدعوم. استخدم رابط كامل من يوتيوب أو إنستغرام أو تيك توك أو فيسبوك (يبدأ بـ https://)." };
+    video_url = parsed.url;
+  }
+  const steps = String(fd.get("steps") ?? "").split("\n").map((x) => x.trim()).filter(Boolean);
+  if (steps.length < 2 || steps.length > 8) return { error: "اكتب من 2 إلى 8 خطوات، كل خطوة بسطر." };
+  if (steps.some((x) => x.length < 2 || x.length > 200)) return { error: "كل خطوة لازم تكون أقل من 200 حرف." };
+  const mistake = z.string().trim().max(200).safeParse(String(fd.get("mistake") ?? ""));
+  if (!mistake.success) return { error: "الخطأ الشائع طويل (حد أقصى 200 حرف)." };
+  const { supabase } = await requireUser();
+  const { error } = await supabase.from("exercise_explanations").upsert(
+    { exercise_id: exerciseId, organization_id: id, video_url, steps_ar: steps, mistake_ar: mistake.data || null },
+    { onConflict: "exercise_id,organization_id" },
+  );
+  if (error) {
+    if (error.message.includes("too many")) return { error: "وصلت الحد الأقصى (20 شرح)." };
+    if (error.message.includes("only coaches")) return { error: "الشروحات للمدربين المستقلين فقط." };
+    return { error: "تعذّر الحفظ" };
+  }
+  await notifyAdmin("🏋️ شرح تمرين جديد بانتظار الموافقة");
+  revalidatePath(`/dashboard/${id}/exercises`);
+  return { ok: "وصل الشرح، بيظهر بعد موافقة الإدارة." };
+}
+
+export async function deleteExplanation(id: string, explId: string): Promise<void> {
+  const { supabase } = await requireUser();
+  await supabase.from("exercise_explanations").delete().eq("id", explId).eq("organization_id", id);
+  revalidatePath(`/dashboard/${id}/exercises`);
+  revalidatePath("/exercises", "layout");
+}

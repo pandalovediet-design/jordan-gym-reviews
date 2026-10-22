@@ -832,6 +832,33 @@ export type Database = {
           },
         ]
       }
+      exercises: {
+        Row: { created_at: string; gear_ar: string | null; id: string; is_active: boolean; level: string; muscle_group: string; name_ar: string; secondary_ar: string | null; slug: string; sort_order: number; summary_ar: string | null }
+        Insert: { created_at?: string; gear_ar?: string | null; id?: string; is_active?: boolean; level?: string; muscle_group: string; name_ar: string; secondary_ar?: string | null; slug: string; sort_order?: number; summary_ar?: string | null }
+        Update: { created_at?: string; gear_ar?: string | null; id?: string; is_active?: boolean; level?: string; muscle_group?: string; name_ar?: string; secondary_ar?: string | null; slug?: string; sort_order?: number; summary_ar?: string | null }
+        Relationships: []
+      }
+      exercise_explanations: {
+        Row: { created_at: string; exercise_id: string; id: string; mistake_ar: string | null; organization_id: string; platform: string | null; status: string; steps_ar: string[]; video_url: string | null }
+        Insert: { created_at?: string; exercise_id: string; id?: string; mistake_ar?: string | null; organization_id: string; platform?: string | null; status?: string; steps_ar: string[]; video_url?: string | null }
+        Update: { created_at?: string; exercise_id?: string; id?: string; mistake_ar?: string | null; organization_id?: string; platform?: string | null; status?: string; steps_ar?: string[]; video_url?: string | null }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_explanations_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_explanations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_votes: {
         Row: { category: string; created_at: string; id: string; nominee_org_id: string; vote_month: string; voter_id: string }
         Insert: { category: string; created_at?: string; id?: string; nominee_org_id: string; vote_month?: string; voter_id?: string }

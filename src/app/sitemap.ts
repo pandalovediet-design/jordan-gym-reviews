@@ -1,5 +1,6 @@
 import { baseUrl } from "@/lib/base-url";
 import type { MetadataRoute } from "next";
+import { listExercises } from "@/lib/exercises";
 import { listCities, listSitemapEntries, listTrails } from "@/lib/queries";
 import { ORG_TYPE_PLURAL } from "@/lib/format";
 import type { Enums } from "@/lib/database.types";
@@ -9,6 +10,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = baseUrl();
   const { orgs, products } = await listSitemapEntries().catch(() => ({ orgs: [], products: [] }));
   const trails = await listTrails().catch(() => []);
+  const exercises = await listExercises().catch(() => []);
   const types = Object.keys(ORG_TYPE_PLURAL) as Enums<"org_type">[];
   const dirs = (
     await Promise.all(
@@ -32,6 +34,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/sponsors` },
     { url: `${base}/deals` },
     { url: `${base}/reels` },
+    { url: `${base}/exercises` },
+    ...exercises.map((e) => ({ url: `${base}/exercises/${e.slug}` })),
     { url: `${base}/market` },
     { url: `${base}/search` },
     { url: `${base}/trails` },

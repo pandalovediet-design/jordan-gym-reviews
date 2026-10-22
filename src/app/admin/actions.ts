@@ -292,3 +292,41 @@ export async function clearVideoReports(videoId: string): Promise<void> {
   await supabase.from("video_reports").delete().eq("video_id", videoId);
   revalidatePath("/admin/videos");
 }
+
+export async function setExplanationStatus(id: string, status: "approved" | "rejected"): Promise<void> {
+  const { supabase } = await requireAdmin();
+  await supabase.from("exercise_explanations").update({ status }).eq("id", id);
+  revalidatePath("/admin/exercises");
+  revalidatePath("/exercises", "layout");
+}
+
+export async function adminDeleteExplanation(id: string): Promise<void> {
+  const { supabase } = await requireAdmin();
+  await supabase.from("exercise_explanations").delete().eq("id", id);
+  revalidatePath("/admin/exercises");
+  revalidatePath("/exercises", "layout");
+}
+
+export async function setExerciseActive(id: string, active: boolean): Promise<void> {
+  const { supabase } = await requireAdmin();
+  await supabase.from("exercises").update({ is_active: active }).eq("id", id);
+  revalidatePath("/admin/exercises");
+  revalidatePath("/exercises", "layout");
+}
+
+export async function addExercise(_prev: { error?: string; ok?: string } | undefined, fd: FormData): Promise<{ error?: string; ok?: string }> {
+  const { supabase } = await requireAdmin();
+  const slug = String(fd.get("slug") ?? "").trim().toLowerCase();
+  const name = String(fd.get("name") ?? "").trim();
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug) || slug.length > 60) return { error: "الـslug إنجليزي صغير وشرطات (مثال: bench-press)" };
+  if (name.length < 2 || name.length > 60) return { error: "اكتب اسم التمرين" };
+  const { error } = await supabase.from("exercises").insert({
+    slug, name_ar: name, muscle_group: String(fd.get("muscle") ?? ""), level: String(fd.get("level") ?? "beginner"),
+    gear_ar: String(fd.get("gear") ?? "").trim() || null, secondary_ar: String(fd.get("secondary") ?? "").trim() || null,
+    summary_ar: String(fd.get("summary") ?? "").trim().slice(0, 300) || null, sort_order: 200,
+  });
+  if (error) return { error: error.message.includes("duplicate") ? "الـslug مستعمل" : "تعذّرت الإضافة" };
+  revalidatePath("/admin/exercises");
+  revalidatePath("/exercises", "layout");
+  return { ok: "انضاف التمرين" };
+}
