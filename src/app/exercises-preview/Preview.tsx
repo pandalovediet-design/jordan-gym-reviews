@@ -52,35 +52,51 @@ const EXERCISES: Exercise[] = [
 ];
 
 // ───────────── BODY MAP ─────────────
+// Left half is drawn once; the right half is its mirror (x -> 200 - x).
 type Shape = { g: Group; d: string };
+const SIL = "M92 66 C80 68 66 70 56 78 C48 84 46 98 44 118 C42 140 38 168 36 190 L34 208 C38 214 48 212 50 206 L56 170 C58 150 62 130 64 118 C64 140 66 160 68 180 C70 196 72 204 74 212 C72 240 70 270 68 300 C68 330 70 350 70 372 L68 384 L92 384 L92 372 C94 340 94 310 94 284 C96 260 98 240 100 226 L100 66 Z";
+const DELT = "M70 74 C60 74 52 80 50 92 C49 102 52 110 58 112 C64 104 68 92 70 74Z";
+const ARM = "M50 114 C46 130 44 148 44 160 C48 164 54 164 57 160 C58 146 60 130 60 116 C56 118 53 118 50 114Z";
+const CALF = "M72 296 C78 292 90 292 94 296 C94 320 92 346 90 366 L76 366 C72 346 70 320 72 296Z";
 const FRONT: Shape[] = [
-  { g: "shoulders", d: "M58 98 q-14 6 -14 22 q8 4 16 0 q4 -12 -2 -22z" }, { g: "shoulders", d: "M142 98 q14 6 14 22 q-8 4 -16 0 q-4 -12 2 -22z" },
-  { g: "chest", d: "M64 100 q18 -6 34 2 v28 q-18 6 -34 -4z" }, { g: "chest", d: "M136 100 q-18 -6 -34 2 v28 q18 6 34 -4z" },
-  { g: "biceps", d: "M44 126 q-6 20 -4 38 q8 4 14 0 q2 -20 6 -34z" }, { g: "biceps", d: "M156 126 q6 20 4 38 q-8 4 -14 0 q-2 -20 -6 -34z" },
-  { g: "abs", d: "M80 136 h40 q2 36 -2 62 h-36 q-4 -26 -2 -62z" },
-  { g: "quads", d: "M70 206 q-8 40 -6 82 q10 6 20 0 q4 -42 2 -82z" }, { g: "quads", d: "M130 206 q8 40 6 82 q-10 6 -20 0 q-4 -42 -2 -82z" },
-  { g: "calves", d: "M66 298 q-4 30 -2 62 q8 4 16 0 q2 -32 0 -62z" }, { g: "calves", d: "M134 298 q4 30 2 62 q-8 4 -16 0 q-2 -32 0 -62z" },
+  { g: "chest", d: "M72 80 C80 78 92 80 99 84 L99 118 C90 122 78 120 68 112 C66 100 68 88 72 80Z" },
+  { g: "shoulders", d: DELT }, { g: "biceps", d: ARM },
+  { g: "abs", d: "M82 124 L99 124 L99 200 C92 202 84 198 80 190 C78 168 78 140 82 124Z" },
+  { g: "quads", d: "M76 218 L98 228 C98 250 96 270 94 284 C88 288 78 288 72 284 C70 260 72 236 76 218Z" },
+  { g: "calves", d: CALF },
 ];
 const BACK: Shape[] = [
-  { g: "shoulders", d: "M58 98 q-14 6 -14 22 q8 4 16 0 q4 -12 -2 -22z" }, { g: "shoulders", d: "M142 98 q14 6 14 22 q-8 4 -16 0 q-4 -12 2 -22z" },
-  { g: "back", d: "M66 98 h68 q4 40 -8 70 h-52 q-12 -30 -8 -70z" },
-  { g: "triceps", d: "M44 126 q-6 20 -4 38 q8 4 14 0 q2 -20 6 -34z" }, { g: "triceps", d: "M156 126 q6 20 4 38 q-8 4 -14 0 q-2 -20 -6 -34z" },
-  { g: "glutes", d: "M72 176 h56 q6 24 -4 34 h-48 q-10 -10 -4 -34z" },
-  { g: "hamstrings", d: "M70 214 q-8 36 -6 74 q10 6 20 0 q4 -38 2 -74z" }, { g: "hamstrings", d: "M130 214 q8 36 6 74 q-10 6 -20 0 q-4 -38 -2 -74z" },
-  { g: "calves", d: "M66 298 q-4 30 -2 62 q8 4 16 0 q2 -32 0 -62z" }, { g: "calves", d: "M134 298 q4 30 2 62 q-8 4 -16 0 q-2 -32 0 -62z" },
+  { g: "back", d: "M72 76 C82 72 92 72 99 70 L99 176 C92 182 80 180 74 170 C68 150 66 120 68 96 C68 88 70 80 72 76Z" },
+  { g: "shoulders", d: DELT }, { g: "triceps", d: ARM },
+  { g: "glutes", d: "M74 180 C86 176 96 178 99 182 L99 222 C90 232 78 230 72 220 C70 204 70 190 74 180Z" },
+  { g: "hamstrings", d: "M74 232 C84 238 94 238 98 232 C98 256 96 272 94 284 C88 288 78 288 72 284 C70 266 72 248 74 232Z" },
+  { g: "calves", d: CALF },
 ];
 
 function Body({ shapes, active, onPick }: { shapes: Shape[]; active: Group | null; onPick: (g: Group) => void }) {
+  const [hov, setHov] = useState<Group | null>(null);
+  const half = (mirror: boolean) => (
+    <g transform={mirror ? "translate(200,0) scale(-1,1)" : undefined}>
+      <path d={SIL} className="fill-white/[0.07] stroke-white/20" strokeWidth={1} strokeLinejoin="round" />
+      {shapes.map((s, i) => {
+        const on = active === s.g;
+        const hot = hov === s.g;
+        return (
+          <path key={i} d={s.d} onClick={() => onPick(s.g)} tabIndex={mirror ? -1 : 0} role="button" aria-label={GROUP_LABEL[s.g]}
+            onMouseEnter={() => setHov(s.g)} onMouseLeave={() => setHov(null)} onFocus={() => setHov(s.g)} onBlur={() => setHov(null)}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onPick(s.g); }}
+            strokeWidth={0.8} strokeLinejoin="round"
+            className={`cursor-pointer outline-none transition-all duration-200 ${on ? "fill-accent stroke-accent drop-shadow-[0_0_8px_var(--color-accent)]" : hot ? "fill-accent/60 stroke-accent/70" : "fill-white/20 stroke-white/30"}`} />
+        );
+      })}
+    </g>
+  );
   return (
-    <svg viewBox="0 0 200 380" className="mx-auto h-[360px] w-auto" role="img" aria-label="خريطة الجسم">
-      <circle cx="100" cy="52" r="24" className="fill-white/10" />
-      <rect x="90" y="72" width="20" height="22" rx="6" className="fill-white/10" />
-      <path d="M64 96 h72 l6 40 -6 76 h-72 l-6 -76z" className="fill-white/[0.06]" />
-      {shapes.map((s, i) => (
-        <path key={i} d={s.d} onClick={() => onPick(s.g)} tabIndex={0} role="button" aria-label={GROUP_LABEL[s.g]}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onPick(s.g); }}
-          className={`cursor-pointer outline-none transition-all duration-200 ${active === s.g ? "fill-accent drop-shadow-[0_0_8px_var(--color-accent)]" : "fill-white/25 hover:fill-accent/60 focus-visible:fill-accent/60"}`} />
-      ))}
+    <svg viewBox="0 0 200 390" className="mx-auto h-[400px] w-auto" role="img" aria-label="خريطة الجسم">
+      <ellipse cx="100" cy="34" rx="16" ry="20" className="fill-white/[0.07] stroke-white/20" strokeWidth={1} />
+      <path d="M92 52 L92 68 L108 68 L108 52Z" className="fill-white/[0.07]" />
+      {half(false)}
+      {half(true)}
     </svg>
   );
 }
