@@ -7,5 +7,7 @@ delete from public.flash_slots where title_ar like '[تجريبي]%';
 delete from public.organizations where slug like 'demo-%';
 -- menu items, glow/promotions, branches and flash slots of demo orgs cascade with the organization.
 -- org_subscriptions, members, programs, inquiries and promotions are removed with their organization (FK cascade).
+-- preview-test videos of "من غير جيم" (their products cascade).
+delete from public.home_workouts where slug like 'zz-preview-test%';
 delete from auth.users where email like '%@example.invalid';
 commit;
