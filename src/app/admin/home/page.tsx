@@ -80,6 +80,7 @@ export default async function HomeAdmin() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Link href={`/no-gym/${w.slug}`} className={btn}>الصفحة</Link>
+                    <Link href={`/admin/home/${w.id}`} className={btn}>تعديل</Link>
                     <form action={setHomeWorkoutActive.bind(null, w.id, !w.is_active)}><button className={btn}>{w.is_active ? "إخفاء" : "إظهار"}</button></form>
                     <form action={deleteHomeWorkout.bind(null, w.id)}><button className={`${btn} !bg-red-500/30`}>حذف</button></form>
                   </div>

@@ -33,8 +33,8 @@ const macro = (fd: FormData, k: string, max: number): number | null | undefined 
   return Number.isInteger(x) && x >= 0 && x <= max ? x : undefined;
 };
 
-export async function addNutritionItem(_: FormState, fd: FormData): Promise<FormState> {
-  const { supabase } = await requireAdmin();
+type ItemValues = { slug: string; title_ar: string; meal: string; kind: string; video_url: string | null; body_ar: string | null; summary_ar: string | null; calories: number | null; protein_g: number | null; carbs_g: number | null; fat_g: number | null };
+function parseItem(fd: FormData, slugRequired: boolean): { error: string } | { v: ItemValues } {
   const title = str(fd, "title");
   if (title.length < 2 || title.length > 80) return { error: "اكتب العنوان (2-80 حرف)" };
   const meal = str(fd, "meal");
@@ -43,30 +43,52 @@ export async function addNutritionItem(_: FormState, fd: FormData): Promise<Form
   const body = str(fd, "body");
   let video: string | null = null;
   if (videoRaw) {
-    const v = parseVideoUrl(videoRaw);
-    if (!v) return { error: "الرابط لازم يكون فيديو من يوتيوب أو إنستغرام أو تيك توك أو فيسبوك" };
-    video = v.url;
+    const pv = parseVideoUrl(videoRaw);
+    if (!pv) return { error: "الرابط لازم يكون فيديو من يوتيوب أو إنستغرام أو تيك توك أو فيسبوك" };
+    video = pv.url;
   }
   if (!video && !body) return { error: "حط رابط فيديو أو اكتب الخطة/الوصفة (واحد على الأقل)" };
   if (body.length > 6000) return { error: "النص أطول من 6000 حرف" };
   const cal = macro(fd, "calories", 5000), pro = macro(fd, "protein", 500), carb = macro(fd, "carbs", 1000), fat = macro(fd, "fat", 500);
-  if ([cal, pro, carb, fat].includes(undefined)) return { error: "السعرات والماكروز أرقام صحيحة معقولة" };
+  if (cal === undefined || pro === undefined || carb === undefined || fat === undefined) return { error: "السعرات والماكروز أرقام صحيحة معقولة" };
   let slug = str(fd, "slug").toLowerCase();
-  if (!slug) slug = `food-${crypto.randomUUID().slice(0, 8)}`;
-  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug) || slug.length > 60) return { error: "الـslug إنجليزي صغير وشرطات (مثال: oats-bowl)" };
+  if (!slug && slugRequired) slug = `food-${crypto.randomUUID().slice(0, 8)}`;
+  if (slug && (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug) || slug.length > 60)) return { error: "الـslug إنجليزي صغير وشرطات (مثال: oats-bowl)" };
+  return { v: { slug, title_ar: title, meal, kind: video ? "video" : "plan", video_url: video, body_ar: body || null, summary_ar: str(fd, "summary").slice(0, 300) || null, calories: cal, protein_g: pro, carbs_g: carb, fat_g: fat } };
+}
+
+export async function addNutritionItem(_: FormState, fd: FormData): Promise<FormState> {
+  const { supabase } = await requireAdmin();
+  const r = parseItem(fd, true);
+  if ("error" in r) return { error: r.error };
   const up = await uploadImage(supabase, fd.get("cover"));
   if (up.error) return { error: up.error };
-  const { error } = await supabase.from("nutrition_items").insert({
-    slug, title_ar: title, meal, kind: video ? "video" : "plan", video_url: video, body_ar: body || null,
-    summary_ar: str(fd, "summary").slice(0, 300) || null, cover_path: up.path ?? null, sort_order: 100,
-    calories: cal as number | null, protein_g: pro as number | null, carbs_g: carb as number | null, fat_g: fat as number | null,
-  });
+  const { error } = await supabase.from("nutrition_items").insert({ ...r.v, cover_path: up.path ?? null, sort_order: 100 });
   if (error) {
     if (up.path) await supabase.storage.from("ads").remove([up.path]);
     return { error: error.message.includes("duplicate") ? "الـslug مستعمل" : "تعذّرت الإضافة" };
   }
   refresh();
   return { ok: "انضاف" };
+}
+
+export async function updateNutritionItem(id: string, _: FormState, fd: FormData): Promise<FormState> {
+  const { supabase } = await requireAdmin();
+  const r = parseItem(fd, false);
+  if ("error" in r) return { error: r.error };
+  const { data: old } = await supabase.from("nutrition_items").select("slug,cover_path").eq("id", id).maybeSingle();
+  if (!old) return { error: "العنصر مش موجود" };
+  const up = await uploadImage(supabase, fd.get("cover"));
+  if (up.error) return { error: up.error };
+  const { error } = await supabase.from("nutrition_items").update({ ...r.v, slug: r.v.slug || old.slug, ...(up.path ? { cover_path: up.path } : {}) }).eq("id", id);
+  if (error) {
+    if (up.path) await supabase.storage.from("ads").remove([up.path]);
+    return { error: error.message.includes("duplicate") ? "الـslug مستعمل" : "تعذّر الحفظ" };
+  }
+  if (up.path && old.cover_path && !old.cover_path.startsWith("demo-")) await supabase.storage.from("ads").remove([old.cover_path]);
+  refresh();
+  revalidatePath(`/no-deprivation/${old.slug}`);
+  return { ok: "انحفظ التعديل" };
 }
 
 export async function setNutritionActive(id: string, active: boolean): Promise<void> {
