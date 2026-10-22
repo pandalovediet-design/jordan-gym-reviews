@@ -5,6 +5,7 @@ import "./globals.css";
 import { SiteHeader, SiteFooter } from "@/components/SiteHeader";
 import { JsonLd } from "@/lib/jsonld";
 import { PwaRegister } from "@/components/PwaRegister";
+import { QuranAudioProvider, QuranMiniBar } from "@/components/QuranAudio";
 
 export const viewport: Viewport = { themeColor: "#07211c" };
 
@@ -27,9 +28,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           { "@type": "WebSite", "@id": `${baseUrl()}/#site`, name: "Jordan Gym Reviews", url: baseUrl(), inLanguage: "ar", publisher: { "@id": `${baseUrl()}/#org` },
             potentialAction: { "@type": "SearchAction", target: `${baseUrl()}/search?q={search_term_string}`, "query-input": "required name=search_term_string" } },
         ] }} />
-        <SiteHeader />
-        <main className="flex-1">{children}</main>
-        <SiteFooter />
+        <QuranAudioProvider>
+          <SiteHeader />
+          <main className="flex-1">{children}</main>
+          <SiteFooter />
+          <QuranMiniBar />
+        </QuranAudioProvider>
         <PwaRegister />
       </body>
     </html>
