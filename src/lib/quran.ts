@@ -57,7 +57,17 @@ export async function getRestContent(): Promise<RestContent & { errors: string[]
   const refs = [...SHORT, ...LONG];
   const nums = [...new Set(refs.map((r) => r[0]))];
   const loaded = new Map<number, NonNullable<Awaited<ReturnType<typeof surah>>>>();
-  await Promise.all(nums.map(async (n) => { const s = await surah(n, errors); if (s) loaded.set(n, s); }));
+  // AlQuran.cloud rate-limits bursts (HTTP 429): fetch a few surahs at a time and retry once after a short pause.
+  let next = 0;
+  const worker = async () => {
+    while (next < nums.length) {
+      const n = nums[next++];
+      let s = await surah(n, errors);
+      if (!s) { await new Promise((r) => setTimeout(r, 800)); errors.pop(); s = await surah(n, errors); }
+      if (s) loaded.set(n, s);
+    }
+  };
+  await Promise.all(Array.from({ length: 3 }, worker));
   const build = (list: [number, number, number][], kind: string): Passage[] =>
     list.flatMap(([s, from, to]) => {
       const d = loaded.get(s);
