@@ -19,9 +19,9 @@ export default async function Dashboard() {
   const orgs = (memberships ?? []).flatMap((m) => (m.organizations ? [m.organizations] : []));
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <div className="mb-6 flex items-center justify-between">
-        <div><h1 className="text-2xl font-extrabold">أنشطتي</h1><p className="text-sm text-muted" dir="ltr">{user.email}</p></div>
-        <div className="flex items-center gap-4">{isAdmin && <Link href="/admin" className="rounded-lg bg-accent px-3 py-1 text-sm font-bold text-accent-foreground">لوحة صاحب المنصة</Link>}<Link href="/account" className="text-sm text-muted underline">حسابي</Link><form action={signout}><button className="text-sm text-muted underline">تسجيل الخروج</button></form></div>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div><h1 className="text-2xl font-extrabold">أنشطتي</h1><p className="break-all text-sm text-muted" dir="ltr">{user.email}</p></div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">{isAdmin && <Link href="/admin" className="rounded-lg bg-accent px-3 py-1 text-sm font-bold text-accent-foreground">لوحة صاحب المنصة</Link>}<Link href="/account" className="text-sm text-muted underline">حسابي</Link><form action={signout}><button className="text-sm text-muted underline">تسجيل الخروج</button></form></div>
       </div>
       {orgs.length === 0 ? (
         <p className="rounded-2xl bg-surface p-8 text-center text-muted">ما عندك أنشطة بعد.</p>
