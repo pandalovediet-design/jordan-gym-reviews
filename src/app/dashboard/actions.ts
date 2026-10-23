@@ -774,3 +774,19 @@ export async function deleteExplanation(id: string, explId: string): Promise<voi
   revalidatePath(`/dashboard/${id}/exercises`);
   revalidatePath("/exercises", "layout");
 }
+
+const replySchema = z.object({ body: z.string().trim().min(1, "اكتب الرد").max(1500, "الرد طويل (الحد 1500 حرف)") });
+/** Owner/manager public reply under a review (one per review; saving again replaces it). */
+export async function respondReview(orgId: string, reviewId: string, _: FormState, fd: FormData): Promise<FormState> {
+  const p = replySchema.safeParse(Object.fromEntries(fd));
+  if (!p.success) return { error: p.error.issues[0].message };
+  const { supabase, user } = await requireUser();
+  const { error } = await supabase.from("review_responses").upsert(
+    { review_id: reviewId, organization_id: orgId, body: p.data.body, created_by: user.id, updated_at: new Date().toISOString() },
+    { onConflict: "review_id" });
+  if (error) return { error: "تعذّر حفظ الرد." };
+  const { data: org } = await supabase.from("organizations").select("slug").eq("id", orgId).maybeSingle();
+  if (org) revalidatePath(`/g/${org.slug}`);
+  revalidatePath(`/dashboard/${orgId}/reviews`);
+  return { ok: "تم نشر ردك." };
+}

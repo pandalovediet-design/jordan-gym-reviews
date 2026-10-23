@@ -14,6 +14,7 @@ import { listVideos } from "@/lib/videos";
 import { FaqSection, JsonLd, faqLd } from "@/lib/jsonld";
 import { orgFaq } from "@/lib/faq";
 import { VideoCard } from "@/components/VideoCard";
+import { Reviews } from "@/components/Reviews";
 import { BILLING_LABEL, DELIVERY_LABEL, GLOW_LABEL, ORG_TYPE_LABEL, WEEKDAYS, WOMEN_LABEL, ammanDate, dateAr, dayLabelAr, hhmm, isVerified, jod, publicMediaUrl, waNumber } from "@/lib/format";
 import type { Tables } from "@/lib/database.types";
 
@@ -410,6 +411,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </>
       )}
 
+      <Reviews orgId={org.id} slug={org.slug} />
       <FaqSection items={faq} title={`أسئلة شائعة عن ${org.name_ar}`} />
       <section className="mt-8"><InquiryForm action={sendInquiry.bind(null, org.id, org.slug)} /><ReportForm action={sendReport.bind(null, org.id, org.slug)} /></section>
     </div>

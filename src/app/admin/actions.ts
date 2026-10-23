@@ -368,3 +368,21 @@ export async function addExercise(_prev: { error?: string; ok?: string } | undef
   revalidatePath("/exercises", "layout");
   return { ok: "انضاف التمرين" };
 }
+
+export async function setReviewStatus(id: string, status: "published" | "hidden"): Promise<void> {
+  const { supabase } = await requireAdmin();
+  await supabase.from("reviews").update({ status }).eq("id", id);
+  revalidatePath("/admin/reviews");
+  revalidatePath("/g/[slug]", "page");
+}
+export async function deleteReview(id: string): Promise<void> {
+  const { supabase } = await requireAdmin();
+  await supabase.from("reviews").delete().eq("id", id);
+  revalidatePath("/admin/reviews");
+  revalidatePath("/g/[slug]", "page");
+}
+export async function setReviewReport(id: string, status: "resolved" | "dismissed"): Promise<void> {
+  const { supabase } = await requireAdmin();
+  await supabase.from("review_reports").update({ status }).eq("id", id);
+  revalidatePath("/admin/reviews");
+}

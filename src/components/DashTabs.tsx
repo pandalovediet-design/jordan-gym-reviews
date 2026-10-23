@@ -7,6 +7,7 @@ export function DashTabs({ id, showMembers, newInquiries = 0 }: { id: string; sh
   const tabs = [
     { href: `/dashboard/${id}/overview`, label: "نظرة عامة" },
     { href: `/dashboard/${id}`, label: "الصفحة والخدمات" },
+    { href: `/dashboard/${id}/reviews`, label: "التقييمات" },
     ...(showMembers ? [{ href: `/dashboard/${id}/members`, label: "الأعضاء والاشتراكات" }, { href: `/dashboard/${id}/attendance`, label: "سجل الحضور" }] : []),
     { href: `/dashboard/${id}/domain`, label: "الدومين" },
     { href: `/dashboard/${id}/inquiries`, label: newInquiries > 0 ? `الاستفسارات (${newInquiries} جديد)` : "الاستفسارات" },

@@ -10,6 +10,7 @@ const TABS = [
   { href: "/admin/ads", label: "الإعلانات" },
   { href: "/admin/categories", label: "التصنيفات" },
   { href: "/admin/reports", label: "البلاغات" },
+  { href: "/admin/reviews", label: "التقييمات" },
   { href: "/admin/flash", label: "الفلاش" },
   { href: "/admin/partners", label: "الشركاء" },
   { href: "/admin/trails", label: "المسارات" },
