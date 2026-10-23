@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { InstallButton } from "@/components/InstallButton";
-import { MobileMenu, type NavLink } from "@/components/MobileMenu";
+import { SiteTabs, type NavLink } from "@/components/SiteTabs";
 
 const LINKS: NavLink[] = [
   { href: "/search", label: "البحث" },
@@ -22,21 +22,26 @@ const LINKS: NavLink[] = [
   { href: "/login", label: "دخول الأنشطة" },
 ];
 
+const REGISTER = "/join";
+const LOGIN = "/login";
+
 export function SiteHeader() {
+  const tabs = LINKS.filter((l) => l.href !== REGISTER && l.href !== LOGIN);
   return (
-    <header className="relative border-b border-white/10 print:hidden">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-3 md:py-4">
+    <header className="border-b border-white/10 print:hidden">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-3">
         <Link href="/" className="flex items-center gap-2 text-lg font-extrabold">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-mark.png" alt="" width={44} height={44} className="size-11 rounded-full object-cover" />
           <span>Jordan <span className="text-accent">Gym</span> Reviews</span>
         </Link>
-        <MobileMenu links={LINKS} />
-        <nav className="hidden flex-wrap gap-x-4 gap-y-1 text-sm text-muted md:flex">
-          {LINKS.map((l) => <Link key={l.href} href={l.href} className={l.cls ? `${l.cls} hover:text-pink-200` : "hover:text-foreground"}>{l.label}</Link>)}
+        <div className="flex items-center gap-2 text-sm">
+          <Link href={LOGIN} className="rounded-xl px-3 py-2 ring-1 ring-white/20 hover:text-accent">دخول</Link>
+          <Link href={REGISTER} className="rounded-xl bg-accent px-3 py-2 font-bold text-accent-foreground">سجّل نشاطك</Link>
           <InstallButton />
-        </nav>
+        </div>
       </div>
+      <SiteTabs links={tabs} />
     </header>
   );
 }
