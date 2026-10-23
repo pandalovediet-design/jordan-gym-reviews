@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { ORG_TYPE_LABEL } from "@/lib/format";
 import { signout } from "@/app/login/actions";
+import { OrgList } from "@/components/OrgList";
 
 export const metadata: Metadata = { title: "لوحة التحكم", robots: { index: false } };
 const STATUS = { draft: "مسودة", pending: "بانتظار المراجعة", published: "منشور", suspended: "موقوف" } as const;
@@ -23,15 +24,12 @@ export default async function Dashboard() {
         <div><h1 className="text-2xl font-extrabold">أنشطتي</h1><p className="break-all text-sm text-muted" dir="ltr">{user.email}</p></div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">{isAdmin && <Link href="/admin" className="rounded-lg bg-accent px-3 py-1 text-sm font-bold text-accent-foreground">لوحة صاحب المنصة</Link>}<Link href="/account" className="text-sm text-muted underline">حسابي</Link><form action={signout}><button className="text-sm text-muted underline">تسجيل الخروج</button></form></div>
       </div>
+      <Link href="/dashboard/new" className="mb-5 inline-block rounded-xl bg-accent px-6 py-2.5 font-bold text-accent-foreground">+ إضافة نشاط</Link>
       {orgs.length === 0 ? (
         <p className="rounded-2xl bg-surface p-8 text-center text-muted">ما عندك أنشطة بعد.</p>
       ) : (
-        <ul className="space-y-3">{orgs.map((o) => (
-          <li key={o.id}><Link href={`/dashboard/${o.id}/overview`} className="flex items-center justify-between rounded-2xl bg-surface p-5 ring-1 ring-white/10 hover:ring-accent/60">
-            <div><p className="font-bold">{o.name_ar}</p><p className="text-sm text-muted">{ORG_TYPE_LABEL[o.type]} · {o.city}</p></div>
-            <span className="flex items-center gap-2">{newOf(o.id) > 0 && <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">{newOf(o.id)} استفسار جديد</span>}<span className="rounded-full bg-white/10 px-3 py-1 text-xs">{STATUS[o.status]}</span></span></Link></li>))}</ul>
+        <OrgList rows={orgs.map((o) => ({ id: o.id, name: o.name_ar, meta: `${ORG_TYPE_LABEL[o.type]} · ${o.city}`, status: STATUS[o.status], newCount: newOf(o.id) }))} />
       )}
-      <Link href="/dashboard/new" className="mt-6 inline-block rounded-xl bg-accent px-6 py-2.5 font-bold text-accent-foreground">+ إضافة نشاط</Link>
     </div>
   );
 }

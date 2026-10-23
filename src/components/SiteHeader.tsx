@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HeaderAuth } from "@/components/HeaderAuth";
 import { InstallButton } from "@/components/InstallButton";
 import { SiteTabs, type NavLink } from "@/components/SiteTabs";
 
@@ -36,8 +37,7 @@ export function SiteHeader() {
           <span>Jordan <span className="text-accent">Gym</span> Reviews</span>
         </Link>
         <div className="flex items-center gap-2 text-sm">
-          <Link href={LOGIN} className="rounded-xl px-3 py-2 ring-1 ring-white/20 hover:text-accent">دخول</Link>
-          <Link href={REGISTER} className="rounded-xl bg-accent px-3 py-2 font-bold text-accent-foreground">سجّل نشاطك</Link>
+          <HeaderAuth />
           <InstallButton />
         </div>
       </div>
