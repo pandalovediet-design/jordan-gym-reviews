@@ -17,7 +17,7 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
   const status = one(sp.status);
   const type = one(sp.type);
   const { supabase } = await requireUser();
-  let query = supabase.from("organizations").select("id,name_ar,type,city,status,verified_at,verified_until,slug,women_access,has_mosque,no_music").order("created_at", { ascending: false }).limit(200);
+  let query = supabase.from("organizations").select("id,name_ar,type,city,status,verified_at,verified_until,slug,women_access,has_mosque,no_music,has_kids_area,kids_friendly,kids_transport,accessibility").order("created_at", { ascending: false }).limit(200);
   if (q) query = query.or(`name_ar.ilike.%${q}%,name_en.ilike.%${q}%,city.ilike.%${q}%`);
   if ((STATUSES as readonly string[]).includes(status)) query = query.eq("status", status as (typeof STATUSES)[number]);
   if (isOrgType(type)) query = query.eq("type", type);
@@ -60,6 +60,10 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
               {o.women_access !== "none" && <form action={clearWomenAccess.bind(null, o.id)}><button className={btn}>💗 إزالة {o.women_access === "women_only" ? "Pink Zone" : "الأوقات النسائية"}</button></form>}
               {o.has_mosque && <form action={clearOrgBadge.bind(null, o.id, "has_mosque")}><button className={btn}>🕌 إزالة شارة المصلى</button></form>}
               {o.no_music && <form action={clearOrgBadge.bind(null, o.id, "no_music")}><button className={btn}>🔇 إزالة شارة بدون موسيقى</button></form>}
+              {o.has_kids_area && <form action={clearOrgBadge.bind(null, o.id, "has_kids_area")}><button className={btn}>🧒 إزالة Kids Area</button></form>}
+              {o.kids_friendly && <form action={clearOrgBadge.bind(null, o.id, "kids_friendly")}><button className={btn}>👶 إزالة شارة الأطفال</button></form>}
+              {o.kids_transport && <form action={clearOrgBadge.bind(null, o.id, "kids_transport")}><button className={btn}>🚌 إزالة المواصلات</button></form>}
+              {(o.accessibility ?? []).length > 0 && <form action={clearOrgBadge.bind(null, o.id, "accessibility")}><button className={btn}>♿ إزالة التهيئة</button></form>}
             </div></div>
             <form action={setVerified.bind(null, o.id)} className="flex flex-wrap items-center gap-2 text-xs">
               <span className="text-muted">التوثيق {isVerified(o) ? (o.verified_until ? `(حتى ${o.verified_until.slice(0, 10)})` : "(بدون انتهاء)") : o.verified_at ? "(منتهي)" : ""}:</span>

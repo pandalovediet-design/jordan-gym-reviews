@@ -10,7 +10,7 @@ export const isOrgType = (v: string | undefined): v is Enums<"org_type"> =>
 
 export const WOMEN_FILTERS = ["only", "any"] as const;
 
-const LISTING_COLS = "id,slug,name_ar,type,city,area,description_ar,verified_at,is_featured,category_id,category_slug,category_name,women_access,women_hours_note,free_trial_note,min_price_jod,latitude,longitude,branch_count,branch_cities,branch_women_only,branch_women_hours,branch_points,glow_color,has_mosque,no_music";
+const LISTING_COLS = "id,slug,name_ar,type,city,area,description_ar,verified_at,is_featured,category_id,category_slug,category_name,women_access,women_hours_note,free_trial_note,min_price_jod,latitude,longitude,branch_count,branch_cities,branch_women_only,branch_women_hours,branch_points,glow_color,has_mosque,no_music,has_kids_area,kids_friendly,kids_transport,accessibility";
 
 type ListingRow = {
   id: string | null; slug: string | null; name_ar: string | null; type: Enums<"org_type"> | null; city: string | null; area: string | null;
@@ -20,6 +20,7 @@ type ListingRow = {
   free_trial_note: string | null; min_price_jod: number | null;
   latitude: number | null; longitude: number | null;
   branch_count: number | null; branch_cities: string[] | null; branch_women_only: boolean | null; branch_women_hours: boolean | null; branch_points: unknown; glow_color: string | null; has_mosque: boolean | null; no_music: boolean | null;
+  has_kids_area: boolean | null; kids_friendly: boolean | null; kids_transport: boolean | null; accessibility: string[] | null;
 };
 function mapListing(data: ListingRow[]) {
   return data.flatMap((o) =>
@@ -36,6 +37,7 @@ function mapListing(data: ListingRow[]) {
           branch_count: Number(o.branch_count ?? 1), glow_color: asGlow(o.glow_color),
           branch_women_only: !!o.branch_women_only, branch_women_hours: !!o.branch_women_hours,
           has_mosque: !!o.has_mosque, no_music: !!o.no_music,
+          has_kids_area: !!o.has_kids_area, kids_friendly: !!o.kids_friendly, kids_transport: !!o.kids_transport, accessibility: Array.isArray(o.accessibility) ? o.accessibility : [],
           points: [
             ...(o.latitude != null && o.longitude != null ? [{ lat: Number(o.latitude), lng: Number(o.longitude) }] : []),
             ...(Array.isArray(o.branch_points) ? (o.branch_points as { lat: number; lng: number }[]).filter((p) => p && typeof p.lat === "number" && typeof p.lng === "number") : []),
@@ -52,7 +54,7 @@ async function withCovers<T extends { id: string }>(db: ReturnType<typeof create
   return rows.map((o) => ({ ...o, cover: covers.find((c) => c.organization_id === o.id) ?? null }));
 }
 
-export async function searchOrgs(opts: { q?: string; type?: string; city?: string; area?: string; category?: string; women?: string; maxPrice?: number; trial?: boolean; mosque?: boolean; quiet?: boolean; near?: { lat: number; lng: number } | null; page: number }) {
+export async function searchOrgs(opts: { q?: string; type?: string; city?: string; area?: string; category?: string; women?: string; maxPrice?: number; trial?: boolean; mosque?: boolean; quiet?: boolean; kidsArea?: boolean; kids?: boolean; transport?: boolean; access?: boolean; near?: { lat: number; lng: number } | null; page: number }) {
   const db = createPublicClient();
   let query = db
     .from("organizations_listing")
@@ -75,6 +77,10 @@ export async function searchOrgs(opts: { q?: string; type?: string; city?: strin
   if (opts.trial) query = query.not("free_trial_note", "is", null);
   if (opts.mosque) query = query.eq("has_mosque", true);
   if (opts.quiet) query = query.eq("no_music", true);
+  if (opts.kidsArea) query = query.eq("has_kids_area", true);
+  if (opts.kids) query = query.eq("kids_friendly", true);
+  if (opts.transport) query = query.eq("kids_transport", true);
+  if (opts.access) query = query.not("accessibility", "eq", "{}");
   const { data, count, error } = await query;
   if (error) throw new Error(error.message);
   if (opts.near) {

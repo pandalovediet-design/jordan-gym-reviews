@@ -244,10 +244,15 @@ export async function clearWomenAccess(orgId: string): Promise<void> {
   revalidatePath("/");
 }
 
-export async function clearOrgBadge(orgId: string, badge: "has_mosque" | "no_music"): Promise<void> {
-  if (badge !== "has_mosque" && badge !== "no_music") return;
+const BADGE_PATCH = {
+  has_mosque: { has_mosque: false }, no_music: { no_music: false },
+  has_kids_area: { has_kids_area: false }, kids_friendly: { kids_friendly: false },
+  kids_transport: { kids_transport: false, transport_note: null }, accessibility: { accessibility: [] as string[] },
+} as const;
+export async function clearOrgBadge(orgId: string, badge: keyof typeof BADGE_PATCH): Promise<void> {
+  if (!(badge in BADGE_PATCH)) return;
   const { supabase } = await requireAdmin();
-  await supabase.from("organizations").update(badge === "has_mosque" ? { has_mosque: false } : { no_music: false }).eq("id", orgId);
+  await supabase.from("organizations").update(BADGE_PATCH[badge]).eq("id", orgId);
   revalidatePath("/admin", "layout");
   revalidatePath("/");
 }

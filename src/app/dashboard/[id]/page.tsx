@@ -1,3 +1,4 @@
+import { ACCESS_OPTIONS } from "@/lib/facilities";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -174,6 +175,12 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             <p className="text-sm font-semibold">🕌 مرافق وأجواء</p>
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="has_mosque" defaultChecked={org.has_mosque} /> فيه مصلى أو مسجد جوا النشاط أو ملاصق له</label>
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="no_music" defaultChecked={org.no_music} /> بدون موسيقى (أو بدون موسيقى أثناء أوقات الصلاة)</label>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="has_kids_area" defaultChecked={org.has_kids_area} /> 🧒 Kids Area: مكان لأولاد المشتركين وهم بتمرّنوا</label>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="kids_friendly" defaultChecked={org.kids_friendly} /> 👶 مهيّأ للأطفال (من 5 لـ 12 سنة)</label>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="kids_transport" defaultChecked={org.kids_transport} /> 🚌 فيه مواصلات للأطفال</label>
+            <input name="transport_note" defaultValue={org.transport_note ?? ""} maxLength={200} placeholder="المناطق أو الأيام (اختياري)، مثال: من عمّان والزرقاء" className={field} />
+            <p className="pt-1 text-sm font-semibold">♿ تهيئة لذوي الاحتياجات الخاصة (اختار بس اللي فعلاً موجود)</p>
+            {ACCESS_OPTIONS.map((a) => <label key={a.key} className="flex items-center gap-2 text-sm"><input type="checkbox" name="accessibility" value={a.key} defaultChecked={org.accessibility?.includes(a.key)} /> {a.label}</label>)}
             <p className="text-xs text-muted">بتظهر للزوار كشارة «حسب صاحب النشاط». اختار بس اللي فعلاً موجود عندك، والإدارة بتقدر تشيل الشارة عند أي إساءة.</p>
           </div>
           )}

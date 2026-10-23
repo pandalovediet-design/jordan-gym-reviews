@@ -1088,6 +1088,11 @@ export type Database = {
           free_trial_note: string | null
         has_mosque: boolean
         no_music: boolean
+        has_kids_area: boolean
+        kids_friendly: boolean
+        kids_transport: boolean
+        transport_note: string | null
+        accessibility: string[]
           address: string | null
           area: string | null
           category_id: string | null
@@ -1124,6 +1129,11 @@ export type Database = {
           free_trial_note?: string | null
         has_mosque?: boolean
         no_music?: boolean
+        has_kids_area?: boolean
+        kids_friendly?: boolean
+        kids_transport?: boolean
+        transport_note?: string | null
+        accessibility?: string[]
           address?: string | null
           area?: string | null
           city?: string
@@ -1159,6 +1169,11 @@ export type Database = {
           free_trial_note?: string | null
         has_mosque?: boolean
         no_music?: boolean
+        has_kids_area?: boolean
+        kids_friendly?: boolean
+        kids_transport?: boolean
+        transport_note?: string | null
+        accessibility?: string[]
           address?: string | null
           area?: string | null
           city?: string
@@ -1471,6 +1486,10 @@ export type Database = {
         Row: {
           has_mosque: boolean | null
           no_music: boolean | null
+          has_kids_area: boolean | null
+          kids_friendly: boolean | null
+          kids_transport: boolean | null
+          accessibility: string[] | null
           area: string | null
           category_id: string | null
           category_name: string | null

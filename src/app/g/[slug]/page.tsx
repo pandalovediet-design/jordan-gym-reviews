@@ -1,3 +1,4 @@
+import { accessLabel } from "@/lib/facilities";
 import { baseUrl } from "@/lib/base-url";
 import { cache } from "react";
 import type { Metadata } from "next";
@@ -256,12 +257,21 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {coachGyms.length > 0 && (
         <p className="mt-1 text-sm">{org.type === "nutritionist" ? "يتعاون مع: " : "يتدرب في: "}{coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
       <h1 className="mt-1 text-3xl font-extrabold">{org.name_ar}</h1>
-      {(org.has_mosque || org.no_music) && (
+      {(org.has_mosque || org.no_music || org.has_kids_area || org.kids_friendly || org.kids_transport) && (
         <p className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+          {org.has_kids_area && <span className="rounded-full bg-amber-500/15 px-3 py-1 font-bold text-amber-300 ring-1 ring-amber-400/30">🧒 Kids Area</span>}
+          {org.kids_friendly && <span className="rounded-full bg-amber-500/15 px-3 py-1 font-bold text-amber-300 ring-1 ring-amber-400/30">👶 مهيّأ للأطفال (5–12)</span>}
+          {org.kids_transport && <span className="rounded-full bg-amber-500/15 px-3 py-1 font-bold text-amber-300 ring-1 ring-amber-400/30">🚌 مواصلات للأطفال{org.transport_note ? `: ${org.transport_note}` : ""}</span>}
           {org.has_mosque && <span className="rounded-full bg-emerald-500/15 px-3 py-1 font-bold text-emerald-300 ring-1 ring-emerald-400/30">🕌 فيه مصلى</span>}
           {org.no_music && <span className="rounded-full bg-sky-500/15 px-3 py-1 font-bold text-sky-300 ring-1 ring-sky-400/30">🔇 بدون موسيقى</span>}
           <span className="text-xs text-muted">حسب صاحب النشاط</span>
         </p>
+      )}
+      {(org.accessibility ?? []).length > 0 && (
+        <div className="mt-3 rounded-2xl bg-violet-500/10 p-4 text-sm ring-1 ring-violet-400/30">
+          <p className="font-bold text-violet-200">♿ تهيئة لذوي الاحتياجات الخاصة <span className="text-xs font-normal text-muted">(حسب صاحب النشاط)</span></p>
+          <ul className="mt-2 list-disc space-y-1 pr-5">{(org.accessibility ?? []).map((k: string) => <li key={k}>{accessLabel(k)}</li>)}</ul>
+        </div>
       )}
       {!multi && <p className="mt-1 text-muted">{[org.address, org.area, org.city].filter(Boolean).join("، ")}</p>}
       </div>

@@ -1,4 +1,5 @@
 "use server";
+import { ACCESS_KEYS } from "@/lib/facilities";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -65,6 +66,10 @@ const profileSchema = z.object({
   women_hours_note: opt(200),
   has_mosque: z.string().optional().transform((v) => v === "on"),
   no_music: z.string().optional().transform((v) => v === "on"),
+  has_kids_area: z.string().optional().transform((v) => v === "on"),
+  kids_friendly: z.string().optional().transform((v) => v === "on"),
+  kids_transport: z.string().optional().transform((v) => v === "on"),
+  transport_note: opt(200),
   maps_url: opt(500),
   free_trial_note: opt(120),
   video_url: opt(300),
@@ -83,7 +88,9 @@ export async function updateProfile(id: string, _: FormState, fd: FormData): Pro
   if (data.women_access !== "women_hours") data.women_hours_note = null;
   const extra = fd.has("delivery_present") ? { delivery_modes: fd.getAll("delivery_modes").map(String).filter((m) => ["own_delivery", "apps", "pickup"].includes(m)) } : {};
   const coords = data.maps_url ? await resolveMapsCoords(data.maps_url) : null;
-  Object.assign(data, { latitude: coords?.lat ?? null, longitude: coords?.lng ?? null }, extra);
+  if (!data.kids_transport) data.transport_note = null;
+  const accessibility = fd.getAll("accessibility").map(String).filter((v) => ACCESS_KEYS.includes(v));
+  Object.assign(data, { latitude: coords?.lat ?? null, longitude: coords?.lng ?? null, accessibility }, extra);
   const { error } = await supabase.from("organizations").update(data).eq("id", id);
   if (error) return { error: error.message.includes("category") ? "التصنيف لا يناسب نوع النشاط." : "تعذّر الحفظ. تأكد من صيغة الهاتف والواتساب والموقع (يبدأ بـ https://)." };
   revalidatePath(`/dashboard/${id}`);

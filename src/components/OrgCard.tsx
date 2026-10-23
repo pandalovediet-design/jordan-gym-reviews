@@ -5,7 +5,7 @@ import type { Enums } from "@/lib/database.types";
 
 export function OrgCard({ org }: {
   org: { slug: string; name_ar: string; type: Enums<"org_type">; city: string; area: string | null; description_ar: string | null; verified_at: string | null; is_featured?: boolean;
-    category_name?: string | null; free_trial_note?: string | null; min_price_jod?: number | null; distance_km?: number; glow_color?: GlowColor | null; branch_count?: number; branch_women_only?: boolean; has_mosque?: boolean; no_music?: boolean; women_access?: "none" | "women_only" | "women_hours";
+    category_name?: string | null; free_trial_note?: string | null; min_price_jod?: number | null; distance_km?: number; glow_color?: GlowColor | null; branch_count?: number; branch_women_only?: boolean; has_mosque?: boolean; no_music?: boolean; has_kids_area?: boolean; kids_friendly?: boolean; kids_transport?: boolean; accessibility?: string[]; women_access?: "none" | "women_only" | "women_hours";
     cover?: { storage_path: string; alt_text: string | null } | null };
 }) {
   return (
@@ -35,8 +35,8 @@ export function OrgCard({ org }: {
         {(org.branch_count ?? 1) > 1 && <span className="rounded-full bg-white/10 px-2 py-0.5">🏢 {org.branch_count} فروع</span>}
         {org.branch_women_only && org.women_access !== "women_only" && <span className="rounded-full bg-pink-500/20 px-2 py-0.5 font-bold text-pink-300 ring-1 ring-pink-400/40">💗 فرع نسائي</span>}
         {org.distance_km != null && <span className="rounded-full bg-white/10 px-2 py-0.5">📍 {org.distance_km < 1 ? "أقل من 1" : org.distance_km.toFixed(1)} كم</span>}
-        {org.has_mosque && <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 font-bold text-emerald-300 ring-1 ring-emerald-400/30">🕌 مصلى</span>}
-        {org.no_music && <span className="rounded-full bg-sky-500/15 px-2 py-0.5 font-bold text-sky-300 ring-1 ring-sky-400/30">🔇 بدون موسيقى</span>}
+        {facilityBadges(org).slice(0, 3).map((b) => <span key={b[0]} className={`rounded-full px-2 py-0.5 font-bold ring-1 ${b[2]}`}>{b[1]}</span>)}
+        {facilityBadges(org).length > 3 && <span className="rounded-full bg-white/10 px-2 py-0.5">+{facilityBadges(org).length - 3}</span>}
         {org.min_price_jod != null && <span className="rounded-full bg-white/10 px-2 py-0.5">من {jod(org.min_price_jod)}</span>}
         {org.free_trial_note && <span className="rounded-full bg-accent/15 px-2 py-0.5 font-bold text-accent">🎟 {org.free_trial_note}</span>}
       </div>
@@ -45,4 +45,18 @@ export function OrgCard({ org }: {
     <FavButton slug={org.slug} />
     </div>
   );
+}
+
+const KID = "bg-amber-500/15 text-amber-300 ring-amber-400/30", MOSQUE = "bg-emerald-500/15 text-emerald-300 ring-emerald-400/30", QUIET = "bg-sky-500/15 text-sky-300 ring-sky-400/30";
+type Badge = [key: string, label: string, cls: string];
+/** Owner-declared facility badges in display priority; the card shows the first three. */
+function facilityBadges(o: { has_kids_area?: boolean; kids_friendly?: boolean; kids_transport?: boolean; accessibility?: string[]; has_mosque?: boolean; no_music?: boolean }): Badge[] {
+  const out: Badge[] = [];
+  if (o.has_kids_area) out.push(["kidsarea", "🧒 Kids Area", KID]);
+  if (o.kids_friendly) out.push(["kids", "👶 للأطفال 5–12", KID]);
+  if (o.kids_transport) out.push(["transport", "🚌 مواصلات أطفال", KID]);
+  if (o.accessibility && o.accessibility.length) out.push(["access", "♿ مهيّأ", "bg-violet-500/15 text-violet-300 ring-violet-400/30"]);
+  if (o.has_mosque) out.push(["mosque", "🕌 مصلى", MOSQUE]);
+  if (o.no_music) out.push(["quiet", "🔇 بدون موسيقى", QUIET]);
+  return out;
 }
