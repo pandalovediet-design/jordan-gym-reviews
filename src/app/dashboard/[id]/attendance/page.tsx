@@ -11,8 +11,8 @@ export default async function Attendance({ params }: PageProps<"/dashboard/[id]/
   const { id } = await params;
   if (!UUID.test(id)) notFound();
   const { supabase } = await requireUser();
-  const { data: org } = await supabase.from("organizations").select("id,name_ar").eq("id", id).maybeSingle();
-  if (!org) notFound();
+  const { data: org } = await supabase.from("organizations").select("id,name_ar,type").eq("id", id).maybeSingle();
+  if (!org || !["gym", "independent_coach", "sports_facility", "nutritionist"].includes(org.type)) notFound();
   const since = new Date(new Date().getTime() - 30 * 86_400_000).toISOString();
   const [{ data: rows }, { data: members }] = await Promise.all([
     supabase.from("member_checkins").select("id,member_id,checked_in_at,was_expired").eq("organization_id", id).gte("checked_in_at", since).order("checked_in_at", { ascending: false }).limit(2000),

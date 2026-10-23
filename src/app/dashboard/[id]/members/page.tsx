@@ -15,7 +15,7 @@ export default async function Members({ params }: PageProps<"/dashboard/[id]/mem
   if (!UUID.test(id)) notFound();
   const { supabase } = await requireUser();
   const { data: org } = await supabase.from("organizations").select("id,name_ar,type").eq("id", id).maybeSingle();
-  if (!org || org.type === "store") notFound();
+  if (!org || !["gym", "independent_coach", "sports_facility", "nutritionist"].includes(org.type)) notFound();
   const [{ data: plans }, { data: members }, { data: programs }, { data: files }] = await Promise.all([
     supabase.from("membership_plans").select("*").eq("organization_id", id).order("created_at"),
     supabase.from("org_members").select("*").eq("organization_id", id).order("ends_on", { ascending: true }).limit(500),
