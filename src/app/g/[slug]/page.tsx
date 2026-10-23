@@ -294,6 +294,18 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         <a href={`/g/${org.slug}/card`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">🖼 كرت للمنشور</a>
         <a href={`/g/${org.slug}/card?s=1`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">📱 كرت للستوري</a>
       </div>
+      <details className="mt-3 w-fit rounded-xl bg-surface ring-1 ring-white/10 [&[open]]:p-4">
+        <summary className="cursor-pointer list-none rounded-xl px-5 py-2.5 [&::-webkit-details-marker]:hidden">📲 QR للمشاركة</summary>
+        <div className="mt-3 flex flex-col items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={`/g/${org.slug}/qr`} alt={`رمز QR لصفحة ${org.name_ar}`} width={208} height={208} loading="lazy" className="size-52 rounded-xl bg-white p-1" />
+          <p className="max-w-52 text-center text-xs text-muted">امسحه بالكاميرا بيفتح صفحة {org.name_ar}.</p>
+          <div className="flex gap-2 text-sm">
+            <a href={`/g/${org.slug}/qr?format=png&download=1`} className="rounded-lg bg-accent px-4 py-2 font-bold text-accent-foreground">تنزيل PNG</a>
+            <a href={`/g/${org.slug}/qr?download=1`} className="rounded-lg bg-white/10 px-4 py-2">SVG</a>
+          </div>
+        </div>
+      </details>
       {reviewVideos.length > 0 && (
         <section className="mt-6 rounded-2xl bg-accent/10 p-4 ring-1 ring-accent/30">
           <h2 className="mb-1 text-lg font-bold">🎬 مراجعة عبد الكريم</h2>
