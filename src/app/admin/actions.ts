@@ -11,6 +11,31 @@ async function requireAdmin() {
   return ctx;
 }
 
+/**
+ * Attach a listing to a real account after the owner proved it is theirs (checked by hand).
+ * fd.email: the account's email. fd.mode: "move" (default; I step out as owner) or "add" (I stay as a co-owner).
+ */
+export async function assignOrgOwner(orgId: string, _: FormState, fd: FormData): Promise<FormState> {
+  const { supabase, user } = await requireAdmin();
+  const email = String(fd.get("email") ?? "").trim().toLowerCase();
+  if (!/^\S+@\S+\.\S+$/.test(email)) return { error: "اكتب إيميل صحيح." };
+  const { data: users, error: ue } = await supabase.rpc("admin_list_users");
+  if (ue) return { error: "تعذّر قراءة المستخدمين." };
+  const target = (users ?? []).find((u) => u.email.toLowerCase() === email);
+  if (!target) return { error: "ما في حساب بهالإيميل. اطلب منه يسجّل حساب أول." };
+  const { error } = await supabase.from("organization_members").upsert({ organization_id: orgId, user_id: target.id, role: "owner" }, { onConflict: "organization_id,user_id" });
+  if (error) return { error: "تعذّر الربط." };
+  let note = "تم الربط، صار مالكاً للنشاط.";
+  if (String(fd.get("mode") ?? "move") === "move" && target.id !== user.id) {
+    // the guard trigger needs another owner to exist, which is true now that the new owner is in
+    const { error: de } = await supabase.from("organization_members").delete().eq("organization_id", orgId).eq("user_id", user.id);
+    note = de ? "تم الربط، بس ما قدرت أشيل حسابك من النشاط." : "تم الربط ونُقلت الملكية له.";
+  }
+  revalidatePath("/admin/orgs");
+  revalidatePath("/dashboard", "layout");
+  return { ok: note };
+}
+
 export async function setOrgStatus(id: string, status: "published" | "suspended" | "draft"): Promise<void> {
   const { supabase } = await requireAdmin();
   await supabase.from("organizations").update({ status }).eq("id", id);

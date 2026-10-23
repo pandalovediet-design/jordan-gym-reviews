@@ -4,7 +4,8 @@ import { requireUser } from "@/lib/auth";
 import { GLOW_COLORS, GLOW_NAME, ORG_TYPE_LABEL, isVerified } from "@/lib/format";
 import { cleanQuery } from "@/lib/format";
 import { isOrgType } from "@/lib/queries";
-import { clearWomenAccess, clearOrgBadge, setFeatured, setGlow, setOrgStatus, setOrgType, setVerified } from "../actions";
+import { ActionForm } from "@/components/Form";
+import { assignOrgOwner, clearWomenAccess, clearOrgBadge, setFeatured, setGlow, setOrgStatus, setOrgType, setVerified } from "../actions";
 
 export const metadata: Metadata = { title: "الأنشطة", robots: { index: false } };
 const STATUSES = ["draft", "pending", "published", "suspended"] as const;
@@ -65,6 +66,17 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
               {o.kids_transport && <form action={clearOrgBadge.bind(null, o.id, "kids_transport")}><button className={btn}>🚌 إزالة المواصلات</button></form>}
               {(o.accessibility ?? []).length > 0 && <form action={clearOrgBadge.bind(null, o.id, "accessibility")}><button className={btn}>♿ إزالة التهيئة</button></form>}
             </div></div>
+            <details className="text-xs">
+              <summary className="cursor-pointer text-muted">🔗 ربط النشاط بحساب صاحبه</summary>
+              <ActionForm action={assignOrgOwner.bind(null, o.id)} submit="ربط" className="mt-2 flex flex-wrap items-center gap-2">
+                <input name="email" type="email" dir="ltr" required placeholder="إيميل حساب صاحب النشاط" className={`${fld} min-w-56`} />
+                <select name="mode" defaultValue="move" className="rounded-lg bg-background px-2 py-2 ring-1 ring-white/10">
+                  <option value="move">انقل الملكية له (أشيل حسابي)</option>
+                  <option value="add">أضفه وأبقى معه</option>
+                </select>
+              </ActionForm>
+              <p className="mt-1 text-muted">تأكد أنه صاحبه فعلاً قبل الربط (مثلاً من واتساب النادي)، وهو لازم يكون عامل حساب أول.</p>
+            </details>
             <form action={setVerified.bind(null, o.id)} className="flex flex-wrap items-center gap-2 text-xs">
               <span className="text-muted">التوثيق {isVerified(o) ? (o.verified_until ? `(حتى ${o.verified_until.slice(0, 10)})` : "(بدون انتهاء)") : o.verified_at ? "(منتهي)" : ""}:</span>
               <select name="days" defaultValue="365" className="rounded-lg bg-background px-2 py-1 ring-1 ring-white/10">
