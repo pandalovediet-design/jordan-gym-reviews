@@ -131,11 +131,11 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             <input name="maps_url" defaultValue={org.maps_url ?? ""} dir="ltr" placeholder="https://maps.app.goo.gl/..." className={field} />
             <span className="block text-xs">افتح قوقل ماب، دوّر على مكانك، اضغط «مشاركة» ثم «نسخ الرابط» والصقه هون. بنستعمله للعنوان وللمسافة بميزة «قريب مني».</span>
           </label>
-          <label className={lbl}>🎬 فيديو جولة (اختياري)
+          <label className={lbl}>{org.type === "independent_coach" ? "🎬 فيديو تعريفي (اختياري)" : "🎬 فيديو جولة (اختياري)"}
             <input name="video_url" defaultValue={org.video_url ?? ""} dir="ltr" placeholder="https://www.youtube.com/watch?v=..." className={field} />
-            <span className="block text-xs">رابط فيديو يعرّف بمكانك (يوتيوب بيظهر مدمج بصفحتك، وإنستغرام/تيك توك بيظهر كزر).</span>
+            <span className="block text-xs">{org.type === "independent_coach" ? "رابط فيديو يعرّف بك وبأسلوب تدريبك" : "رابط فيديو يعرّف بمكانك"} (يوتيوب بيظهر مدمج بصفحتك، وإنستغرام/تيك توك بيظهر كزر).</span>
           </label>
-          <label className={lbl}>🎟 عرض يوم تجريبي (اختياري)
+          <label className={lbl}>{org.type === "independent_coach" ? "🎟 عرض جلسة تجريبية (اختياري)" : "🎟 عرض يوم تجريبي (اختياري)"}
             <input name="free_trial_note" defaultValue={org.free_trial_note ?? ""} maxLength={120} placeholder="مثال: يوم تجريبي مجاني" className={field} />
             <span className="block text-xs">لو كتبت شي، بيظهر زر «احجز يوم تجريبي» بصفحتك وشارة على بطاقتك، وبيوصل الطلب على واتساب. اتركه فاضي لإخفائه.</span>
           </label>
@@ -164,12 +164,14 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             </label>
             <p className="text-xs text-muted">اختار «خاص بالنساء بالكامل» فقط إذا النشاط كله للنساء. الإدارة بتراجع وبتقدر تشيل الشارة عند أي إساءة.</p>
           </div>
+          {org.type === "independent_coach" ? null : (
           <div className="space-y-2 rounded-xl border border-emerald-400/30 bg-emerald-500/5 p-3">
             <p className="text-sm font-semibold">🕌 مرافق وأجواء</p>
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="has_mosque" defaultChecked={org.has_mosque} /> فيه مصلى أو مسجد جوا النشاط أو ملاصق له</label>
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="no_music" defaultChecked={org.no_music} /> بدون موسيقى (أو بدون موسيقى أثناء أوقات الصلاة)</label>
             <p className="text-xs text-muted">بتظهر للزوار كشارة «حسب صاحب النشاط». اختار بس اللي فعلاً موجود عندك، والإدارة بتقدر تشيل الشارة عند أي إساءة.</p>
           </div>
+          )}
           {(org.type === "nutritionist" || org.type === "sports_health") && (
             <div className="grid gap-3 rounded-xl border border-white/10 p-3 sm:grid-cols-2">
               <label className={lbl}>{org.type === "sports_health" ? "رقم الترخيص / عضوية النقابة" : "رقم الترخيص"}<input name="license_number" defaultValue={org.license_number ?? ""} dir="ltr" className={field} /></label>
