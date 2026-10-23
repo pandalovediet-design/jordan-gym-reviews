@@ -1102,6 +1102,7 @@ export type Database = {
           description_ar: string | null
           id: string
           instagram: string | null
+          theme: string | null
           license_authority: string | null
           license_number: string | null
           latitude: number | null
@@ -1142,6 +1143,7 @@ export type Database = {
           description_ar?: string | null
           id?: string
           instagram?: string | null
+          theme?: string | null
           license_authority?: string | null
           license_number?: string | null
           latitude?: number | null
@@ -1182,6 +1184,7 @@ export type Database = {
           description_ar?: string | null
           id?: string
           instagram?: string | null
+          theme?: string | null
           license_authority?: string | null
           license_number?: string | null
           latitude?: number | null

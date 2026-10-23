@@ -16,6 +16,7 @@ import { orgFaq } from "@/lib/faq";
 import { VideoCard } from "@/components/VideoCard";
 import { BILLING_LABEL, DELIVERY_LABEL, GLOW_LABEL, ORG_TYPE_LABEL, WEEKDAYS, WOMEN_LABEL, ammanDate, dateAr, dayLabelAr, hhmm, isVerified, jod, publicMediaUrl, waNumber } from "@/lib/format";
 import type { Tables } from "@/lib/database.types";
+import { themeClass } from "@/lib/themes";
 
 export const revalidate = 120;
 const load = cache(getOrgBySlug);
@@ -242,6 +243,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   const contact = (v: BV) => <div className="mt-3 flex flex-wrap gap-3">{contactButtons(v)}</div>;
 
   return (
+    <div className={`min-h-[70vh] ${themeClass(org.theme)}`}>
     <div className="mx-auto max-w-5xl px-4 py-8">
       <PageView orgId={org.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
@@ -369,8 +371,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         <>
           {offers.length > 0 && <Section title="العروض"><Offers items={offers} /></Section>}
           <div className="mt-8 grid gap-6 lg:grid-cols-[2fr_1fr]">
-            {(services.length > 0 || org.type !== "healthy_food") && <section><h2 className="mb-3 text-xl font-bold">الأسعار والخدمات</h2>
-              {services.length === 0 ? <p className="text-muted">لم تُضف الأسعار بعد.</p> : <Services items={services} />}</section>}
+            {services.length > 0 && <section><h2 className="mb-3 text-xl font-bold">الأسعار والخدمات</h2><Services items={services} /></section>}
             <section><h2 className="mb-3 text-xl font-bold">ساعات الدوام</h2><Hours items={hours} /></section>
           </div>
           {org.type === "sports_facility" && slots.length > 0 && (
@@ -430,6 +431,18 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
 
       <FaqSection items={faq} title={`أسئلة شائعة عن ${org.name_ar}`} />
       <section className="mt-8"><InquiryForm action={sendInquiry.bind(null, org.id, org.slug)} /><ReportForm action={sendReport.bind(null, org.id, org.slug)} /></section>
+    </div>
+      {!multi && (waNumber(views[0].whatsapp) || views[0].phone || views[0].mapsHref) && (
+        <>
+          {/* Phone: contact actions always within thumb reach. */}
+          <div className="h-20 md:hidden" aria-hidden />
+          <nav aria-label="تواصل سريع" className="fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-white/10 bg-background/95 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur md:hidden">
+            {waNumber(views[0].whatsapp) && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${waNumber(views[0].whatsapp)}?text=${msg("")}`} className="flex-1 rounded-xl bg-accent py-3 text-center font-bold text-accent-foreground">واتساب</TrackedLink>}
+            {views[0].phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${views[0].phone}`} className="flex-1 rounded-xl bg-surface py-3 text-center font-bold ring-1 ring-white/10">اتصال</TrackedLink>}
+            {views[0].mapsHref && <a href={views[0].mapsHref} target="_blank" rel="noopener noreferrer" className="flex-1 rounded-xl bg-surface py-3 text-center font-bold ring-1 ring-white/10">الموقع</a>}
+          </nav>
+        </>
+      )}
     </div>
   );
 }

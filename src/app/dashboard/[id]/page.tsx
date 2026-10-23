@@ -1,5 +1,6 @@
 import { ACCESS_OPTIONS } from "@/lib/facilities";
 import Link from "next/link";
+import { ThemePicker } from "@/components/ThemePicker";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
@@ -9,7 +10,7 @@ import { AVAILABILITY_LABEL, BILLING_LABEL, DELIVERY_LABEL, ammanDate, dayLabelA
 import { PriceTag } from "@/components/PriceTag";
 import { CityAreaPicker } from "@/components/CityAreaPicker";
 import { missingForPublish, suggestionsFor } from "@/lib/completeness";
-import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setHeadTrainer, addFacilitySlots, setSlotStatus, deleteSlot, clearSlotsDay, saveCoachProfile, requestJoinGym, respondCoachLink, setProductAvailability, addMenuItem, deleteMenuItem, setMenuAvailability, setMenuImage, setMainImage } from "../actions";
+import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setHeadTrainer, addFacilitySlots, setSlotStatus, deleteSlot, clearSlotsDay, saveCoachProfile, requestJoinGym, respondCoachLink, setProductAvailability, addMenuItem, deleteMenuItem, setMenuAvailability, setMenuImage, setMainImage, setTheme } from "../actions";
 
 export const metadata: Metadata = { title: "تعديل النشاط", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -100,6 +101,11 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
       {org.status === "published" && <Link href={`/g/${org.slug}`} className="text-accent underline">عرض الصفحة العامة</Link>}
       {org.type === "independent_coach" && <Link href={`/dashboard/${id}/exercises`} className="block rounded-2xl bg-accent/10 p-4 text-sm font-bold text-accent ring-1 ring-accent/30">➕ أضف شرح تمرين — بيظهر باسمك بدليل التمارين (بعد مراجعة الإدارة) ←</Link>}
       <Link href={`/dashboard/${id}/growth`} className="block rounded-2xl bg-accent/10 p-4 text-sm font-bold text-accent ring-1 ring-accent/30">🎬 فيديو + 🎟️ أكواد الخصم{(org.type === "gym" || org.type === "sports_facility" || org.type === "store") && " + 🔄 سوق المعدات"} ←</Link>
+
+      <section className={box}><h2 className="mb-1 text-lg font-bold">🎨 ألوان صفحتك</h2>
+        <p className="mb-4 text-sm text-muted">اختار الثيم اللي بيميّز صفحتك العامة ولوحة تحكمك عن غيرك.</p>
+        <ActionForm action={setTheme.bind(null, id)} submit="حفظ الألوان"><ThemePicker current={org.theme} /></ActionForm>
+      </section>
 
       <section className={box}><h2 className="mb-3 text-lg font-bold">البيانات الأساسية</h2>
         <div className="mb-5 flex flex-wrap items-center gap-4">

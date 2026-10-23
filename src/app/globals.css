@@ -25,6 +25,24 @@ body {
   font-family: "Cairo Variable", system-ui, sans-serif;
 }
 
+/* Per-activity themes: override the color variables inside a wrapper (public page + dashboard). */
+.theme-night { --background: #0a0d24; --surface: #151a3f; --foreground: #eef0ff; --muted: #a3a9d6; --accent: #7c6cff; --accent-foreground: #ffffff; }
+.theme-gold { --background: #15110a; --surface: #241c10; --foreground: #fbf5e6; --muted: #c8b88f; --accent: #f5c542; --accent-foreground: #1a1405; }
+.theme-ocean { --background: #04182a; --surface: #0a2840; --foreground: #e8f4ff; --muted: #9cbcd6; --accent: #38bdf8; --accent-foreground: #04182a; }
+.theme-rose { --background: #1f0a19; --surface: #311128; --foreground: #fff0f7; --muted: #d6a3bf; --accent: #f472b6; --accent-foreground: #1f0a19; }
+.theme-ember { --background: #1a0d06; --surface: #2a160b; --foreground: #fff3ea; --muted: #d4ab90; --accent: #fb923c; --accent-foreground: #1a0d06; }
+.themed { background: var(--background); color: var(--foreground); }
+/* Night: the soft blue/violet glow and faint grid of the reference design. */
+.theme-night.themed {
+  background:
+    radial-gradient(60rem 30rem at 85% -10%, rgba(91, 140, 255, 0.22), transparent 60%),
+    radial-gradient(40rem 25rem at 0% 30%, rgba(139, 92, 246, 0.16), transparent 60%),
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px) 0 0 / 32px 32px,
+    var(--background);
+}
+.theme-night .bg-accent { background-image: linear-gradient(90deg, #5b8cff, #8b5cf6); }
+
 /* Colored glow behind a member card (gold / blue / green / pink), granted by the platform admin. */
 .glow { position: relative; isolation: isolate; }
 .glow::before {

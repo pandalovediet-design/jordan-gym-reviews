@@ -201,10 +201,13 @@ export async function getProduct(id: string) {
 export async function listSitemapEntries() {
   const db = createPublicClient();
   const [orgs, products] = await Promise.all([
-    db.from("organizations").select("slug,updated_at").eq("status", "published").limit(5000),
-    db.from("products").select("id,updated_at").limit(5000),
+    db.from("organizations").select("id,slug,updated_at").eq("status", "published").limit(5000),
+    db.from("products").select("id,updated_at,organization_id").limit(5000),
   ]);
-  return { orgs: orgs.data ?? [], products: products.data ?? [] };
+  // Demo listings stay browsable but are kept out of search engines.
+  const real = (orgs.data ?? []).filter((o) => !o.slug.startsWith("demo-"));
+  const realIds = new Set(real.map((o) => o.id));
+  return { orgs: real, products: (products.data ?? []).filter((p) => realIds.has(p.organization_id)) };
 }
 
 export async function listActiveOffers(limit = 6) {

@@ -8,6 +8,7 @@ import { requireUser } from "@/lib/auth";
 import { missingForPublish } from "@/lib/completeness";
 import { resolveMapsCoords } from "@/lib/maps";
 import { parseVideoUrl } from "@/lib/video";
+import { asTheme } from "@/lib/themes";
 
 export type FormState = { error?: string; ok?: string } | undefined;
 const opt = (max: number) => z.string().trim().max(max).optional().transform((v) => v || null);
@@ -785,4 +786,15 @@ export async function deleteExplanation(id: string, explId: string): Promise<voi
   await supabase.from("exercise_explanations").delete().eq("id", explId).eq("organization_id", id);
   revalidatePath(`/dashboard/${id}/exercises`);
   revalidatePath("/exercises", "layout");
+}
+
+// ---------------------------------------------------------------- page theme
+export async function setTheme(id: string, _: FormState, fd: FormData): Promise<FormState> {
+  const t = asTheme(String(fd.get("theme") ?? ""));
+  const { supabase } = await requireUser();
+  const { data: org, error } = await supabase.from("organizations").update({ theme: t && t !== "emerald" ? t : null }).eq("id", id).select("slug").maybeSingle();
+  if (error || !org) return { error: "تعذّر حفظ الثيم" };
+  revalidatePath(`/dashboard/${id}`, "layout");
+  revalidatePath(`/g/${org.slug}`);
+  return { ok: "تم تغيير ألوان صفحتك" };
 }

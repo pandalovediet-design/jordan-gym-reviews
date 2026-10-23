@@ -1,21 +1,24 @@
 import Link from "next/link";
 import { DashTabs } from "@/components/DashTabs";
 import { createClient } from "@/lib/supabase/server";
+import { themeClass } from "@/lib/themes";
 
 export default async function DashLayout({ children, params }: LayoutProps<"/dashboard/[id]">) {
   const { id } = await params;
   let showMembers = true;
   let newInquiries = 0;
   let adminView: { orgName: string } | null = null;
+  let theme: string | null = null;
   if (/^[0-9a-f-]{36}$/i.test(id)) {
     const supabase = await createClient();
     const [{ data: org }, { data: auth }, { data: isAdmin }] = await Promise.all([
-      supabase.from("organizations").select("type,name_ar").eq("id", id).maybeSingle(),
+      supabase.from("organizations").select("type,name_ar,theme").eq("id", id).maybeSingle(),
       supabase.auth.getUser(),
       supabase.rpc("is_platform_admin"),
     ]);
     const { count } = await supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("organization_id", id).eq("status", "new");
     newInquiries = count ?? 0;
+    theme = org?.theme ?? null;
     showMembers = !!org && ["gym", "independent_coach", "sports_facility", "nutritionist"].includes(org.type); // private subscriber tool only for places with subscribers
     if (org && isAdmin && auth.user) {
       const { data: mine } = await supabase.from("organization_members").select("user_id").eq("organization_id", id).eq("user_id", auth.user.id).maybeSingle();
@@ -29,8 +32,10 @@ export default async function DashLayout({ children, params }: LayoutProps<"/das
           وضع الأدمن: أنت تدير حساب «{adminView.orgName}» وأي تعديل بيطبّق مباشرة عليه. <Link href="/admin/orgs" className="underline">← رجوع للوحة الإدارة</Link>
         </div>
       )}
-      <DashTabs id={id} showMembers={showMembers} newInquiries={newInquiries} />
-      {children}
+      <div className={`min-h-[70vh] pb-10 ${themeClass(theme)}`}>
+        <DashTabs id={id} showMembers={showMembers} newInquiries={newInquiries} />
+        {children}
+      </div>
     </>
   );
 }
