@@ -22,7 +22,7 @@ const PACKAGES = [
 export default async function Sponsors() {
   const { data } = await createPublicClient().rpc("get_public_stats");
   const s = data?.[0];
-  const n = (v: number | string | null | undefined) => new Intl.NumberFormat("ar-JO").format(Number(v ?? 0));
+  const n = (v: number | string | null | undefined) => new Intl.NumberFormat("ar-JO-u-nu-latn").format(Number(v ?? 0));
   const stats: [string, string][] = [
     ["نشاط مسجّل", n(s?.orgs)], ["مدينة", n(s?.cities)], ["مشاهدة صفحة (30 يوم)", n(s?.views_30d)],
     ["نقرة واتساب (30 يوم)", n(s?.whatsapp_30d)], ["اتصال (30 يوم)", n(s?.phone_30d)], ["استفسار (30 يوم)", n(s?.inquiries_30d)],

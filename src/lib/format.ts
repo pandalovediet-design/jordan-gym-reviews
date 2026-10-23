@@ -34,7 +34,7 @@ export const jod = (n: number | null | undefined) =>
 export const hhmm = (t: string | null) => (t ? t.slice(0, 5) : "");
 
 export const dateAr = (iso: string) =>
-  new Intl.DateTimeFormat("ar-JO", { dateStyle: "medium" }).format(new Date(iso));
+  new Intl.DateTimeFormat("ar-JO-u-nu-latn", { dateStyle: "medium" }).format(new Date(iso));
 
 /** Normalise a Jordanian number to wa.me format (digits only, 962 prefix). */
 export function waNumber(raw: string | null): string | null {

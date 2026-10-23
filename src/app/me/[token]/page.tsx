@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: PageProps<"/me/[token]">): Pr
   return { title: "عضويتي", robots: { index: false, follow: false }, manifest: `/me/${token}/manifest.webmanifest` };
 }
 
-const visit = (iso: string) => new Intl.DateTimeFormat("ar-JO", { timeZone: "Asia/Amman", weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" }).format(new Date(iso));
+const visit = (iso: string) => new Intl.DateTimeFormat("ar-JO-u-nu-latn", { timeZone: "Asia/Amman", weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" }).format(new Date(iso));
 
 export default async function MemberPage({ params }: PageProps<"/me/[token]">) {
   const { token } = await params;
@@ -79,7 +79,7 @@ export default async function MemberPage({ params }: PageProps<"/me/[token]">) {
       <div className="grid grid-cols-3 gap-3">
         <div className={tile}><p className={`text-2xl font-extrabold ${left < 0 ? "text-red-300" : "text-accent"}`}>{left < 0 ? 0 : left}</p><p className="text-xs text-muted">يوم باقي</p></div>
         <div className={tile}><p className="text-2xl font-extrabold text-accent">{monthCount}</p><p className="text-xs text-muted">حضور هالشهر</p></div>
-        <div className={tile}><p className="text-sm font-bold text-accent">{visits?.[0] ? new Intl.DateTimeFormat("ar-JO", { timeZone: "Asia/Amman", day: "numeric", month: "short" }).format(new Date(visits[0].checked_in_at)) : "—"}</p><p className="mt-1 text-xs text-muted">آخر زيارة</p></div>
+        <div className={tile}><p className="text-sm font-bold text-accent">{visits?.[0] ? new Intl.DateTimeFormat("ar-JO-u-nu-latn", { timeZone: "Asia/Amman", day: "numeric", month: "short" }).format(new Date(visits[0].checked_in_at)) : "—"}</p><p className="mt-1 text-xs text-muted">آخر زيارة</p></div>
       </div>
 
       <section data-sec className={box}>

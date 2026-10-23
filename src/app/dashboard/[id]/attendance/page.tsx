@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "سجل الحضور", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
-const fmt = (iso: string, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("ar-JO", { timeZone: "Asia/Amman", ...o }).format(new Date(iso));
+const fmt = (iso: string, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("ar-JO-u-nu-latn", { timeZone: "Asia/Amman", ...o }).format(new Date(iso));
 
 export default async function Attendance({ params }: PageProps<"/dashboard/[id]/attendance">) {
   const { id } = await params;

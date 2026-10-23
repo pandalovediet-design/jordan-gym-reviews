@@ -7,7 +7,7 @@ import { ammanDate, isoDaysFromNow } from "@/lib/format";
 export const metadata: Metadata = { title: "الإحصائيات", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
 const DAYS = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-const ar = (n: number) => n.toLocaleString("ar-EG");
+const ar = (n: number) => n.toLocaleString("ar-JO-u-nu-latn");
 type Ev = { event_type: string; created_at: string };
 /** Amman wall-clock parts of an ISO timestamp (UTC+3, no DST). */
 const amman = (iso: string) => new Date(+new Date(iso) + 3 * 3_600_000);

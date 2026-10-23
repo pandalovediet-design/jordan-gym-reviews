@@ -20,7 +20,7 @@ function subscribe(cb: () => void) {
 }
 const save = (log: Log) => { try { localStorage.setItem(KEY, JSON.stringify(log)); window.dispatchEvent(new Event(EVT)); } catch {} };
 
-const ar = (n: number) => n.toLocaleString("ar-EG");
+const ar = (n: number) => n.toLocaleString("ar-JO-u-nu-latn");
 const MONTHS = ["كانون الثاني", "شباط", "آذار", "نيسان", "أيار", "حزيران", "تموز", "آب", "أيلول", "تشرين الأول", "تشرين الثاني", "كانون الأول"];
 const DOW = ["أحد", "إثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت"];
 
