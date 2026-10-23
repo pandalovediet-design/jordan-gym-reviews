@@ -1,6 +1,7 @@
 import { createPublicClient } from "@/lib/supabase/public";
 import { ammanDate, asGlow, cleanQuery } from "@/lib/format";
 import { distanceKm } from "@/lib/maps";
+import { ACCESS_KEYS } from "@/lib/facilities";
 import type { Database, Enums, Tables } from "@/lib/database.types";
 
 export const PAGE_SIZE = 12;
@@ -80,7 +81,7 @@ export async function searchOrgs(opts: { q?: string; type?: string; city?: strin
   if (opts.kidsArea) query = query.eq("has_kids_area", true);
   if (opts.kids) query = query.eq("kids_friendly", true);
   if (opts.transport) query = query.eq("kids_transport", true);
-  if (opts.access) query = query.not("accessibility", "eq", "{}");
+  if (opts.access) query = query.overlaps("accessibility", [...ACCESS_KEYS]);
   const { data, count, error } = await query;
   if (error) throw new Error(error.message);
   if (opts.near) {
