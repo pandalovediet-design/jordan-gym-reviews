@@ -24,6 +24,7 @@ export function SiteHeader() {
           <Link href="/market" className="hover:text-foreground">🔄 سوق المعدات</Link>
           <Link href="/trails" className="hover:text-foreground">المسارات</Link>
           <Link href="/tools" className="hover:text-foreground">الحاسبة</Link>
+          <Link href="/log" className="hover:text-foreground">🔥 سجل تمريني</Link>
           <Link href="/favorites" className="hover:text-foreground">❤️ المفضلة</Link>
           <Link href="/join" className="hover:text-foreground">سجّل نشاطك</Link>
           <Link href="/login" className="hover:text-foreground">دخول الأنشطة</Link>
