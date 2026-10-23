@@ -3,6 +3,7 @@ import { GLOW_COLORS } from "@/lib/format";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
 import { parseVideoUrl } from "@/lib/video";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 async function requireAdmin() {
   const ctx = await requireUser();
@@ -25,11 +26,46 @@ export async function assignOrgOwner(orgId: string, _: FormState, fd: FormData):
   if (!target) return { error: "ما في حساب بهالإيميل. اطلب منه يسجّل حساب أول." };
   const { error } = await supabase.from("organization_members").upsert({ organization_id: orgId, user_id: target.id, role: "owner" }, { onConflict: "organization_id,user_id" });
   if (error) return { error: "تعذّر الربط." };
+  await supabase.from("organizations").update({ is_claimed: true }).eq("id", orgId);
   let note = "تم الربط، صار مالكاً للنشاط.";
   if (String(fd.get("mode") ?? "move") === "move" && target.id !== user.id) {
     // the guard trigger needs another owner to exist, which is true now that the new owner is in
     const { error: de } = await supabase.from("organization_members").delete().eq("organization_id", orgId).eq("user_id", user.id);
     note = de ? "تم الربط، بس ما قدرت أشيل حسابك من النشاط." : "تم الربط ونُقلت الملكية له.";
+  }
+  revalidatePath("/admin/orgs");
+  revalidatePath("/dashboard", "layout");
+  return { ok: note };
+}
+
+/**
+ * Platform owner creates the account for a club owner: email + a temporary password.
+ * The account is flagged so the owner must pick their own password on first sign-in (see requireUser).
+ * If the email already has an account, it is just linked (no password is touched).
+ */
+export async function createOwnerAccount(orgId: string, _: FormState, fd: FormData): Promise<FormState> {
+  const { supabase, user } = await requireAdmin();
+  const email = String(fd.get("email") ?? "").trim().toLowerCase();
+  const password = String(fd.get("password") ?? "");
+  if (!/^\S+@\S+\.\S+$/.test(email)) return { error: "اكتب إيميل صحيح." };
+  const { data: users, error: ue } = await supabase.rpc("admin_list_users");
+  if (ue) return { error: "تعذّر قراءة المستخدمين." };
+  let targetId = (users ?? []).find((u) => u.email.toLowerCase() === email)?.id;
+  let note = "الحساب موجود أصلاً، تم ربطه بالنشاط (كلمة مروره ما انلمست).";
+  if (!targetId) {
+    if (password.length < 8) return { error: "الكلمة المؤقتة 8 أحرف على الأقل (نموذج الدخول بيطلب هيك)." };
+    const admin = createAdminClient();
+    if (!admin) return { error: "مفتاح الخدمة غير مضبوط على فيرسل." };
+    const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { must_change_password: true } });
+    if (error || !data.user) return { error: "تعذّر إنشاء الحساب. تأكد من الإيميل." };
+    targetId = data.user.id;
+    note = `تم إنشاء الحساب. الإيميل: ${email} · الكلمة المؤقتة: ${password} · لازم يغيّرها أول دخول.`;
+  }
+  const { error } = await supabase.from("organization_members").upsert({ organization_id: orgId, user_id: targetId, role: "owner" }, { onConflict: "organization_id,user_id" });
+  if (error) return { error: "الحساب انعمل بس تعذّر ربطه بالنشاط." };
+  await supabase.from("organizations").update({ is_claimed: true }).eq("id", orgId);
+  if (String(fd.get("mode") ?? "move") === "move" && targetId !== user.id) {
+    await supabase.from("organization_members").delete().eq("organization_id", orgId).eq("user_id", user.id);
   }
   revalidatePath("/admin/orgs");
   revalidatePath("/dashboard", "layout");

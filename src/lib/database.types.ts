@@ -1102,6 +1102,7 @@ export type Database = {
           description_ar: string | null
           id: string
           instagram: string | null
+          is_claimed: boolean
           theme: string | null
           license_authority: string | null
           license_number: string | null
@@ -1143,6 +1144,7 @@ export type Database = {
           description_ar?: string | null
           id?: string
           instagram?: string | null
+          is_claimed?: boolean
           theme?: string | null
           license_authority?: string | null
           license_number?: string | null
@@ -1184,6 +1186,7 @@ export type Database = {
           description_ar?: string | null
           id?: string
           instagram?: string | null
+          is_claimed?: boolean
           theme?: string | null
           license_authority?: string | null
           license_number?: string | null

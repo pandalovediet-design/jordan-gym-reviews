@@ -266,6 +266,11 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {coachGyms.length > 0 && (
         <p className="mt-1 text-sm">{org.type === "nutritionist" ? "يتعاون مع: " : "يتدرب في: "}{coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
       <h1 className="mt-1 text-3xl font-extrabold">{org.name_ar}</h1>
+      {org.is_claimed === false && (
+        <p className="mt-2 rounded-xl bg-white/5 p-3 text-sm text-muted ring-1 ring-white/10">
+          بيانات أولية من مصادر عامة، وصاحب النادي لسا ما استلم صفحته. <Link href="/join" className="font-bold text-accent underline">هذا ناديي؟ استلم صفحتك</Link>
+        </p>
+      )}
       {(org.has_mosque || org.no_music || org.has_kids_area || org.kids_friendly || org.kids_transport) && (
         <p className="mt-2 flex flex-wrap items-center gap-2 text-sm">
           {org.has_kids_area && <span className="rounded-full bg-amber-500/15 px-3 py-1 font-bold text-amber-300 ring-1 ring-amber-400/30">🧒 Kids Area</span>}

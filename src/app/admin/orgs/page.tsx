@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { randomBytes } from "node:crypto";
 import { requireUser } from "@/lib/auth";
 import { GLOW_COLORS, GLOW_NAME, ORG_TYPE_LABEL, isVerified } from "@/lib/format";
 import { cleanQuery } from "@/lib/format";
 import { isOrgType } from "@/lib/queries";
 import { ActionForm } from "@/components/Form";
-import { assignOrgOwner, clearWomenAccess, clearOrgBadge, setFeatured, setGlow, setOrgStatus, setOrgType, setVerified } from "../actions";
+import { assignOrgOwner, createOwnerAccount, clearWomenAccess, clearOrgBadge, setFeatured, setGlow, setOrgStatus, setOrgType, setVerified } from "../actions";
 
 export const metadata: Metadata = { title: "الأنشطة", robots: { index: false } };
 const STATUSES = ["draft", "pending", "published", "suspended"] as const;
 const STATUS_LABEL = { draft: "مسودة", pending: "بانتظار المراجعة", published: "منشور", suspended: "موقوف" } as const;
+
+const tempPassword = () => "Gym" + randomBytes(4).toString("hex");
 
 export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs">) {
   const sp = await searchParams;
@@ -76,6 +79,18 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
                 </select>
               </ActionForm>
               <p className="mt-1 text-muted">تأكد أنه صاحبه فعلاً قبل الربط (مثلاً من واتساب النادي)، وهو لازم يكون عامل حساب أول.</p>
+            </details>
+            <details className="text-xs">
+              <summary className="cursor-pointer text-muted">🔑 أنشئ حساب لصاحب النادي (إيميل + كلمة مؤقتة)</summary>
+              <ActionForm action={createOwnerAccount.bind(null, o.id)} submit="إنشاء وربط" className="mt-2 flex flex-wrap items-center gap-2">
+                <input name="email" type="email" dir="ltr" required placeholder="إيميل صاحب النادي" className={`${fld} min-w-56`} />
+                <input name="password" dir="ltr" minLength={8} defaultValue={tempPassword()} className={`${fld} w-40`} aria-label="كلمة مؤقتة" />
+                <select name="mode" defaultValue="move" className="rounded-lg bg-background px-2 py-2 ring-1 ring-white/10">
+                  <option value="move">انقل الملكية له</option>
+                  <option value="add">أضفه وأبقى معه</option>
+                </select>
+              </ActionForm>
+              <p className="mt-1 text-muted">بيدخل بالإيميل والكلمة المؤقتة، وأول ما يدخل بينجبر يختار كلمة خاصة فيه. ابعتله البيانات على واتساب.</p>
             </details>
             <form action={setVerified.bind(null, o.id)} className="flex flex-wrap items-center gap-2 text-xs">
               <span className="text-muted">التوثيق {isVerified(o) ? (o.verified_until ? `(حتى ${o.verified_until.slice(0, 10)})` : "(بدون انتهاء)") : o.verified_at ? "(منتهي)" : ""}:</span>

@@ -60,7 +60,19 @@ export async function setNewPassword(_: AuthState, fd: FormData): Promise<AuthSt
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
   if (!data.user) return { error: "انتهت صلاحية الرابط. اطلب رابط جديد." };
-  const { error } = await supabase.auth.updateUser({ password: p.data.password });
+  const { error } = await supabase.auth.updateUser({ password: p.data.password, data: { must_change_password: false } });
   if (error) return { error: "تعذّر تغيير كلمة المرور. جرّب كلمة مرور أقوى." };
+  redirect("/dashboard");
+}
+
+/** First sign-in with a temporary password: the owner must choose their own. */
+export async function changeTempPassword(_: AuthState, fd: FormData): Promise<AuthState> {
+  const p = resetSchema.safeParse(Object.fromEntries(fd));
+  if (!p.success) return { error: p.error.issues[0].message };
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) redirect("/login");
+  const { error } = await supabase.auth.updateUser({ password: p.data.password, data: { must_change_password: false } });
+  if (error) return { error: "تعذّر تغيير كلمة المرور. جرّب كلمة مرور ثانية (مش نفس المؤقتة)." };
   redirect("/dashboard");
 }
