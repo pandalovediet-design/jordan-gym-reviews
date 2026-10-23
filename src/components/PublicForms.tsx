@@ -1,5 +1,5 @@
 "use client";
-import { useActionState } from "react";
+import { useKeepForm } from "@/components/Form";
 import type { PublicState } from "@/app/g/[slug]/actions";
 
 const field = "w-full rounded-xl bg-background px-3 py-2.5 ring-1 ring-white/10 outline-none focus:ring-accent";
@@ -10,9 +10,9 @@ function Msg({ s }: { s: PublicState }) {
 }
 
 export function InquiryForm({ action }: { action: A }) {
-  const [s, run, pending] = useActionState(action, undefined);
+  const { state: s, onSubmit, pending, ref } = useKeepForm(action);
   return (
-    <form action={run} className="space-y-3 rounded-2xl bg-surface p-5 ring-1 ring-white/10">
+    <form ref={ref} onSubmit={onSubmit} className="space-y-3 rounded-2xl bg-surface p-5 ring-1 ring-white/10">
       <h3 className="font-bold">أرسل استفسار</h3>
       <input name="sender_name" required placeholder="اسمك" className={field} />
       <input name="sender_phone" required placeholder="رقم هاتفك" dir="ltr" inputMode="tel" className={field} />
@@ -25,11 +25,11 @@ export function InquiryForm({ action }: { action: A }) {
 }
 
 export function ReportForm({ action }: { action: A }) {
-  const [s, run, pending] = useActionState(action, undefined);
+  const { state: s, onSubmit, pending, ref } = useKeepForm(action);
   return (
     <details className="mt-6 text-sm text-muted">
       <summary className="cursor-pointer hover:text-foreground">🚩 بلّغ عن مشكلة بهالصفحة</summary>
-      <form action={run} className="mt-3 space-y-3 rounded-2xl bg-surface p-5 ring-1 ring-white/10">
+      <form ref={ref} onSubmit={onSubmit} className="mt-3 space-y-3 rounded-2xl bg-surface p-5 ring-1 ring-white/10">
         <select name="reason" required defaultValue="" className={field}>
           <option value="" disabled>سبب البلاغ</option>
           <option value="wrong_info">معلومات خاطئة (سعر، دوام، رقم)</option>
