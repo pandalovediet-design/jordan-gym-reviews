@@ -372,7 +372,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           {offers.length > 0 && <Section title="العروض"><Offers items={offers} /></Section>}
           <div className="mt-8 grid gap-6 lg:grid-cols-[2fr_1fr]">
             {services.length > 0 && <section><h2 className="mb-3 text-xl font-bold">الأسعار والخدمات</h2><Services items={services} /></section>}
-            <section><h2 className="mb-3 text-xl font-bold">ساعات الدوام</h2><Hours items={hours} /></section>
+            {hours.length > 0 && <section><h2 className="mb-3 text-xl font-bold">ساعات الدوام</h2><Hours items={hours} /></section>}
           </div>
           {org.type === "sports_facility" && slots.length > 0 && (
             <Section title="المواعيد المتاحة">
