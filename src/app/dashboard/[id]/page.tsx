@@ -128,7 +128,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
           <div className="grid gap-3 sm:grid-cols-2">
             <label className={lbl}>الهاتف<input name="phone" defaultValue={org.phone ?? ""} dir="ltr" placeholder="0791234567" className={field} /></label>
             <label className={lbl}>واتساب<input name="whatsapp" defaultValue={org.whatsapp ?? ""} dir="ltr" placeholder="0791234567" className={field} /></label>
-            <label className={lbl}>انستغرام (بدون @)<input name="instagram" defaultValue={org.instagram ?? ""} dir="ltr" className={field} /></label>
+            <label className={lbl}>انستغرام (اسم الحساب أو رابطه)<input name="instagram" defaultValue={org.instagram ?? ""} dir="ltr" className={field} /></label>
             <label className={lbl}>الموقع الإلكتروني<input name="website" defaultValue={org.website ?? ""} dir="ltr" placeholder="https://" className={field} /></label>
           </div>
           <label className={lbl}>📍 حدّد موقعك على الخريطة

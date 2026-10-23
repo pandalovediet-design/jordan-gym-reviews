@@ -50,6 +50,16 @@ function intl(v: string | null | undefined) {
   return d;
 }
 
+/** Accepts "@name", "name" or a pasted profile link (with tracking params) and returns the bare handle, or undefined if it isn't a valid Instagram handle. */
+function igHandle(v: string | null | undefined): string | null | undefined {
+  if (!v) return null;
+  let h = v.trim();
+  const m = h.match(/instagram\.com\/([^/?#\s]+)/i);
+  if (m) h = m[1];
+  h = h.replace(/^@/, "");
+  return /^[A-Za-z0-9._]{1,30}$/.test(h) ? h : undefined;
+}
+
 const profileSchema = z.object({
   name_ar: z.string().trim().min(2).max(80),
   name_en: opt(80),
@@ -59,7 +69,7 @@ const profileSchema = z.object({
   address: opt(200),
   phone: opt(20),
   whatsapp: opt(20),
-  instagram: opt(60),
+  instagram: opt(200),
   website: opt(200),
   category_id: z.string().uuid().optional().transform((v) => v || null),
   women_access: z.enum(["none", "women_only", "women_hours"]).default("none"),
@@ -82,7 +92,9 @@ export async function updateProfile(id: string, _: FormState, fd: FormData): Pro
   const p = profileSchema.safeParse(Object.fromEntries(fd));
   if (!p.success) return { error: "تأكد من البيانات المدخلة" };
   const { supabase } = await requireUser();
-  const data = { ...p.data, phone: intl(p.data.phone), whatsapp: intl(p.data.whatsapp), instagram: p.data.instagram?.replace(/^@/, "") ?? null };
+  const ig = igHandle(p.data.instagram);
+  if (ig === undefined) return { error: "حساب الإنستغرام مش مضبوط. اكتب اسم الحساب بس (مثل gymjordan) أو الصق رابط الحساب." };
+  const data = { ...p.data, phone: intl(p.data.phone), whatsapp: intl(p.data.whatsapp), instagram: ig };
   if (data.maps_url && !/^https:\/\/(maps\.app\.goo\.gl\/|goo\.gl\/maps\/|(www\.|maps\.)?google\.[a-z.]+\/maps)/i.test(data.maps_url)) return { error: "رابط الموقع لازم يكون من قوقل ماب (maps.app.goo.gl أو google.com/maps)." };
   if (data.video_url && !/^https:\/\/(www\.)?(youtube\.com|youtu\.be|instagram\.com|tiktok\.com)\//i.test(data.video_url)) return { error: "رابط الفيديو لازم يكون من يوتيوب أو إنستغرام أو تيك توك (يبدأ بـ https://)." };
   if (data.women_access !== "women_hours") data.women_hours_note = null;
