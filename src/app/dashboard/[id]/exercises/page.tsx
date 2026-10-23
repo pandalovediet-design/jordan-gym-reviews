@@ -26,15 +26,16 @@ export default async function CoachExercises({ params }: PageProps<"/dashboard/[
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
       <Link href={`/dashboard/${id}`} className="text-sm text-accent hover:underline">← لوحة {org.name_ar}</Link>
-      <h1 className="text-2xl font-extrabold">🏋️ شروحات التمارين</h1>
+      <h1 className="text-2xl font-extrabold">➕ أضف شرح تمرين</h1>
+      <p className="text-sm text-muted">اختار تمرين، واكتب خطوات الشرح (وفيديو إذا بدك)، وبعد مراجعة الإدارة بيظهر باسمك بدليل التمارين العام. اللي أضفته بتشوفه تحت بـ«شروحاتي».</p>
       {org.type !== "independent_coach" ? (
         <p className={box}>الشروحات متاحة للمدربين المستقلين فقط.</p>
       ) : (
         <>
           <section className={box}>
-            <h2 className="mb-1 text-lg font-bold">أضف أو عدّل شرح</h2>
+            <h2 className="mb-1 text-lg font-bold">شرح جديد</h2>
             <p className="mb-3 text-xs text-muted">اختر تمرين من قائمة المنصة. إذا عندك شرح قديم لنفس التمرين بينحفظ مكانه. أي تعديل بيرجع للمراجعة. ({(mine ?? []).length}/20)</p>
-            <ActionForm action={bind} submit="إرسال للمراجعة">
+            <ActionForm action={bind} submit="➕ أضف الشرح وأرسله للمراجعة">
               <select name="exercise_id" required className={field} defaultValue="">
                 <option value="" disabled>اختر التمرين</option>
                 {(exercises ?? []).map((e) => <option key={e.id} value={e.id}>{MUSCLE_LABEL[e.muscle_group as Muscle]} — {e.name_ar}</option>)}
