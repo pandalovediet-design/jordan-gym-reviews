@@ -2,7 +2,7 @@
 -- No prices, photos, WhatsApp or third-party reviews. Flip to claimed via admin 'إنشاء حساب' / 'ربط'.
 begin;
 insert into public.organizations (slug,type,name_ar,name_en,description_ar,city,area,address,latitude,longitude,phone,status,is_claimed,created_by)
-select v.slug,v.type::public.org_type,v.name_ar,v.name_en,v.description_ar,v.city,v.area,v.address,v.latitude::numeric,v.longitude::numeric,v.phone,v.status::public.org_status,v.is_claimed, (select id from auth.users where email = 'pandalovediet@gmail.com') from (values
+select v.slug,v.type::public.org_type,v.name_ar,v.name_en,v.description_ar,v.city,v.area,v.address,v.latitude::numeric,v.longitude::numeric,v.phone,v.status::public.org_status,v.is_claimed, (select user_id from public.platform_admins limit 1) from (values
  ('city-gym-ein-al-basha','gym','سيتي جيم','CITY GYM','نادي رياضي في عين الباشا. هذي بيانات أولية (الموقع والدوام)، والأسعار والصور بتنضاف لما صاحب النادي يستلم صفحته.','البلقاء','عين الباشا',null,32.059526,35.824039,'+962798348031','published',false),
  ('city-ladies-gym-ein-al-basha','gym','سيتي ليديز جيم','City Ladies Gym','نادي رياضي في عين الباشا. هذي بيانات أولية (الموقع والدوام)، والأسعار والصور بتنضاف لما صاحب النادي يستلم صفحته.','البلقاء','عين الباشا','شارع السلط، عين الباشا',32.059225,35.824525,'+962782299314','published',false),
  ('pilates-gym-ein-al-basha','gym','بيلاتس جيم','Pilates gym','نادي رياضي في عين الباشا. هذي بيانات أولية (الموقع والدوام)، والأسعار والصور بتنضاف لما صاحب النادي يستلم صفحته.','البلقاء','عين الباشا','دوار السارية، عين الباشا',32.057707,35.831945,null,'published',false),
