@@ -92,7 +92,12 @@ export async function renderCard(o: CardOrg, story: boolean) {
 
   const hasPhoto = !!o.photo;
   const nameLen = (o.name_ar ?? "").length;
-  const nameSize = hasPhoto ? (nameLen > 30 ? 72 : nameLen > 18 ? 88 : 104) : nameLen > 26 ? 88 : nameLen > 14 ? 104 : 132;
+  // Prefer one line: shrink the name to fit the card width (same glyph-width estimate R uses to wrap); very long names wrap at a fixed size instead.
+  const nameWords = (o.name_ar ?? "").split(/\s+/).filter(Boolean);
+  const nameEm = nameWords.reduce((a, w) => a + [...w].length * 0.62, 0) + Math.max(0, nameWords.length - 1) * 0.26;
+  const baseName = hasPhoto ? (nameLen > 40 ? 72 : nameLen > 26 ? 88 : 104) : nameLen > 40 ? 84 : nameLen > 26 ? 100 : 132;
+  const fit = nameEm > 0 ? Math.floor((W - 180) / nameEm) : baseName;
+  const nameSize = fit >= 84 ? Math.min(baseName, fit) : baseName;
   const whereParts = [o.area, o.city].filter(Boolean) as string[];
   const feats = ["الأسعار", "الدوام", "الموقع", "واتساب"];
   const gl = o.glow ? GLOW[o.glow] : null;
