@@ -16,7 +16,8 @@ const shape = (r: Row): HomeWorkout => ({
 });
 
 export async function listHomeWorkouts(): Promise<HomeWorkout[]> {
-  const { data } = await createPublicClient().from("home_workouts").select(COLS).order("sort_order").order("created_at", { ascending: false }).limit(500);
+  // "zz-" slugs are internal test rows: never shown publicly (delete them from /admin/home).
+  const { data } = await createPublicClient().from("home_workouts").select(COLS).not("slug", "like", "zz-%").order("sort_order").order("created_at", { ascending: false }).limit(500);
   return (data ?? []).map(shape);
 }
 
@@ -25,6 +26,7 @@ export type HomeWorkoutFull = HomeWorkout & { products: HomeProduct[]; related: 
 
 export async function getHomeWorkout(slug: string): Promise<HomeWorkoutFull | null> {
   const db = createPublicClient();
+  if (slug.startsWith("zz-")) return null;
   const { data: r } = await db.from("home_workouts").select(COLS).eq("slug", slug).maybeSingle();
   if (!r) return null;
   const [{ data: prods }, { data: rel }] = await Promise.all([
