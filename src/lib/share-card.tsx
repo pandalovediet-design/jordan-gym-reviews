@@ -28,7 +28,6 @@ export async function renderCard(o: CardOrg, story: boolean) {
   if (o.kids_friendly) chips.push("مهيّأ للأطفال");
   if (o.has_mosque) chips.push("مصلى");
   if (o.free_trial_note) chips.push("يوم تجريبي");
-  const where = [o.area, o.city].filter(Boolean).join("، ");
   const host = baseUrl().replace(/^https?:\/\//, "");
 
   // Satori shapes Arabic but doesn't reorder words, so each phrase is laid out as words in a row-reverse flex box.
@@ -39,39 +38,58 @@ export async function renderCard(o: CardOrg, story: boolean) {
   );
   const ar = "flex-end";
 
+  const nameLen = (o.name_ar ?? "").length;
+  const nameSize = nameLen > 30 ? 92 : nameLen > 18 ? 112 : 132;
+  const whereParts = [o.area, o.city].filter(Boolean) as string[];
+  const feats = ["الأسعار", "الدوام", "الموقع", "واتساب"];
+
   return new ImageResponse(
     (
-      <div style={{ width: W, height: H, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: 80, background: "linear-gradient(160deg,#0d2f28 0%,#07211c 70%)", color: "#eef6f2", fontFamily: "Taj, TajL" }}>
+      <div style={{ width: W, height: H, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "90px 80px", background: "radial-gradient(circle at 85% 12%, #1c5a47 0%, rgba(28,90,71,0) 45%), radial-gradient(circle at 10% 95%, rgba(182,242,58,0.18) 0%, rgba(182,242,58,0) 40%), linear-gradient(160deg,#0d2f28 0%,#07211c 75%)", color: "#eef6f2", fontFamily: "Taj, TajL" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexDirection: "row-reverse" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoSrc} width={84} height={84} alt="" style={{ borderRadius: 42 }} />
-            <div style={{ display: "flex", fontSize: 34, fontWeight: 800 }}>Jordan <span style={{ color: "#b6f23a", marginLeft: 10 }}>Gym</span></div>
+            <img src={logoSrc} width={120} height={120} alt="" style={{ borderRadius: 60 }} />
+            <div style={{ display: "flex", fontSize: 54, fontWeight: 800 }}>Jordan <span style={{ color: "#b6f23a", marginLeft: 14 }}>Gym</span></div>
           </div>
-          {isVerified(o) && <div style={{ display: "flex", background: "#b6f23a", padding: "6px 28px 10px", borderRadius: 40 }}><R t="موثّق" size={30} weight={800} color="#07211c" nowrap /></div>}
+          {isVerified(o) && <div style={{ display: "flex", background: "#b6f23a", padding: "8px 36px 14px", borderRadius: 50 }}><R t="موثّق" size={40} weight={800} color="#07211c" nowrap /></div>}
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 28, alignItems: ar }}>
-          <R t={ORG_TYPE_LABEL[o.type as keyof typeof ORG_TYPE_LABEL] ?? ""} size={38} color="#b6f23a" />
-          <R t={o.name_ar ?? ""} size={(o.name_ar ?? "").length > 22 ? 80 : 100} weight={800} lh={1.3} />
-          {where && <R t={where} size={44} color="#9bb5ab" />}
+        <div style={{ display: "flex", flexDirection: "column", gap: 34, alignItems: ar }}>
+          <div style={{ display: "flex", padding: "8px 40px 14px", borderRadius: 50, border: "3px solid #b6f23a" }}>
+            <R t={ORG_TYPE_LABEL[o.type as keyof typeof ORG_TYPE_LABEL] ?? ""} size={48} weight={800} color="#b6f23a" nowrap />
+          </div>
+          <div style={{ display: "flex", width: 140, height: 10, borderRadius: 5, background: "#b6f23a" }} />
+          <R t={o.name_ar ?? ""} size={nameSize} weight={800} lh={1.25} />
+          {whereParts.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "row-reverse", alignItems: "center", gap: 20 }}>
+              <div style={{ display: "flex", width: 22, height: 22, borderRadius: 11, background: "#b6f23a" }} />
+              {whereParts.map((w, i) => (
+                <div key={i} style={{ display: "flex", flexDirection: "row-reverse", alignItems: "center", gap: 20 }}>
+                  {i > 0 && <div style={{ display: "flex", width: 8, height: 8, borderRadius: 4, background: "#6f8d82" }} />}
+                  <R t={w} size={58} color="#c9ddd4" nowrap />
+                </div>))}
+            </div>
+          )}
           {o.min_price_jod != null && (
-            <div style={{ display: "flex", flexDirection: "row-reverse", alignItems: "baseline", gap: 16, marginTop: 20 }}>
-              <R t="يبدأ من" size={40} color="#9bb5ab" />
-              <div style={{ display: "flex", fontSize: 96, fontWeight: 800, color: "#b6f23a" }}>{Number(o.min_price_jod).toFixed(0)}</div>
-              <R t="د.أ" size={40} />
+            <div style={{ display: "flex", flexDirection: "row-reverse", alignItems: "baseline", gap: 20, marginTop: 16, padding: "10px 44px 24px", borderRadius: 36, background: "rgba(182,242,58,0.12)" }}>
+              <R t="يبدأ من" size={48} color="#c9ddd4" nowrap />
+              <div style={{ display: "flex", fontSize: 130, fontWeight: 800, color: "#b6f23a" }}>{Number(o.min_price_jod).toFixed(0)}</div>
+              <R t="د.أ" size={52} weight={800} nowrap />
             </div>
           )}
           {chips.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "row-reverse", flexWrap: "wrap", gap: 14, marginTop: 10 }}>
-              {chips.map((c) => <div key={c} style={{ display: "flex", padding: "6px 26px 10px", borderRadius: 40, background: "rgba(255,255,255,0.1)" }}><R t={c} size={32} nowrap /></div>)}
+            <div style={{ display: "flex", flexDirection: "row-reverse", flexWrap: "wrap", gap: 18, marginTop: 6 }}>
+              {chips.map((c) => <div key={c} style={{ display: "flex", padding: "8px 34px 14px", borderRadius: 50, background: "rgba(255,255,255,0.12)" }}><R t={c} size={40} nowrap /></div>)}
             </div>
           )}
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, borderTop: "2px solid rgba(255,255,255,0.15)", paddingTop: 36, alignItems: ar }}>
-          <R t="الأسعار والدوام والموقع وواتساب" size={34} color="#9bb5ab" />
-          <div style={{ display: "flex", fontSize: 40, fontWeight: 800 }}>{host}/g/{o.slug}</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 26, alignItems: ar }}>
+          <div style={{ display: "flex", flexDirection: "row-reverse", gap: 14 }}>
+            {feats.map((f) => <div key={f} style={{ display: "flex", padding: "6px 26px 12px", borderRadius: 40, background: "rgba(255,255,255,0.1)" }}><R t={f} size={36} color="#c9ddd4" nowrap /></div>)}
+          </div>
+          <div style={{ display: "flex", alignSelf: "stretch", justifyContent: "center", background: "#b6f23a", color: "#07211c", borderRadius: 30, padding: "26px 20px", fontSize: host.length + (o.slug ?? "").length > 42 ? 38 : 46, fontWeight: 800 }}>{host}/g/{o.slug}</div>
         </div>
       </div>
     ),
