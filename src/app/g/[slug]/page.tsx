@@ -249,6 +249,12 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {faqLd(faq) && <JsonLd data={faqLd(faq)} />}
       {!multi && womenBanner(views[0])}
       <div className={glow ? `glow glow-${glow} rounded-2xl bg-surface p-5` : ""}>
+      {media[0] && (
+        <figure className="mb-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} className="aspect-[4/3] w-full rounded-xl object-cover sm:aspect-[16/9]" />
+        </figure>
+      )}
       {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
       <p className="text-sm text-muted">{category ?? ORG_TYPE_LABEL[org.type]}{isVerified(org) && <span className="text-accent"> · ✓ موثّق</span>}{multi && <span> · {views.length} فروع</span>}</p>
       {coachProfile && (coachProfile.education || coachProfile.experience_years != null) && (
@@ -296,9 +302,9 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </section>
       )}
 
-      {media.length > 0 && (
+      {media.length > 1 && (
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {media.map((m) => (
+          {media.slice(1).map((m) => (
             <figure key={m.id}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={publicMediaUrl(m.storage_path)} alt={m.alt_text ?? org.name_ar} loading="lazy" className="aspect-[4/3] w-full rounded-xl object-cover" />
