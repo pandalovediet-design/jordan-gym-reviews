@@ -9,7 +9,7 @@ import { ActionForm, field } from "@/components/Form";
 import { AVAILABILITY_LABEL, BILLING_LABEL, DELIVERY_LABEL, ammanDate, dayLabelAr, publicMediaUrl, WEEKDAYS, hhmm, jod } from "@/lib/format";
 import { PriceTag } from "@/components/PriceTag";
 import { CityAreaPicker } from "@/components/CityAreaPicker";
-import { missingForPublish, suggestionsFor } from "@/lib/completeness";
+import { completenessFor, missingForPublish, suggestionsFor } from "@/lib/completeness";
 import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setHeadTrainer, addFacilitySlots, setSlotStatus, deleteSlot, clearSlotsDay, saveCoachProfile, requestJoinGym, respondCoachLink, setProductAvailability, addMenuItem, deleteMenuItem, setMenuAvailability, setMenuImage, setMainImage, setTheme } from "../actions";
 
 export const metadata: Metadata = { title: "تعديل النشاط", robots: { index: false } };
@@ -68,6 +68,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
   const hasVenueFacilities = org.type === "gym" || org.type === "sports_facility";
   const isHomeChef = (orgCats ?? []).some((c) => c.id === org.category_id && c.slug === "home-chefs");
   const tips = org.status === "draft" ? await suggestionsFor(supabase, id) : [];
+  const done = await completenessFor(supabase, id);
   const box = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
   const lbl = "block space-y-1 text-sm text-muted";
   const allBranches = branches ?? [];
@@ -101,6 +102,12 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
       {org.status === "published" && <Link href={`/g/${org.slug}`} className="text-accent underline">عرض الصفحة العامة</Link>}
       {org.type === "independent_coach" && <Link href={`/dashboard/${id}/exercises`} className="block rounded-2xl bg-accent/10 p-4 text-sm font-bold text-accent ring-1 ring-accent/30">➕ أضف شرح تمرين — بيظهر باسمك بدليل التمارين (بعد مراجعة الإدارة) ←</Link>}
       <Link href={`/dashboard/${id}/growth`} className="block rounded-2xl bg-accent/10 p-4 text-sm font-bold text-accent ring-1 ring-accent/30">🎬 فيديو + 🎟️ أكواد الخصم{(org.type === "gym" || org.type === "sports_facility" || org.type === "store") && " + 🔄 سوق المعدات"} ←</Link>
+
+      <section className={box} aria-label="اكتمال الصفحة">
+        <div className="mb-2 flex items-baseline justify-between"><h2 className="text-lg font-bold">صفحتك مكتملة {done.pct}%</h2>{done.pct === 100 && <span className="text-sm text-accent">ممتاز! 🎉</span>}</div>
+        <div className="h-3 overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuenow={done.pct} aria-valuemin={0} aria-valuemax={100}><div className="h-full rounded-full bg-accent transition-all" style={{ width: `${done.pct}%` }} /></div>
+        {done.next && <p className="mt-2 text-sm text-muted">الخطوة الجاية: <b className="text-foreground">{done.next}</b>{done.left.length > 1 && ` (وبعدها: ${done.left.slice(1).join("، ")})`}</p>}
+      </section>
 
       <section className={box}><h2 className="mb-1 text-lg font-bold">🎨 ألوان صفحتك</h2>
         <p className="mb-4 text-sm text-muted">اختار الثيم اللي بيميّز صفحتك العامة ولوحة تحكمك عن غيرك.</p>

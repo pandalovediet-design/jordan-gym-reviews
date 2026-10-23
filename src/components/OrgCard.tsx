@@ -5,7 +5,7 @@ import type { Enums } from "@/lib/database.types";
 
 export function OrgCard({ org }: {
   org: { slug: string; name_ar: string; type: Enums<"org_type">; city: string; area: string | null; description_ar: string | null; verified_at: string | null; is_featured?: boolean;
-    category_name?: string | null; free_trial_note?: string | null; min_price_jod?: number | null; distance_km?: number; glow_color?: GlowColor | null; branch_count?: number; branch_women_only?: boolean; has_mosque?: boolean; no_music?: boolean; has_kids_area?: boolean; kids_friendly?: boolean; kids_transport?: boolean; accessibility?: string[]; women_access?: "none" | "women_only" | "women_hours";
+    category_name?: string | null; free_trial_note?: string | null; min_price_jod?: number | null; distance_km?: number; glow_color?: GlowColor | null; open_now?: boolean | null; branch_count?: number; branch_women_only?: boolean; has_mosque?: boolean; no_music?: boolean; has_kids_area?: boolean; kids_friendly?: boolean; kids_transport?: boolean; accessibility?: string[]; women_access?: "none" | "women_only" | "women_hours";
     cover?: { storage_path: string; alt_text: string | null } | null };
 }) {
   return (
@@ -28,7 +28,10 @@ export function OrgCard({ org }: {
           {org.verified_at && <span className="text-accent">✓ موثّق</span>}
         </span>
       </div>
-      <h3 className="text-lg font-bold">{org.name_ar}</h3>
+      <h3 className="flex items-center gap-2 text-lg font-bold">{org.name_ar}
+        {org.open_now === true && <span className="whitespace-nowrap rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-bold text-emerald-300 ring-1 ring-emerald-400/40">● مفتوح هسا</span>}
+        {org.open_now === false && <span className="whitespace-nowrap rounded-full bg-white/10 px-2 py-0.5 text-xs font-normal text-muted">مسكّر هسا</span>}
+      </h3>
       <p className="mt-1 text-sm text-muted">{[org.area, org.city].filter(Boolean).join("، ")}</p>
       {org.description_ar && <p className="mt-2 line-clamp-2 text-sm">{org.description_ar}</p>}
       <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">

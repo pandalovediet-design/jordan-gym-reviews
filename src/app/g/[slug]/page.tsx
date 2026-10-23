@@ -17,6 +17,7 @@ import { VideoCard } from "@/components/VideoCard";
 import { BILLING_LABEL, DELIVERY_LABEL, GLOW_LABEL, ORG_TYPE_LABEL, WEEKDAYS, WOMEN_LABEL, ammanDate, dateAr, dayLabelAr, hhmm, isVerified, jod, publicMediaUrl, waNumber } from "@/lib/format";
 import type { Tables } from "@/lib/database.types";
 import { themeClass } from "@/lib/themes";
+import { Gallery } from "@/components/Gallery";
 
 export const revalidate = 120;
 const load = cache(getOrgBySlug);
@@ -308,6 +309,14 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           </div>
         </div>
       </details>
+      {!multi && (() => {
+        const jumps = [offers.length > 0 && ["#offers", "العروض"], services.length > 0 && ["#prices", "الأسعار"], hours.length > 0 && ["#hours", "الدوام"], media.length > 1 && ["#photos", "الصور"], ["#faq", "أسئلة"], ["#ask", "استفسار"]].filter(Boolean) as [string, string][];
+        return jumps.length > 2 && (
+          <nav aria-label="أقسام الصفحة" className="sticky top-0 z-20 -mx-4 mt-4 flex gap-2 overflow-x-auto bg-background/90 px-4 py-2 text-sm backdrop-blur [scrollbar-width:none]">
+            {jumps.map(([h, l]) => <a key={h} href={h} className="whitespace-nowrap rounded-full bg-surface px-4 py-1.5 ring-1 ring-white/10 hover:ring-accent">{l}</a>)}
+          </nav>
+        );
+      })()}
       {reviewVideos.length > 0 && (
         <section className="mt-6 rounded-2xl bg-accent/10 p-4 ring-1 ring-accent/30">
           <h2 className="mb-1 text-lg font-bold">🎬 مراجعة عبد الكريم</h2>
@@ -316,17 +325,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </section>
       )}
 
-      {media.length > 1 && (
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {media.slice(1).map((m) => (
-            <figure key={m.id}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={publicMediaUrl(m.storage_path)} alt={m.alt_text ?? org.name_ar} loading="lazy" className="aspect-[4/3] w-full rounded-xl object-cover" />
-              {m.alt_text && <figcaption className="mt-1 px-1 text-sm text-muted">{m.alt_text}</figcaption>}
-            </figure>
-          ))}
-        </div>
-      )}
+      {media.length > 1 && <section id="photos" className="scroll-mt-20"><Gallery start={1} items={media.map((m) => ({ src: publicMediaUrl(m.storage_path), alt: m.alt_text ?? org.name_ar, caption: m.alt_text }))} /></section>}
 
       {org.video_url && (() => {
         const yt = org.video_url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
@@ -369,10 +368,10 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
 
       {!multi ? (
         <>
-          {offers.length > 0 && <Section title="العروض"><Offers items={offers} /></Section>}
+          {offers.length > 0 && <div id="offers" className="scroll-mt-20"><Section title="العروض"><Offers items={offers} /></Section></div>}
           <div className="mt-8 grid gap-6 lg:grid-cols-[2fr_1fr]">
-            {services.length > 0 && <section><h2 className="mb-3 text-xl font-bold">الأسعار والخدمات</h2><Services items={services} /></section>}
-            {hours.length > 0 && <section><h2 className="mb-3 text-xl font-bold">ساعات الدوام</h2><Hours items={hours} /></section>}
+            {services.length > 0 && <section id="prices" className="scroll-mt-20"><h2 className="mb-3 text-xl font-bold">الأسعار والخدمات</h2><Services items={services} /></section>}
+            {hours.length > 0 && <section id="hours" className="scroll-mt-20"><h2 className="mb-3 text-xl font-bold">ساعات الدوام</h2><Hours items={hours} /></section>}
           </div>
           {org.type === "sports_facility" && slots.length > 0 && (
             <Section title="المواعيد المتاحة">
@@ -429,8 +428,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </>
       )}
 
-      <FaqSection items={faq} title={`أسئلة شائعة عن ${org.name_ar}`} />
-      <section className="mt-8"><InquiryForm action={sendInquiry.bind(null, org.id, org.slug)} /><ReportForm action={sendReport.bind(null, org.id, org.slug)} /></section>
+      <div id="faq" className="scroll-mt-20"><FaqSection items={faq} title={`أسئلة شائعة عن ${org.name_ar}`} /></div>
+      <section id="ask" className="mt-8 scroll-mt-20"><InquiryForm action={sendInquiry.bind(null, org.id, org.slug)} /><ReportForm action={sendReport.bind(null, org.id, org.slug)} /></section>
     </div>
       {!multi && (waNumber(views[0].whatsapp) || views[0].phone || views[0].mapsHref) && (
         <>

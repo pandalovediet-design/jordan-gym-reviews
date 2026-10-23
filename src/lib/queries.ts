@@ -1,5 +1,6 @@
 import { createPublicClient } from "@/lib/supabase/public";
 import { ammanDate, asGlow, cleanQuery } from "@/lib/format";
+import { ammanNow, isOpenAt } from "@/lib/open-hours";
 import { distanceKm } from "@/lib/maps";
 import { ACCESS_KEYS } from "@/lib/facilities";
 import type { Database, Enums, Tables } from "@/lib/database.types";
@@ -52,7 +53,15 @@ async function withCovers<T extends { id: string }>(db: ReturnType<typeof create
   const covers = ids.length
     ? (await db.from("organization_media").select("organization_id,storage_path,alt_text,is_cover,sort_order").in("organization_id", ids).order("is_cover", { ascending: false }).order("sort_order")).data ?? []
     : [];
-  return rows.map((o) => ({ ...o, cover: covers.find((c) => c.organization_id === o.id) ?? null }));
+  const hours = ids.length
+    ? (await db.from("organization_hours").select("organization_id,weekday,opens_at,closes_at,is_closed").in("organization_id", ids)).data ?? []
+    : [];
+  const { weekday, minutes } = ammanNow();
+  return rows.map((o) => {
+    const h = hours.filter((x) => x.organization_id === o.id);
+    // null = the place hasn't set its hours, so the card shows nothing rather than guessing.
+    return { ...o, cover: covers.find((c) => c.organization_id === o.id) ?? null, open_now: h.length ? isOpenAt(h, weekday, minutes) : null };
+  });
 }
 
 export async function searchOrgs(opts: { q?: string; type?: string; city?: string; area?: string; category?: string; women?: string; maxPrice?: number; trial?: boolean; mosque?: boolean; quiet?: boolean; kidsArea?: boolean; kids?: boolean; transport?: boolean; access?: boolean; near?: { lat: number; lng: number } | null; page: number }) {

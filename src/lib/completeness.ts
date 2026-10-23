@@ -31,3 +31,15 @@ export async function suggestionsFor(supabase: SupabaseClient<Database>, id: str
   else if ((services.count ?? 0) < 1) tips.push("الأسعار والخدمات");
   return tips;
 }
+
+/** Page completeness for the owner's progress bar: share of the checks done and the next thing to add. */
+export async function completenessFor(supabase: SupabaseClient<Database>, id: string): Promise<{ pct: number; next: string | null; left: string[] }> {
+  const [missing, tips, hours] = await Promise.all([
+    missingForPublish(supabase, id),
+    suggestionsFor(supabase, id),
+    supabase.from("organization_hours").select("id", { count: "exact", head: true }).eq("organization_id", id),
+  ]);
+  const left = [...missing, ...tips, ...((hours.count ?? 0) < 1 ? ["ساعات الدوام"] : [])];
+  const total = 7; // 2 required + 4 tips (description, map, photo, prices/menu/products) + hours
+  return { pct: Math.round(((total - Math.min(left.length, total)) / total) * 100), next: left[0] ?? null, left };
+}

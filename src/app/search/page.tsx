@@ -45,38 +45,50 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
     if (mode === "products") u.set("in", "products"); u.set("page", String(p));
     return `/search?${u}`;
   };
+  const activeFilters = [type, city, area, category, women, maxPrice, trial, mosque, quiet, kidsArea, kids, transport, access].filter(Boolean).length + (mode === "products" ? 1 : 0);
   const field = "rounded-xl bg-surface px-3 py-2.5 ring-1 ring-white/10 outline-none focus:ring-accent";
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <form className="mb-6 grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
-        <input name="q" defaultValue={q} placeholder="ابحث..." className={field} />
-        <select name="in" defaultValue={mode} className={field}>
-          <option value="orgs">أنشطة</option><option value="products">منتجات</option>
-        </select>
-        <select name="type" defaultValue={type} className={field}>
-          <option value="">كل الأنواع</option>
-          {Object.entries(ORG_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
-        <select name="category" defaultValue={category} className={field}>
-          <option value="">كل التصنيفات</option>
-          {categories.map((c) => <option key={c.id} value={c.slug}>{c.name_ar}</option>)}
-        </select>
-        <select name="women" defaultValue={women} className={field}>
-          <option value="">للجميع</option>
-          <option value="only">💗 Pink Zone فقط</option>
-          <option value="any">يشمل أوقات نسائية</option>
-        </select>
-        <CityAreaPicker defaultCity={city} defaultArea={area} allowAll labels={false} />
-        <input name="max" type="number" min="1" step="1" defaultValue={maxPrice || ""} placeholder="أقصى سعر شهري (د.أ)" className={field} />
-        <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="trial" value="1" defaultChecked={trial} /> 🎟 يوم تجريبي مجاني</label>
-        <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="mosque" value="1" defaultChecked={mosque} /> 🕌 فيه مصلى</label>
-        <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="quiet" value="1" defaultChecked={quiet} /> 🔇 بدون موسيقى</label>
-        <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="kidsarea" value="1" defaultChecked={kidsArea} /> 🧒 Kids Area</label>
-        <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="kids" value="1" defaultChecked={kids} /> 👶 مهيّأ للأطفال (5–12)</label>
-        <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="transport" value="1" defaultChecked={transport} /> 🚌 مواصلات للأطفال</label>
-        <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="access" value="1" defaultChecked={access} /> ♿ مهيّأ لذوي الاحتياجات</label>
-        <button className="rounded-xl bg-accent px-6 font-bold text-accent-foreground">بحث</button>
+      <form className="mb-6">
+        <div className="flex gap-2">
+          <input name="q" defaultValue={q} placeholder="ابحث..." className={`${field} min-w-0 flex-1`} />
+          <button className="rounded-xl bg-accent px-6 font-bold text-accent-foreground">بحث</button>
+        </div>
+        <details open={activeFilters > 0} className="mt-3 rounded-2xl bg-surface/60 ring-1 ring-white/10">
+          <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">
+            <span>⚙️ الفلاتر{activeFilters > 0 && <span className="mr-2 rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground">{activeFilters}</span>}</span>
+            {activeFilters > 0 && <Link href={q ? `/search?q=${encodeURIComponent(q)}` : "/search"} className="text-xs text-muted underline">مسح الفلاتر</Link>}
+          </summary>
+          <div className="grid gap-2 p-3 pt-0 sm:grid-cols-3 lg:grid-cols-4">
+            <select name="in" defaultValue={mode} className={field}>
+              <option value="orgs">أنشطة</option><option value="products">منتجات</option>
+            </select>
+            <select name="type" defaultValue={type} className={field}>
+              <option value="">كل الأنواع</option>
+              {Object.entries(ORG_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+            <select name="category" defaultValue={category} className={field}>
+              <option value="">كل التصنيفات</option>
+              {categories.map((c) => <option key={c.id} value={c.slug}>{c.name_ar}</option>)}
+            </select>
+            <select name="women" defaultValue={women} className={field}>
+              <option value="">للجميع</option>
+              <option value="only">💗 Pink Zone فقط</option>
+              <option value="any">يشمل أوقات نسائية</option>
+            </select>
+            <CityAreaPicker defaultCity={city} defaultArea={area} allowAll labels={false} />
+            <input name="max" type="number" min="1" step="1" defaultValue={maxPrice || ""} placeholder="أقصى سعر شهري (د.أ)" className={field} />
+            <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="trial" value="1" defaultChecked={trial} /> 🎟 يوم تجريبي مجاني</label>
+            <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="mosque" value="1" defaultChecked={mosque} /> 🕌 فيه مصلى</label>
+            <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="quiet" value="1" defaultChecked={quiet} /> 🔇 بدون موسيقى</label>
+            <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="kidsarea" value="1" defaultChecked={kidsArea} /> 🧒 Kids Area</label>
+            <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="kids" value="1" defaultChecked={kids} /> 👶 مهيّأ للأطفال (5–12)</label>
+            <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="transport" value="1" defaultChecked={transport} /> 🚌 مواصلات للأطفال</label>
+            <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="access" value="1" defaultChecked={access} /> ♿ مهيّأ لذوي الاحتياجات</label>
+            <button className="rounded-xl bg-accent px-6 py-2.5 font-bold text-accent-foreground">تطبيق</button>
+          </div>
+        </details>
       </form>
 
       {mode === "orgs" && <div className="mb-4 flex flex-wrap items-center gap-3"><NearMeButton active={!!near} />{near && <span className="text-sm text-muted">مرتبة من الأقرب للأبعد (الأنشطة اللي حدّدت موقعها فقط)</span>}</div>}
