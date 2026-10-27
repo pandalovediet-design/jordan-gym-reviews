@@ -26,6 +26,7 @@ export function InstallButton({ className = "" }: { className?: string }) {
       setStandalone(true);
       setReady(false);
       setTip(false);
+      setMessage("تم تثبيت التطبيق بنجاح.");
     };
     syncState();
     window.addEventListener("pwa-ready", onReady);
@@ -82,10 +83,9 @@ export function InstallButton({ className = "" }: { className?: string }) {
       {(tip || message) && (
         <span
           id="install-app-help"
-          role="status"
           className="mt-2 block max-w-sm rounded-xl bg-surface p-3 text-sm leading-6 text-muted ring-1 ring-white/10"
         >
-          {message && <span className="mb-1 block">{message}</span>}
+          {message && <span role="status" aria-live="polite" className="mb-1 block">{message}</span>}
           {tip && (ios
             ? "من زر المشاركة (⬆️) في سفاري اختر «إضافة إلى الشاشة الرئيسية»."
             : "من قائمة المتصفح (⋮) اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».")}
