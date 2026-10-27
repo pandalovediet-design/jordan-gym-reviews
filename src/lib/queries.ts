@@ -72,7 +72,7 @@ export async function searchOrgs(opts: { q?: string; type?: string; city?: strin
     .order("is_featured", { ascending: false })
     .order("featured_rank", { ascending: false })
     .order("created_at", { ascending: false });
-  query = opts.near ? query.limit(500) : query.range((opts.page - 1) * PAGE_SIZE, opts.page * PAGE_SIZE - 1);
+  query = opts.near ? query.range(0, 499) : query.range((opts.page - 1) * PAGE_SIZE, opts.page * PAGE_SIZE - 1);
   const q = cleanQuery(opts.q ?? "");
   if (q) query = query.or(`name_ar.ilike.%${q}%,name_en.ilike.%${q}%,area.ilike.%${q}%`);
   if (isOrgType(opts.type)) query = query.eq("type", opts.type);
@@ -91,16 +91,30 @@ export async function searchOrgs(opts: { q?: string; type?: string; city?: strin
   if (opts.kids) query = query.eq("kids_friendly", true);
   if (opts.transport) query = query.eq("kids_transport", true);
   if (opts.access) query = query.overlaps("accessibility", [...ACCESS_KEYS]);
-  const { data, count, error } = await query;
-  if (error) throw new Error(error.message);
   if (opts.near) {
+    // Fetch in bounded batches: sorting only the first 500 featured/newest rows can hide closer places.
+    const batchSize = 500;
+    const rows: ListingRow[] = [];
+    let offset = 0;
+    let count: number | null = null;
+    while (true) {
+      const { data, count: batchCount, error } = await query.range(offset, offset + batchSize - 1);
+      if (error) throw new Error(error.message);
+      if (count == null) count = batchCount;
+      const batch = (data ?? []) as ListingRow[];
+      rows.push(...batch);
+      if (batch.length < batchSize || (count != null && rows.length >= count)) break;
+      offset += batchSize;
+    }
     const near = opts.near;
-    const all = mapListing(data ?? []).flatMap((o) => (o.points.length ? [{ ...o, distance_km: Math.min(...o.points.map((p) => distanceKm(near, p))) }] : []))
+    const all = mapListing(rows).flatMap((o) => (o.points.length ? [{ ...o, distance_km: Math.min(...o.points.map((p) => distanceKm(near, p))) }] : []))
       .sort((a, b) => a.distance_km - b.distance_km);
     const slice = all.slice((opts.page - 1) * PAGE_SIZE, opts.page * PAGE_SIZE);
     return { total: all.length, items: await withCovers(db, slice) };
   }
-  return { total: count ?? 0, items: await withCovers(db, mapListing(data ?? [])) };
+  const { data, count, error } = await query;
+  if (error) throw new Error(error.message);
+  return { total: count ?? 0, items: await withCovers(db, mapListing((data ?? []) as ListingRow[])) };
 }
 
 export async function listCategories() {
