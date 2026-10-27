@@ -19,7 +19,7 @@ export function PriceTag({ price, oldPrice, className = "" }: { price: number; o
           <del className="text-sm tabular-nums text-muted">
             {jod(oldPrice)}
           </del>
-          <span className="inline-flex items-center rounded-full bg-red-500/15 px-2.5 py-1 text-xs font-bold text-red-500 ring-1 ring-inset ring-red-500/25">
+          <span aria-hidden="true" className="inline-flex items-center rounded-full bg-red-500/15 px-2.5 py-1 text-xs font-bold text-red-300 ring-1 ring-inset ring-red-400/30">
             خصم {off}%
           </span>
         </>
