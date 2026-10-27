@@ -28,7 +28,7 @@ export function OrgCard({ org }: {
           {org.verified_at && <span className="text-accent">✓ موثّق</span>}
         </span>
       </div>
-      <h3 className="flex items-center gap-2 text-lg font-extrabold tracking-tight transition group-hover:text-cyan-100">{org.name_ar}
+      <h3 className="flex flex-wrap items-center gap-2 break-words text-lg font-extrabold tracking-tight transition group-hover:text-cyan-100">{org.name_ar}
         {org.open_now === true && <span className="whitespace-nowrap rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-bold text-emerald-300 ring-1 ring-emerald-400/40">● مفتوح هسا</span>}
         {org.open_now === false && <span className="whitespace-nowrap rounded-full bg-white/10 px-2 py-0.5 text-xs font-normal text-muted">مسكّر هسا</span>}
       </h3>
@@ -43,7 +43,7 @@ export function OrgCard({ org }: {
         {org.min_price_jod != null && <span className="rounded-full bg-white/10 px-2 py-0.5">من {jod(org.min_price_jod)}</span>}
         {org.free_trial_note && <span className="rounded-full bg-accent/15 px-2 py-0.5 font-bold text-accent">🎟 {org.free_trial_note}</span>}
       </div>
-      <div className="mx-5 flex items-center justify-between border-t border-white/10 py-3 text-sm sm:mx-6">
+      <div className="-mx-5 mt-4 flex items-center justify-between border-t border-white/10 px-5 pt-4 text-sm sm:-mx-6 sm:px-6">
         <span className="font-bold text-accent transition group-hover:text-cyan-200">عرض التفاصيل</span>
         <span aria-hidden="true" className="text-lg text-muted transition group-hover:-translate-x-1 group-hover:text-accent">←</span>
       </div>
