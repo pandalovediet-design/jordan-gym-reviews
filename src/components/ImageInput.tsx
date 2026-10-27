@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, type InputHTMLAttributes } from "react";
+import { useId, useRef, useState, type InputHTMLAttributes } from "react";
 
 const MAX_SIDE = 1600;
 const MAX_OPTIMIZE_SIZE = 700 * 1024;
@@ -43,6 +43,7 @@ function formatSize(bytes: number) {
 
 export function ImageInput(props: Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "onChange">) {
   const ref = useRef<HTMLInputElement>(null);
+  const statusId = useId();
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("تُجهّز الصور الكبيرة تلقائيًا قبل الرفع.");
 
@@ -85,12 +86,12 @@ export function ImageInput(props: Omit<InputHTMLAttributes<HTMLInputElement>, "t
         ref={ref}
         type="file"
         aria-busy={busy}
-        aria-describedby={props["aria-describedby"] ? `${props["aria-describedby"]} image-input-status` : "image-input-status"}
+        aria-describedby={props["aria-describedby"] ? `${props["aria-describedby"]} ${statusId}` : statusId}
         accept={props.accept ?? "image/jpeg,image/png,image/webp"}
         onChange={onChange}
         className={`min-h-11 max-w-full rounded-xl text-sm text-foreground file:me-3 file:min-h-11 file:cursor-pointer file:rounded-lg file:border-0 file:bg-white/10 file:px-4 file:font-semibold file:text-foreground file:transition hover:file:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:file:transition-none ${props.className ?? ""}`}
       />
-      <span id="image-input-status" className="mt-2 block text-xs leading-relaxed text-muted" role="status" aria-live="polite" aria-atomic="true">
+      <span id={statusId} className="mt-2 block text-xs leading-relaxed text-muted" role="status" aria-live="polite" aria-atomic="true">
         {status}
       </span>
     </>
