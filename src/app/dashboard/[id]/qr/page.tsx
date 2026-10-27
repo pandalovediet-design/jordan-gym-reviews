@@ -14,14 +14,27 @@ export default async function ActivityQr({ params }: PageProps<"/dashboard/[id]/
   if (!UUID.test(id)) notFound();
 
   const { supabase } = await requireUser();
-  const { data: org } = await supabase
-    .from("organizations")
-    .select("id,name_ar,type,slug,status")
-    .eq("id", id)
-    .maybeSingle();
+  const [{ data: org }, { data: auth }, { data: isAdmin }] = await Promise.all([
+    supabase
+      .from("organizations")
+      .select("id,name_ar,type,slug,status")
+      .eq("id", id)
+      .maybeSingle(),
+    supabase.auth.getUser(),
+    supabase.rpc("is_platform_admin"),
+  ]);
 
-  // RLS must confirm that the signed-in user can access this organization.
-  if (!org || org.status !== "published") notFound();
+  if (!org || org.status !== "published" || !auth.user) notFound();
+
+  // A public listing may be readable to any visitor, but its private tools
+  // must only be available to a member of this organization or a platform admin.
+  const { data: membership } = await supabase
+    .from("organization_members")
+    .select("user_id")
+    .eq("organization_id", id)
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+  if (!membership && !isAdmin) notFound();
 
   const base = await siteUrl();
   const publicUrl = `${base}/g/${org.slug}?utm_source=qr&utm_medium=print`;
