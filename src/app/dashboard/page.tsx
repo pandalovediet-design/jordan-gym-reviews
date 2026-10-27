@@ -22,24 +22,57 @@ export default async function Dashboard() {
   // Listings added from public sources (not yet handed to their owners) are managed from the platform-owner panel, not mixed into "my activities".
   const orgs = all.filter((o) => o.is_claimed !== false);
   const unclaimed = all.length - orgs.length;
+
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div><h1 className="text-2xl font-extrabold">أنشطتي</h1><p className="break-all text-sm text-muted" dir="ltr">{user.email}</p></div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">{isAdmin && <Link href="/admin" className="rounded-lg bg-accent px-3 py-1 text-sm font-bold text-accent-foreground">لوحة صاحب المنصة</Link>}<Link href="/account" className="text-sm text-muted underline">حسابي</Link><form action={signout}><button className="text-sm text-muted underline">تسجيل الخروج</button></form></div>
-      </div>
+    <main className="mx-auto max-w-4xl px-4 py-8 sm:py-10">
+      <header className="mb-7 overflow-hidden rounded-3xl border border-white/10 bg-surface shadow-xl shadow-black/10">
+        <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+          <div className="min-w-0">
+            <p className="mb-2 text-xs font-bold tracking-wide text-accent">مساحة إدارة الأنشطة</p>
+            <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">أنشطتي</h1>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-muted">تابع بيانات أنشطتك وحالة النشر واستفسارات العملاء من مكان واحد.</p>
+            <p className="mt-3 break-all text-xs text-muted" dir="ltr">{user.email}</p>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {isAdmin && <Link href="/admin" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/15 px-4 py-2 text-sm font-bold transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">لوحة صاحب المنصة</Link>}
+            <Link href="/account" className="inline-flex min-h-11 items-center justify-center rounded-xl px-4 py-2 text-sm font-bold text-muted transition-colors hover:bg-white/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">حسابي</Link>
+            <form action={signout}><button type="submit" className="inline-flex min-h-11 items-center justify-center rounded-xl px-4 py-2 text-sm font-bold text-muted transition-colors hover:bg-white/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">تسجيل الخروج</button></form>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 border-t border-white/10 sm:grid-cols-3">
+          <div className="p-4 sm:px-7"><p className="text-xs text-muted">أنشطتي</p><p className="mt-1 text-2xl font-extrabold tabular-nums">{orgs.length}</p></div>
+          <div className="border-r border-white/10 p-4 sm:px-7"><p className="text-xs text-muted">استفسارات جديدة</p><p className="mt-1 text-2xl font-extrabold tabular-nums">{orgs.reduce((sum, org) => sum + newOf(org.id), 0)}</p></div>
+          <div className="col-span-2 border-t border-white/10 p-4 sm:col-span-1 sm:border-r sm:border-t-0 sm:px-7"><p className="text-xs text-muted">طلبات الاستلام المعلّقة</p><p className="mt-1 text-2xl font-extrabold tabular-nums">{(myClaims ?? []).length}</p></div>
+        </div>
+      </header>
+
       {isAdmin && unclaimed > 0 && (
-        <p className="mb-4 rounded-xl bg-surface p-3 text-sm text-muted ring-1 ring-white/10">{unclaimed} نادي غير مُستلَم (بيانات أولية) بتلاقيهم وتدير ربطهم بأصحابهم من <Link href="/admin/orgs" className="font-bold text-accent underline">لوحة صاحب المنصة</Link>.</p>
+        <p className="mb-4 rounded-2xl border border-white/10 bg-surface p-4 text-sm leading-6 text-muted">
+          <span className="font-bold text-foreground">{unclaimed} نادي غير مُستلَم</span> (بيانات أولية) بتلاقيهم وتدير ربطهم بأصحابهم من <Link href="/admin/orgs" className="font-bold text-accent underline underline-offset-4">لوحة صاحب المنصة</Link>.
+        </p>
       )}
       {(myClaims ?? []).length > 0 && (
-        <p className="mb-4 rounded-xl bg-accent/10 p-3 text-sm text-accent ring-1 ring-accent/30">طلب استلام «{(myClaims ?? []).map((c) => c.organizations?.name_ar).filter(Boolean).join("، ")}» قيد المراجعة. بعد الموافقة بيظهر النادي هون.</p>
+        <p role="status" className="mb-4 rounded-2xl border border-accent/30 bg-accent/10 p-4 text-sm leading-6 text-accent">
+          طلب استلام «{(myClaims ?? []).map((c) => c.organizations?.name_ar).filter(Boolean).join("، ")}» قيد المراجعة. بعد الموافقة بيظهر النادي هون.
+        </p>
       )}
-      <Link href="/dashboard/new" className="mb-5 inline-block rounded-xl bg-accent px-6 py-2.5 font-bold text-accent-foreground">+ إضافة نشاط</Link>
-      {orgs.length === 0 ? (
-        <p className="rounded-2xl bg-surface p-8 text-center text-muted">ما عندك أنشطة بعد.</p>
-      ) : (
-        <OrgList rows={orgs.map((o) => ({ id: o.id, name: o.name_ar, meta: `${ORG_TYPE_LABEL[o.type]} · ${o.city}`, status: STATUS[o.status], newCount: newOf(o.id) }))} />
-      )}
-    </div>
+
+      <section aria-labelledby="activities-heading">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div><h2 id="activities-heading" className="text-xl font-extrabold">قائمة الأنشطة</h2><p className="mt-1 text-sm text-muted">إدارة بيانات النادي ومتابعة حالة ظهوره للزوار.</p></div>
+          <Link href="/dashboard/new" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-accent px-5 py-2.5 font-bold text-accent-foreground shadow-lg shadow-accent/10 transition-transform hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none"><span aria-hidden="true">+</span> إضافة نشاط</Link>
+        </div>
+        {orgs.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-white/20 bg-surface/60 px-6 py-12 text-center sm:px-10">
+            <div aria-hidden="true" className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-accent/10 text-2xl text-accent">＋</div>
+            <h3 className="text-lg font-extrabold">لسّه ما أضفت أي نشاط</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">أضف ناديك حتى يتمكن الزوار من اكتشافه والتواصل معك ومعرفة معلوماته الأساسية.</p>
+            <Link href="/dashboard/new" className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-accent px-5 py-2.5 font-bold text-accent-foreground transition-colors hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">ابدأ بإضافة نشاطك</Link>
+          </div>
+        ) : (
+          <OrgList rows={orgs.map((o) => ({ id: o.id, name: o.name_ar, meta: `${ORG_TYPE_LABEL[o.type]} · ${o.city}`, status: STATUS[o.status], newCount: newOf(o.id) }))} />
+        )}
+      </section>
+    </main>
   );
 }
