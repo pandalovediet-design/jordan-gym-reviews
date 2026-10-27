@@ -33,7 +33,7 @@ export default async function DashLayout({ children, params }: LayoutProps<"/das
         </div>
       )}
       <div className={`min-h-[70vh] pb-10 ${themeClass(theme)}`}>
-        <DashTabs id={id} showMembers={showMembers} newInquiries={newInquiries} />
+        <DashTabs id={id} showMembers={showMembers} orgType={org?.type === "independent_coach" || org?.type === "sports_facility" || org?.type === "store" || org?.type === "nutritionist" ? org.type : "gym"} newInquiries={newInquiries} />
         {children}
       </div>
     </>
