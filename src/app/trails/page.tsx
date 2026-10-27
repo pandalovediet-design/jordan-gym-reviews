@@ -4,6 +4,7 @@ import { OrgCard } from "@/components/OrgCard";
 import { listPlacesByCategory, listTrails } from "@/lib/queries";
 
 export const revalidate = 300;
+const VISIBLE = 6;
 export const metadata: Metadata = {
   title: "مسارات المشي والهايكنق والركض في الأردن",
   description: "دليل مسارات الهايكنق والمشي والركض في الأردن: المنطقة، الصعوبة، المسافة والموقع.",
@@ -32,7 +33,13 @@ export default async function TrailsPage() {
       {sections.map((x) => (
         <section key={x.id} id={x.id} className="mt-12">
           <h2 className="text-xl font-extrabold">{x.title} <span className="text-sm font-normal text-muted">({x.items.length}) — {x.note}</span></h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{x.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{x.items.slice(0, VISIBLE).map((o) => <OrgCard key={o.id} org={o} />)}</div>
+          {x.items.length > VISIBLE && (
+            <details className="mt-4">
+              <summary className="cursor-pointer rounded-xl bg-surface px-4 py-3 text-center text-sm font-bold ring-1 ring-white/10 hover:ring-accent">عرض كل الأماكن ({x.items.length})</summary>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{x.items.slice(VISIBLE).map((o) => <OrgCard key={o.id} org={o} />)}</div>
+            </details>
+          )}
         </section>
       ))}
     </div>
