@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-/** Copies a text (usually a link) and announces the result accessibly. */
+/** Copies text (usually a link) and announces the result accessibly. */
 export function CopyButton({ text, label, className = "" }: { text: string; label: string; className?: string }) {
   const [status, setStatus] = useState<"idle" | "copied" | "manual">("idle");
   const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -14,7 +14,7 @@ export function CopyButton({ text, label, className = "" }: { text: string; labe
   const announce = (next: "copied" | "manual") => {
     if (resetTimer.current) clearTimeout(resetTimer.current);
     setStatus(next);
-    resetTimer.current = setTimeout(() => setStatus("idle"), 2500);
+    resetTimer.current = setTimeout(() => setStatus("idle"), 3000);
   };
 
   const copy = async () => {
@@ -23,19 +23,32 @@ export function CopyButton({ text, label, className = "" }: { text: string; labe
       await navigator.clipboard.writeText(text);
       announce("copied");
     } catch {
-      setStatus("manual");
-      const result = window.prompt?.("تعذّر النسخ التلقائي. انسخ الرابط من هنا:", text);
-      if (result !== null && result !== undefined) announce("manual");
+      // Prompt is a fallback, not a successful copy; do not claim success if cancelled.
+      if (typeof window.prompt !== "function") {
+        announce("manual");
+        return;
+      }
+      const result = window.prompt("تعذّر النسخ التلقائي. انسخ الرابط من هنا:", text);
+      if (result === null) {
+        setStatus("idle");
+        return;
+      }
+      announce("manual");
     }
   };
 
   return (
     <>
-      <button type="button" onClick={copy} className={className} aria-label={status === "copied" ? "تم نسخ الرابط" : label}>
+      <button
+        type="button"
+        onClick={copy}
+        className={`inline-flex min-h-11 items-center justify-center rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none ${className}`}
+        aria-label={status === "copied" ? "تم نسخ الرابط" : status === "manual" ? "تعذّر النسخ التلقائي، انسخ الرابط يدويًا" : label}
+      >
         {status === "copied" ? "✓ تم النسخ" : status === "manual" ? "انسخ الرابط يدويًا" : label}
       </button>
       <span className="sr-only" role="status" aria-live="polite">
-        {status === "copied" ? "تم نسخ الرابط إلى الحافظة" : status === "manual" ? "استخدم نافذة النسخ اليدوي إذا ظهرت" : ""}
+        {status === "copied" ? "تم نسخ الرابط إلى الحافظة" : status === "manual" ? "تعذّر النسخ التلقائي؛ انسخ الرابط من نافذة النسخ اليدوي إذا ظهرت" : ""}
       </span>
     </>
   );
