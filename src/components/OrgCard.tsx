@@ -10,15 +10,15 @@ export function OrgCard({ org }: {
 }) {
   return (
     <div className={`relative ${org.glow_color ? `glow glow-${org.glow_color}` : ""}`}>
-    <Link href={`/g/${org.slug}`} className={`block overflow-hidden rounded-2xl bg-surface ring-1 transition hover:ring-accent/60 ${org.women_access === "women_only" ? "ring-pink-400/60" : "ring-white/10"}`}>
+    <Link href={`/g/${org.slug}`} className={`group block overflow-hidden rounded-3xl bg-surface shadow-lg shadow-black/10 ring-1 transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/25 ${org.women_access === "women_only" ? "ring-pink-400/60" : "ring-white/10 hover:ring-blue-400/50"}`}>
       {org.women_access === "women_only" && <div className="bg-pink-500 px-4 py-1 text-center text-xs font-bold tracking-wide text-white">💗 {WOMEN_LABEL.women_only}</div>}
       {org.cover ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={publicMediaUrl(org.cover.storage_path)} alt={org.cover.alt_text ?? org.name_ar} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+        <img src={publicMediaUrl(org.cover.storage_path)} alt={org.cover.alt_text ?? org.name_ar} loading="lazy" className="aspect-[16/10] w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
       ) : (
-        <div className="flex aspect-[4/3] w-full items-center justify-center bg-background/40 text-sm text-muted">بدون صورة</div>
+        <div className="relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_25%_15%,rgba(54,120,246,.3),transparent_45%),linear-gradient(135deg,#243653,#111827)] text-sm text-muted"><span className="text-5xl opacity-70" aria-hidden>✦</span><span className="absolute bottom-3 right-4 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-white/80">اكتشف المكان</span></div>
       )}
-      <div className="p-5">
+      <div className="p-5 sm:p-6">
       <div className="mb-2 flex items-center justify-between text-xs text-muted">
         <span>{org.category_name ?? ORG_TYPE_LABEL[org.type]}</span>
         <span className="flex gap-2">
@@ -28,7 +28,7 @@ export function OrgCard({ org }: {
           {org.verified_at && <span className="text-accent">✓ موثّق</span>}
         </span>
       </div>
-      <h3 className="flex items-center gap-2 text-lg font-bold">{org.name_ar}
+      <h3 className="flex items-center gap-2 text-lg font-extrabold tracking-tight transition group-hover:text-cyan-100">{org.name_ar}
         {org.open_now === true && <span className="whitespace-nowrap rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-bold text-emerald-300 ring-1 ring-emerald-400/40">● مفتوح هسا</span>}
         {org.open_now === false && <span className="whitespace-nowrap rounded-full bg-white/10 px-2 py-0.5 text-xs font-normal text-muted">مسكّر هسا</span>}
       </h3>
