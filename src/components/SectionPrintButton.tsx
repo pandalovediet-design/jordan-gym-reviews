@@ -5,15 +5,35 @@ export function SectionPrintButton({ target, label }: { target: string; label: s
   const go = () => {
     const el = document.getElementById(target);
     if (!el) return;
+
     el.setAttribute("data-print-active", "");
     document.body.classList.add("printing-one");
+
+    let cleaned = false;
     const done = () => {
+      if (cleaned) return;
+      cleaned = true;
       el.removeAttribute("data-print-active");
       document.body.classList.remove("printing-one");
       window.removeEventListener("afterprint", done);
     };
+
     window.addEventListener("afterprint", done);
-    window.print();
+    try {
+      window.print();
+    } catch {
+      // Restore the page if the browser blocks or cannot open its print dialog.
+      done();
+    }
   };
-  return <button type="button" onClick={go} className="no-print rounded-lg bg-white/10 px-3 py-1 text-xs hover:bg-white/20">{label}</button>;
+
+  return (
+    <button
+      type="button"
+      onClick={go}
+      className="no-print rounded-lg bg-white/10 px-3 py-1 text-xs transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent active:scale-[0.98]"
+    >
+      {label}
+    </button>
+  );
 }
