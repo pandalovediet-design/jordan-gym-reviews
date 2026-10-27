@@ -39,7 +39,6 @@ export default async function ActivityQr({ params }: PageProps<"/dashboard/[id]/
           <h1 className="mt-2 text-2xl font-extrabold">ملصق QR جاهز للطباعة</h1>
           <p className="mt-1 text-sm text-muted">اطبعه وعلّقه على باب النادي أو عند الاستقبال، ليصل الزوار إلى صفحتك على Jordan Gym Reviews.</p>
         </div>
-        <button onClick={undefined} className="hidden" aria-hidden="true" />
         <a href={qr} download={`jordan-gym-reviews-${org.slug}-qr.png`} className="rounded-xl bg-accent px-4 py-2.5 font-bold text-accent-foreground">تنزيل QR كصورة</a>
       </div>
 
