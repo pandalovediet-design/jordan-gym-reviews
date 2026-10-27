@@ -18,7 +18,7 @@ export function OrgCard({ org }: {
         {org.women_access === "women_only" && <div className="bg-pink-600 px-4 py-1.5 text-center text-xs font-bold tracking-wide text-white">💗 {WOMEN_LABEL.women_only}</div>}
         {org.cover ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={publicMediaUrl(org.cover.storage_path)} alt={org.cover.alt_text ?? org.name_ar} loading="lazy" decoding="async" sizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 1024px) 50vw, 33vw" className="aspect-[16/10] w-full object-cover transition duration-500 group-hover:scale-[1.04] motion-reduce:transform-none motion-reduce:transition-none" />
+          <img src={publicMediaUrl(org.cover.storage_path)} alt={org.cover.alt_text ?? org.name_ar} loading="lazy" decoding="async" className="aspect-[16/10] w-full object-cover transition duration-500 group-hover:scale-[1.04] motion-reduce:transform-none motion-reduce:transition-none" />
         ) : (
           <div className="relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_25%_15%,rgba(54,120,246,.3),transparent_45%),linear-gradient(135deg,#243653,#111827)] text-sm text-muted"><span className="text-5xl opacity-70" aria-hidden="true">✦</span><span className="absolute bottom-3 right-4 rounded-full border border-white/10 bg-black/50 px-3 py-1.5 text-xs text-white">اكتشف المكان</span></div>
         )}
