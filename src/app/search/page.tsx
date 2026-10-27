@@ -49,8 +49,8 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
   const field = "rounded-xl bg-surface px-3 py-2.5 ring-1 ring-white/10 outline-none focus:ring-accent";
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      <form className="mb-6">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
+      <div className="mb-7 rounded-3xl border border-white/10 bg-[radial-gradient(ellipse_at_10%_0%,rgba(54,120,246,.16),transparent_45%),linear-gradient(135deg,rgba(255,255,255,.035),transparent)] p-4 sm:p-7"><div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="mb-2 text-xs font-bold tracking-wider text-cyan-200">اكتشف خياراتك</p><h1 className="text-2xl font-black sm:text-3xl">{q ? `نتائج البحث عن «${q}»` : mode === "products" ? "السوق الرياضي" : "دليل الأنشطة الرياضية"}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">قارن الأماكن والخدمات حسب المدينة والسعر والمرافق، واختار الأنسب لهدفك.</p></div><Link href="/sections" className="rounded-full border border-white/10 bg-surface px-4 py-2 text-sm font-bold transition hover:border-cyan-300/40">تصفّح الأقسام ←</Link></div><form className="mb-0">
         <div className="flex gap-2">
           <input name="q" defaultValue={q} placeholder="ابحث..." className={`${field} min-w-0 flex-1`} />
           <button className="rounded-xl bg-accent px-6 font-bold text-accent-foreground">بحث</button>
@@ -94,8 +94,8 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
       {mode === "orgs" && <div className="mb-4 flex flex-wrap items-center gap-3"><NearMeButton active={!!near} />{near && <span className="text-sm text-muted">مرتبة من الأقرب للأبعد (الأنشطة اللي حدّدت موقعها فقط)</span>}</div>}
 
       {error && <p className="rounded-2xl bg-surface p-6 text-center">تعذّر تحميل النتائج حالياً، جرّب مرة ثانية بعد قليل.</p>}
-      {!error && total === 0 && <p className="rounded-2xl bg-surface p-8 text-center text-muted">ما لقينا نتائج مطابقة.</p>}
-      {!error && <p className="mb-3 text-sm text-muted">{total} نتيجة</p>}
+      {!error && total === 0 && <div className="rounded-3xl border border-dashed border-white/15 bg-surface/50 px-6 py-14 text-center"><span className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-blue-400/10 text-3xl">⌕</span><h2 className="text-xl font-extrabold">ما لقينا نتائج مطابقة</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">جرّب تغيّر كلمة البحث أو توسّع خيارات المدينة والسعر، ويمكن تلاقي المكان المناسب.</p><Link href="/search" className="mt-5 inline-flex rounded-xl bg-accent px-5 py-3 font-bold text-accent-foreground">عرض كل الأنشطة</Link></div>}
+      {!error && <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><p className="text-lg font-extrabold">{total} <span className="text-sm font-normal text-muted">نتيجة مطابقة</span></p><p className="text-xs text-muted">الصفحة {page}{pages > 1 ? ` من ${pages}` : ""}</p></div>}
 
       {orgs && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{orgs.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>}
       {prods && (
