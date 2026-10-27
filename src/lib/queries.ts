@@ -280,6 +280,14 @@ export async function listTrails() {
   return data ?? [];
 }
 
+/** Places (not routes) shown on the trails page: parks, walking spots and private hiking/adventure venues. */
+export async function listPlacesByCategory(slug: string) {
+  const db = createPublicClient();
+  const { data, error } = await db.from("organizations_listing").select(LISTING_COLS).eq("category_slug", slug).order("is_featured", { ascending: false }).order("name_ar").limit(500);
+  if (error) throw new Error(error.message);
+  return withCovers(db, mapListing(data ?? []));
+}
+
 export async function getTrail(slug: string) {
   const { data } = await createPublicClient().from("trails").select("*").eq("slug", slug).eq("is_published", true).maybeSingle();
   return data;
