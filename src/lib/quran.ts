@@ -41,7 +41,7 @@ type ApiEdition = { name: string; ayahs: ApiAyah[]; edition: { identifier: strin
 async function surah(n: number, errs: string[]): Promise<{ name: string; text: Map<number, string>; tafsir: Map<number, string> } | null> {
   try {
     const res = await fetch(`${API}/${n}/editions/${EDITIONS}`, { headers: { accept: "application/json", "user-agent": "JordanGymReviews/1.0 (+https://jordan-gym-reviews.vercel.app)" }, next: { revalidate: 2592000 } }); // text never changes: keep a month
-    if (!res.ok) { errs.push(`${n}: HTTP ${res.status}`); console.error(`quran api ${n}: HTTP ${res.status}`); return null; }
+    if (!res.ok) { errs.push(`${n}: HTTP ${res.status}`); return null; }
     const j = (await res.json()) as { data?: ApiEdition[] };
     if (!Array.isArray(j.data)) { errs.push(`${n}: bad payload`); return null; }
     const q = j.data.find((e) => e.edition.identifier === "quran-uthmani");
@@ -60,14 +60,25 @@ export async function getRestContent(): Promise<RestContent & { errors: string[]
   const refs = [...SHORT, ...LONG];
   const nums = [...new Set(refs.map((r) => r[0]))];
   const loaded = new Map<number, NonNullable<Awaited<ReturnType<typeof surah>>>>();
-  // AlQuran.cloud rate-limits bursts (HTTP 429): two surahs at a time, up to two retries with a growing pause.
+  // Keep retry errors local to each surah; concurrent workers must not remove each other's errors.
   let next = 0;
   const worker = async () => {
     while (next < nums.length) {
       const n = nums[next++];
-      let s = await surah(n, errors);
-      for (let i = 1; !s && i <= 2; i++) { await new Promise((r) => setTimeout(r, 1200 * i)); errors.pop(); s = await surah(n, errors); }
+      const attemptErrors: string[] = [];
+      let s = await surah(n, attemptErrors);
+      for (let i = 1; !s && i <= 3; i++) {
+        // Back off progressively when the upstream API is busy or rate-limiting.
+        await new Promise((r) => setTimeout(r, 1500 * 2 ** (i - 1)));
+        attemptErrors.length = 0;
+        s = await surah(n, attemptErrors);
+      }
       if (s) loaded.set(n, s);
+      else {
+        const message = attemptErrors.at(-1) ?? `${n}: fetch failed`;
+        errors.push(message);
+        console.error(`quran api ${message}`);
+      }
     }
   };
   await Promise.all(Array.from({ length: 2 }, worker));
