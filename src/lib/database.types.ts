@@ -1118,6 +1118,7 @@ export type Database = {
           verified_at: string | null
           video_url: string | null
           verified_until: string | null
+          review_done_at: string | null
           website: string | null
           whatsapp: string | null
         }
@@ -1160,6 +1161,7 @@ export type Database = {
           verified_at?: string | null
           video_url?: string | null
           verified_until?: string | null
+          review_done_at?: string | null
           website?: string | null
           whatsapp?: string | null
         }
@@ -1202,6 +1204,7 @@ export type Database = {
           verified_at?: string | null
           video_url?: string | null
           verified_until?: string | null
+          review_done_at?: string | null
           website?: string | null
           whatsapp?: string | null
         }

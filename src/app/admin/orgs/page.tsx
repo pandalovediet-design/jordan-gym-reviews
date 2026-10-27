@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { randomBytes } from "node:crypto";
 import { requireUser } from "@/lib/auth";
-import { GLOW_COLORS, GLOW_NAME, ORG_TYPE_LABEL, isVerified } from "@/lib/format";
+import { GLOW_COLORS, GLOW_NAME, ORG_TYPE_LABEL, isVerified, jordanTodayStartIso } from "@/lib/format";
 import { cleanQuery } from "@/lib/format";
 import { isOrgType } from "@/lib/queries";
 import { ActionForm } from "@/components/Form";
-import { assignOrgOwner, createOwnerAccount, clearWomenAccess, clearOrgBadge, setFeatured, setGlow, setOrgStatus, setOrgType, setVerified } from "../actions";
+import { assignOrgOwner, createOwnerAccount, clearWomenAccess, clearOrgBadge, setFeatured, setGlow, setOrgStatus, setOrgType, setReviewDone, setVerified } from "../actions";
 
 export const metadata: Metadata = { title: "الأنشطة", robots: { index: false } };
 const STATUSES = ["draft", "pending", "published", "suspended"] as const;
@@ -20,8 +20,20 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
   const q = cleanQuery(one(sp.q));
   const status = one(sp.status);
   const type = one(sp.type);
+  const review = one(sp.review) === "done" ? "done" : one(sp.review) === "all" ? "all" : "pending";
   const { supabase } = await requireUser();
-  let query = supabase.from("organizations").select("id,name_ar,type,city,status,verified_at,verified_until,slug,women_access,has_mosque,no_music,has_kids_area,kids_friendly,kids_transport,accessibility").order("created_at", { ascending: false }).limit(200);
+  // Start of "today" in Jordan time (UTC+3), for the daily goal counter.
+  const todayStart = jordanTodayStartIso();
+  const [pendingCount, doneCount, todayCount] = await Promise.all([
+    supabase.from("organizations").select("id", { count: "exact", head: true }).is("review_done_at", null),
+    supabase.from("organizations").select("id", { count: "exact", head: true }).not("review_done_at", "is", null),
+    supabase.from("organizations").select("id", { count: "exact", head: true }).gte("review_done_at", todayStart),
+  ]);
+  const nPending = pendingCount.count ?? 0, nDone = doneCount.count ?? 0, nToday = todayCount.count ?? 0;
+  const DAILY_GOAL = 20;
+  let query = supabase.from("organizations").select("id,review_done_at,name_ar,type,city,status,verified_at,verified_until,slug,women_access,has_mosque,no_music,has_kids_area,kids_friendly,kids_transport,accessibility").order("created_at", { ascending: false }).limit(200);
+  if (review === "pending") query = query.is("review_done_at", null);
+  if (review === "done") query = query.not("review_done_at", "is", null).order("review_done_at", { ascending: false });
   if (q) query = query.or(`name_ar.ilike.%${q}%,name_en.ilike.%${q}%,city.ilike.%${q}%`);
   if ((STATUSES as readonly string[]).includes(status)) query = query.eq("status", status as (typeof STATUSES)[number]);
   if (isOrgType(type)) query = query.eq("type", type);
@@ -43,7 +55,23 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
   return (
     <div className="mx-auto max-w-4xl space-y-5 px-4 py-8">
       <h1 className="text-2xl font-extrabold">الأنشطة ({(orgs.data ?? []).length})</h1>
+      <div className={`${box} space-y-3`}>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+          <span className="font-bold">هدف اليوم: {nToday} / {DAILY_GOAL}{nToday >= DAILY_GOAL ? " 🎉" : ""}</span>
+          <span className="text-muted">المنجز الكلي: {nDone} من {nDone + nPending}</span>
+        </div>
+        <div className="h-2 overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuenow={nToday} aria-valuemin={0} aria-valuemax={DAILY_GOAL}>
+          <div className="h-full bg-accent" style={{ width: `${Math.min(100, (nToday / DAILY_GOAL) * 100)}%` }} />
+        </div>
+        <nav className="flex flex-wrap gap-2 text-sm">
+          {([["pending", `غير منجز (${nPending})`], ["done", `منجز (${nDone})`], ["all", "الكل"]] as const).map(([k, label]) => (
+            <Link key={k} href={{ pathname: "/admin/orgs", query: { review: k, ...(q ? { q } : {}), ...(status ? { status } : {}), ...(type ? { type } : {}) } }}
+              className={`rounded-full px-4 py-1.5 ring-1 ring-white/10 ${review === k ? "bg-accent font-bold text-accent-foreground" : "bg-background hover:ring-accent"}`}>{label}</Link>
+          ))}
+        </nav>
+      </div>
       <form className="flex flex-wrap gap-2">
+        <input type="hidden" name="review" value={review} />
         <input name="q" defaultValue={q} placeholder="ابحث بالاسم أو المدينة" className={fld} />
         <select name="status" defaultValue={status} className={fld}><option value="">كل الحالات</option>{STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}</select>
         <select name="type" defaultValue={type} className={fld}><option value="">كل الأنواع</option>{Object.entries(ORG_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
@@ -53,12 +81,15 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
           <li key={o.id} className={`${box} space-y-3`}>
             <div className="flex flex-wrap items-center justify-between gap-3">
             <div><p className="font-semibold">{o.name_ar} {isVerified(o) && <span className="text-accent">✓</span>} {isLive(o.id) && <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">مميّز</span>}</p>
-              <p className="text-xs text-muted">{ORG_TYPE_LABEL[o.type]} · {o.city} · {STATUS_LABEL[o.status]}</p>
+              <p className="text-xs text-muted">{ORG_TYPE_LABEL[o.type]} · {o.city} · {STATUS_LABEL[o.status]} · {o.review_done_at ? "✔ منجز" : "غير منجز"}</p>
               {emailOf(o.id) && <p className="text-xs text-muted">المالك: <span dir="ltr">{emailOf(o.id)}</span></p>}</div>
             <div className="flex flex-wrap gap-2">
               <Link href={`/dashboard/${o.id}/overview`} className={`${btn} !bg-accent text-accent-foreground`}>إدارة الحساب</Link>
               {o.status === "published" ? <Link href={`/g/${o.slug}`} className={btn}>الصفحة العامة</Link> : <span className="px-2 py-1 text-xs text-muted">الصفحة العامة بعد النشر</span>}
               <Link href={`/admin/qr/${o.id}/sticker`} className={btn}>ستكر QR</Link>
+              {o.review_done_at
+                ? <form action={setReviewDone.bind(null, o.id, false)}><button className={btn}>↩ رجّعه لغير منجز</button></form>
+                : <form action={setReviewDone.bind(null, o.id, true)}><button className={`${btn} !bg-green-600 text-white`}>✔ تم</button></form>}
               {o.status !== "published" && <form action={setOrgStatus.bind(null, o.id, "published")}><button className={`${btn} !bg-accent text-accent-foreground`}>نشر</button></form>}
               {o.status === "published" && <form action={setOrgStatus.bind(null, o.id, "suspended")}><button className={btn}>إيقاف</button></form>}
               {o.women_access !== "none" && <form action={clearWomenAccess.bind(null, o.id)}><button className={btn}>💗 إزالة {o.women_access === "women_only" ? "Pink Zone" : "الأوقات النسائية"}</button></form>}
