@@ -1,5 +1,6 @@
 import { ACCESS_OPTIONS } from "@/lib/facilities";
 import Link from "next/link";
+import { Panel } from "@/components/Panel";
 import { ThemePicker } from "@/components/ThemePicker";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -85,7 +86,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
   ) : null;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
+    <div className="mx-auto max-w-3xl space-y-3 px-4 py-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-extrabold">{org.name_ar}</h1>
         <span className="rounded-full bg-white/10 px-3 py-1 text-xs">{STATUS[org.status]}</span>
@@ -109,12 +110,8 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
         {done.next && <p className="mt-2 text-sm text-muted">الخطوة الجاية: <b className="text-foreground">{done.next}</b>{done.left.length > 1 && ` (وبعدها: ${done.left.slice(1).join("، ")})`}</p>}
       </section>
 
-      <section className={box}><h2 className="mb-1 text-lg font-bold">🎨 ألوان صفحتك</h2>
-        <p className="mb-4 text-sm text-muted">اختار الثيم اللي بيميّز صفحتك العامة ولوحة تحكمك عن غيرك.</p>
-        <ActionForm action={setTheme.bind(null, id)} submit="حفظ الألوان"><ThemePicker current={org.theme} /></ActionForm>
-      </section>
 
-      <section className={box}><h2 className="mb-3 text-lg font-bold">البيانات الأساسية</h2>
+      <Panel title="📝 البيانات الأساسية">
         <div className="mb-5 flex flex-wrap items-center gap-4">
           {mainImage
             // eslint-disable-next-line @next/next/no-img-element
@@ -205,9 +202,9 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             </div>
           )}
         </ActionForm>
-      </section>
+      </Panel>
 
-      {org.type !== "independent_coach" && !isHomeChef && <section className={box}><h2 className="mb-1 text-lg font-bold">الفروع</h2>
+      {org.type !== "independent_coach" && !isHomeChef && <Panel title="📍 الفروع">
         <p className="mb-3 text-xs text-muted">الفرع الرئيسي بياخد بياناته من «البيانات الأساسية» فوق. أضف فروعك الثانية هون، وكل فرع بيكون إله أسعاره وعروضه ودوامه ومنتجاته وحصصه.</p>
         <ul className="mb-4 space-y-2">
           {allBranches.map((b) => (
@@ -242,10 +239,10 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             </ActionForm>
           </div>
         </details>
-      </section>}
+      </Panel>}
 
       {(org.type === "gym" || org.type === "sports_facility") && (
-        <section className={box}><h2 className="mb-1 text-lg font-bold">المدربون</h2>
+        <Panel title="🧑‍🏫 المدربون">
           <p className="mb-3 text-xs text-muted">اعرض مدربينك بصورهم وخبراتهم. بيظهروا بصفحتك للزوار.</p>
           <ul className="mb-4 space-y-3">{(trainers ?? []).map((t) => (
             <li key={t.id} className="flex items-start gap-3 text-sm">
@@ -272,11 +269,11 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             {branchSelect}
             <label className={lbl}>صورة المدرب<ImageInput name="photo" accept="image/jpeg,image/png,image/webp" className="text-sm" /></label>
           </ActionForm>
-        </section>
+        </Panel>
       )}
 
       {org.type === "gym" && (
-        <section className={box}><h2 className="mb-1 text-lg font-bold">مدربون وأخصائيو تغذية شركاء</h2>
+        <Panel title="🤝 مدربون وأخصائيو تغذية شركاء">
           <p className="mb-3 text-xs text-muted">المدرب المستقل أو أخصائي التغذية بيطلب ينضم لناديك، وما بيظهر إلا لما توافق. بطاقته بتنبني من ملفه الشخصي.</p>
           <ul className="space-y-2">{gymLinks.map((l) => (
             <li key={l.link_id} className="flex flex-wrap items-center gap-3 text-sm">
@@ -284,12 +281,12 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
               {l.status === "pending" && <form action={respondCoachLink.bind(null, id, l.link_id, true)}><button className="font-bold text-accent underline">قبول</button></form>}
               <form action={respondCoachLink.bind(null, id, l.link_id, false)}><button className="text-red-300 underline">{l.status === "pending" ? "رفض" : "إزالة"}</button></form></li>))}
             {gymLinks.length === 0 && <li className="text-sm text-muted">ما في طلبات بعد.</li>}</ul>
-        </section>
+        </Panel>
       )}
 
       {(org.type === "independent_coach" || org.type === "nutritionist") && (
         <>
-          <section className={box}><h2 className="mb-1 text-lg font-bold">{org.type === "nutritionist" ? "ملفي كأخصائي تغذية" : "ملفي كمدرب"}</h2>
+          <Panel title={org.type === "nutritionist" ? "ملفي كأخصائي تغذية" : "ملفي كمدرب"}>
             <p className="mb-3 text-xs text-muted">لازم تكمّله (وتضيف صورة شخصية بالصور) قبل ما تطلب الانضمام لأي نادي. هاد بيظهر ببطاقتك بكل نادي.</p>
             <ActionForm action={saveCoachProfile.bind(null, id)}>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -306,8 +303,8 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
                 </select>
               </label>
             </ActionForm>
-          </section>
-          <section className={box}><h2 className="mb-1 text-lg font-bold">{org.type === "nutritionist" ? "النوادي اللي بتتعاون معها" : "النوادي اللي بتدرّب فيها"}</h2>
+          </Panel>
+          <Panel title={org.type === "nutritionist" ? "النوادي اللي بتتعاون معها" : "النوادي اللي بتدرّب فيها"}>
             <p className="mb-3 text-xs text-muted">بتقدر تطلب الانضمام لأي عدد نوادي. الاتفاق المالي بينك وبين النادي.</p>
             <ul className="mb-4 space-y-2">{coachLinks.map((l) => (
               <li key={l.link_id} className="flex items-center gap-3 text-sm">
@@ -317,12 +314,12 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             <ActionForm action={requestJoinGym.bind(null, id)} submit="طلب انضمام">
               <input name="gym" required placeholder="اسم النادي" className={field} />
             </ActionForm>
-          </section>
+          </Panel>
         </>
       )}
 
       {org.type === "healthy_food" && (
-        <section className={box}><h2 className="mb-1 text-lg font-bold">قائمة الوجبات</h2>
+        <Panel title="🍱 قائمة الوجبات">
           <p className="mb-3 text-xs text-muted">اكتب السعرات والبروتين إذا بتعرفها. بتظهر للزوار مع كل وجبة. زر «خلصت» بيخفي الوجبة من الطلب مؤقتاً.</p>
           <ul className="mb-4 space-y-3">{(menu ?? []).map((m) => (
             <li key={m.id} className="flex items-start gap-3 text-sm">
@@ -354,10 +351,10 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             {branchSelect}
             <label className={lbl}>صورة الوجبة<ImageInput name="image" accept="image/jpeg,image/png,image/webp" className="text-sm" /></label>
           </ActionForm>
-        </section>
+        </Panel>
       )}
 
-      <section className={box}><h2 className="mb-1 text-lg font-bold">{SERVICES_TITLE[org.type]}</h2>
+      <Panel title={`💳 ${SERVICES_TITLE[org.type]}`}>
         <p className="mb-3 text-xs text-muted">{SERVICES_HINT[org.type]}</p>
         <ul className="mb-4 space-y-2">{(services ?? []).map((s) => (
           <li key={s.id} className="flex items-center justify-between gap-3 text-sm">
@@ -370,10 +367,10 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
           <select name="billing_period" className={field}><option value="">—</option>{Object.entries(BILLING_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
           {branchSelect && <div className="sm:col-span-4">{branchSelect}</div>}
         </ActionForm>
-      </section>
+      </Panel>
 
       {(org.type === "gym" || org.type === "sports_facility" || org.type === "independent_coach") && (
-        <section className={box}><h2 className="mb-1 text-lg font-bold">جدول الحصص الأسبوعي</h2>
+        <Panel title="📅 جدول الحصص الأسبوعي">
           <p className="mb-3 text-xs text-muted">للعرض فقط (بدون حجز). بيظهر للزوار بصفحتك.</p>
           <ul className="mb-4 space-y-2">{(classes ?? []).map((c) => (
             <li key={c.id} className="flex items-center justify-between gap-3 text-sm">
@@ -389,12 +386,12 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             {branchSelect && <div className="sm:col-span-2">{branchSelect}</div>}
             <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="women_only" /> 💗 للنساء فقط</label>
           </ActionForm>
-        </section>
+        </Panel>
       )}
 
 
       {org.type === "sports_facility" && (
-        <section className={box}><h2 className="mb-1 text-lg font-bold">المواعيد المتاحة والمحجوزة</h2>
+        <Panel title="🗓️ المواعيد المتاحة والمحجوزة">
           <p className="mb-3 text-xs text-muted">أضف فترات اليوم، ولما تنحجز اضغط «محجوز». الزائر بيشوف المتاح والمحجوز وبحجز بالواتساب. (بالدفع والتأكيد التلقائي لاحقاً.)</p>
           <div className="mb-4 space-y-4">{slotDays.map((day) => (
             <div key={day}>
@@ -415,10 +412,10 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             <label className={lbl}>إلى<input name="to" type="time" required className={field} /></label>
             <label className={lbl}>مدة الفترة<select name="length" defaultValue="60" className={field}><option value="30">30 دقيقة</option><option value="60">ساعة</option><option value="90">ساعة ونص</option><option value="120">ساعتين</option></select></label>
           </ActionForm>
-        </section>
+        </Panel>
       )}
 
-      <section className={box}><h2 className="mb-3 text-lg font-bold">ساعات الدوام</h2>
+      <Panel title="🕒 ساعات الدوام">
         <div className="space-y-3">
           {allBranches.map((b) => (
             <details key={b.id} open={allBranches.length === 1} className="rounded-xl bg-background/40 p-3">
@@ -438,8 +435,8 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             </details>
           ))}
         </div>
-      </section>
-      <section className={box}><h2 className="mb-3 text-lg font-bold">معرض الصور</h2>
+      </Panel>
+      <Panel title="🖼️ معرض الصور">
         <div className="mb-4 grid grid-cols-3 gap-3">{galleryMedia.map((m) => (
           <div key={m.id} className="space-y-1">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -451,10 +448,10 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
           <input name="alt_text" placeholder="وصف الصورة (اختياري)" className={field} />
           <p className="text-xs text-muted">JPG / PNG / WebP، حتى 4MB، وحد أقصى 12 صورة.</p>
         </ActionForm>
-      </section>
+      </Panel>
 
       {org.type === "store" && (
-        <section className={box}><h2 className="mb-3 text-lg font-bold">المنتجات</h2>
+        <Panel title="🛍️ المنتجات">
           <ul className="mb-4 space-y-3">{(products ?? []).map((p) => (
             <li key={p.id} className="flex items-start gap-3 text-sm">
               {p.image_path ? (
@@ -488,10 +485,10 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             <textarea name="ingredients" rows={2} placeholder="المكونات (للمكملات)" className={field} />
             {branchSelect}
           </ActionForm>
-        </section>
+        </Panel>
       )}
 
-      <section className={box}><h2 className="mb-3 text-lg font-bold">العروض</h2>
+      <Panel title="🎁 العروض">
         <ul className="mb-4 space-y-2">{(offers ?? []).map((o) => (
           <li key={o.id} className="flex items-center justify-between gap-3 text-sm"><span>{o.kind === "course" ? "🎓 " : ""}{o.title_ar} <span className="text-muted">حتى {o.ends_at.slice(0, 10)}</span> {bTag(o.branch_id)}</span>
             <form action={deleteOffer.bind(null, id, o.id)}><button className="text-red-300 underline">حذف</button></form></li>))}
@@ -508,7 +505,12 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
             <input name="ends_at" type="date" required className={field} dir="ltr" />
           </div>
         </ActionForm>
-      </section>
+      </Panel>
+
+      <Panel title="🎨 ألوان صفحتك">
+        <p className="mb-4 text-sm text-muted">اختار الثيم اللي بيميّز صفحتك العامة ولوحة تحكمك عن غيرك.</p>
+        <ActionForm action={setTheme.bind(null, id)} submit="حفظ الألوان"><ThemePicker current={org.theme} /></ActionForm>
+      </Panel>
     </div>
   );
 }

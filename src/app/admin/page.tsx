@@ -38,18 +38,29 @@ export default async function AdminHome() {
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
       <h1 className="text-2xl font-extrabold">لوحة الإدارة</h1>
+      <nav className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4" aria-label="اختصارات">
+        <Link href="/admin/orgs" className="rounded-xl bg-accent px-4 py-3 text-center font-bold text-accent-foreground">📋 راجع الأنشطة</Link>
+        <Link href="/dashboard/new" className="rounded-xl bg-surface px-4 py-3 text-center font-semibold ring-1 ring-white/10 hover:ring-accent">➕ أضف نشاط</Link>
+        <Link href="/admin/ads" className="rounded-xl bg-surface px-4 py-3 text-center font-semibold ring-1 ring-white/10 hover:ring-accent">📣 الإعلانات</Link>
+        <Link href="/admin/settings" className="rounded-xl bg-surface px-4 py-3 text-center font-semibold ring-1 ring-white/10 hover:ring-accent">⚙️ إعدادات الموقع</Link>
+      </nav>
       {(statsRes.error || topRes.error) && <p className="rounded-xl bg-red-400/15 p-3 text-sm text-red-200">تعذّر تحميل بعض الإحصائيات.</p>}
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {kpi("المستخدمون المسجلون", s.users_total ?? 0, `${s.users_confirmed ?? 0} مؤكد · ${s.users_7d ?? 0} جديد آخر 7 أيام`, "/admin/users")}
         {kpi("الأنشطة", orgsTotal, `${byStatus.published ?? 0} منشور · ${byStatus.pending ?? 0} بالانتظار`, "/admin/orgs")}
-        {kpi("مميّز حالياً", s.featured_now ?? 0, "بالبحث", "/admin/orgs")}
-        {kpi("الأعضاء بالأنشطة", s.members_total ?? 0)}
+        {kpi("استفسارات جديدة", s.inquiries_new ?? 0)}
         {kpi("مشاهدات (7 أيام)", e7.page_view ?? 0, `${e30.page_view ?? 0} آخر 30 يوم`)}
         {kpi("نقرات واتساب (7 أيام)", e7.whatsapp_click ?? 0, `${e30.whatsapp_click ?? 0} آخر 30 يوم`)}
-        {kpi("مسح QR (7 أيام)", e7.qr_scan ?? 0, `${e30.qr_scan ?? 0} آخر 30 يوم`)}
-        {kpi("استفسارات جديدة", s.inquiries_new ?? 0)}
       </section>
+      <details className="rounded-2xl bg-surface/50 p-4 ring-1 ring-white/10">
+        <summary className="cursor-pointer font-semibold text-muted">📊 أرقام أكثر</summary>
+        <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {kpi("المستخدمون المسجلون", s.users_total ?? 0, `${s.users_confirmed ?? 0} مؤكد · ${s.users_7d ?? 0} جديد آخر 7 أيام`, "/admin/users")}
+          {kpi("مميّز حالياً", s.featured_now ?? 0, "بالبحث", "/admin/orgs")}
+          {kpi("الأعضاء بالأنشطة", s.members_total ?? 0)}
+          {kpi("مسح QR (7 أيام)", e7.qr_scan ?? 0, `${e30.qr_scan ?? 0} آخر 30 يوم`)}
+        </div>
+      </details>
 
       {(pending.length > 0 || (s.products_pending ?? 0) > 0) && (
         <section><h2 className="mb-3 text-lg font-bold">يحتاج إجراء</h2>
@@ -64,6 +75,9 @@ export default async function AdminHome() {
           </ul></section>
       )}
 
+      <details className="rounded-2xl bg-surface/50 p-4 ring-1 ring-white/10">
+        <summary className="cursor-pointer font-semibold text-muted">📈 تقارير (الأنواع، آخر المسجلين، أكثر الأنشطة نشاطاً)</summary>
+        <div className="mt-4 space-y-8">
       <section className="grid gap-6 lg:grid-cols-2">
         <div className={box}><h2 className="mb-3 font-bold">الأنشطة حسب النوع</h2>
           <ul className="space-y-2 text-sm">{Object.entries(ORG_TYPE_LABEL).map(([k, v]) => (
@@ -85,6 +99,8 @@ export default async function AdminHome() {
               <td className="p-2">{t.views}</td><td className="p-2">{t.whatsapp}</td><td className="p-2">{t.phone}</td><td className="p-2">{t.qr}</td></tr>))}
             {top.length === 0 && <tr><td colSpan={5} className="p-4 text-center text-muted">لا توجد بيانات بعد. تظهر الأرقام بعد إضافة مفتاح service role على فيرسل.</td></tr>}
           </tbody></table></div></section>
+        </div>
+      </details>
     </div>
   );
 }
