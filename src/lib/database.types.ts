@@ -1702,6 +1702,7 @@ export type Database = {
       program_kind: "workout" | "nutrition"
       analytics_event_type:
         | "qr_scan"
+        | "qr_visit"
         | "page_view"
         | "product_view"
         | "whatsapp_click"

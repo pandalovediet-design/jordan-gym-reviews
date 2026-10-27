@@ -9,6 +9,7 @@ export default async function DashLayout({ children, params }: LayoutProps<"/das
   let newInquiries = 0;
   let adminView: { orgName: string } | null = null;
   let theme: string | null = null;
+  let orgType: "gym" | "independent_coach" | "sports_facility" | "store" | "nutritionist" = "gym";
   if (/^[0-9a-f-]{36}$/i.test(id)) {
     const supabase = await createClient();
     const [{ data: org }, { data: auth }, { data: isAdmin }] = await Promise.all([
@@ -19,6 +20,7 @@ export default async function DashLayout({ children, params }: LayoutProps<"/das
     const { count } = await supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("organization_id", id).eq("status", "new");
     newInquiries = count ?? 0;
     theme = org?.theme ?? null;
+    orgType = org?.type === "independent_coach" || org?.type === "sports_facility" || org?.type === "store" || org?.type === "nutritionist" ? org.type : "gym";
     showMembers = !!org && ["gym", "independent_coach", "sports_facility", "nutritionist"].includes(org.type); // private subscriber tool only for places with subscribers
     if (org && isAdmin && auth.user) {
       const { data: mine } = await supabase.from("organization_members").select("user_id").eq("organization_id", id).eq("user_id", auth.user.id).maybeSingle();
@@ -33,7 +35,7 @@ export default async function DashLayout({ children, params }: LayoutProps<"/das
         </div>
       )}
       <div className={`min-h-[70vh] pb-10 ${themeClass(theme)}`}>
-        <DashTabs id={id} showMembers={showMembers} newInquiries={newInquiries} />
+        <DashTabs id={id} showMembers={showMembers} orgType={orgType} newInquiries={newInquiries} />
         {children}
       </div>
     </>

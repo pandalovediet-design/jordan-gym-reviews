@@ -14,7 +14,7 @@ export async function SiteHeader() {
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-3">
         <Link href="/" className="flex items-center gap-2 text-lg font-extrabold">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-mark.png" alt="" width={44} height={44} className="size-11 rounded-full object-cover" />
+          <img src="/brand-mark.svg" alt="" width={44} height={44} className="size-11 rounded-full object-cover" />
           <span>Jordan <span className="text-accent">Gym</span> Reviews</span>
         </Link>
         <div className="flex items-center gap-2 text-sm">
