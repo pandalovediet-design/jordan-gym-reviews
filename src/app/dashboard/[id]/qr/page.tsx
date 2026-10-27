@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { siteUrl } from "@/lib/site";
+import { PrintPosterButton } from "@/components/PrintPosterButton";
 
 export const metadata: Metadata = { title: "ملصق QR للنشاط", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -70,7 +71,7 @@ export default async function ActivityQr({ params }: PageProps<"/dashboard/[id]/
 
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <p className="max-w-xl text-xs leading-6 text-muted">نصيحة: اطبع على ورق A4، واختبر مسح الرمز بهاتفك قبل تعليق الملصق. تأكد من أن صفحة النشاط منشورة.</p>
-        <button type="button" onClick={() => window.print()} className="rounded-xl border border-white/15 px-5 py-2.5 font-bold hover:bg-white/5">طباعة الملصق</button>
+        <PrintPosterButton />
       </div>
       <style>{`
         @media print {
