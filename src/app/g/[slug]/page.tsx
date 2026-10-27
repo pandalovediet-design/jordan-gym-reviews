@@ -233,15 +233,16 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   );
   const contactButtons = (v: BV) => {
     const n = waNumber(v.whatsapp);
+    const actionClass = "inline-flex min-h-11 items-center justify-center rounded-xl px-5 py-2.5 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 motion-reduce:transition-none";
     return (
       <>
-        {n && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${n}?text=${msg(multi ? ` (${v.name})` : "")}`} className="rounded-xl bg-accent px-5 py-2.5 font-bold text-accent-foreground">واتساب</TrackedLink>}
-        {v.phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${v.phone}`} className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">اتصال</TrackedLink>}
-        {v.mapsHref && <a href={v.mapsHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">الموقع على الخريطة</a>}
+        {n && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${n}?text=${msg(multi ? ` (${v.name})` : "")}`} className={`${actionClass} bg-accent font-bold text-accent-foreground`}>واتساب</TrackedLink>}
+        {v.phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${v.phone}`} className={`${actionClass} bg-surface ring-1 ring-white/10`}>اتصال</TrackedLink>}
+        {v.mapsHref && <a href={v.mapsHref} target="_blank" rel="noopener noreferrer" className={`${actionClass} bg-surface ring-1 ring-white/10`}>الموقع على الخريطة</a>}
       </>
     );
   };
-  const contact = (v: BV) => <div className="mt-3 flex flex-wrap gap-2 sm:gap-3 [&>a]:min-h-11 [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center">{contactButtons(v)}</div>;
+  const contact = (v: BV) => <div className="mt-3 flex flex-wrap gap-2 sm:gap-3">{contactButtons(v)}</div>;
 
   return (
     <div className={`min-h-[70vh] ${themeClass(org.theme)}`}>
@@ -261,7 +262,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
       <p className="text-sm text-muted">{category ?? ORG_TYPE_LABEL[org.type]}{isVerified(org) && <span className="text-accent"> · ✓ موثّق</span>}{multi && <span> · {views.length} فروع</span>}</p>
       {coachProfile && (coachProfile.education || coachProfile.experience_years != null) && (
-        <p className="mt-1 text-sm text-muted">{[coachProfile.experience_years != null ? `🏅 ${coachProfile.experience_years} سنة خبرة` : null, coachProfile.education ? `🎓 ${[coachProfile.education, coachProfile.education_place].filter(Boolean).join(" — ")}` : null, coachProfile.session_mode ? { onsite: "حضوري", online: "أونلاين", both: "حضوري وأونلاين" }[coachProfile.session_mode] ?? null : null].filter(Boolean).join("  ·  ")}</p>)}
+        <p className="mt-1 text-sm text-muted">{[coachProfile.experience_years != null ? `🏅 ${coachProfile.experience_years} سنة خبرة` : null, coachProfile.education ? `🎓 ${[coachProfile.education, coachProfile.education_place].filter(Boolean).join(" — ")}` : null, coachProfile.session_mode ? { onsite: "حضوري", online: "أونلاين", both: "حضوري وأونلاين" }[coachProfile.session_mode] ?? null : null : null].filter(Boolean).join("  ·  ")}</p>)}
       {coachProfile?.certificates && <p className="mt-1 text-sm text-muted">📜 {coachProfile.certificates}</p>}
       {coachGyms.length > 0 && (
         <p className="mt-1 text-sm">{org.type === "nutritionist" ? "يتعاون مع: " : "يتدرب في: "}{coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
@@ -290,8 +291,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {!multi && <p className="mt-1 text-muted">{[org.address, org.area, org.city].filter(Boolean).join("، ")}</p>}
       </div>
       {multi && (
-        <nav className="mt-3 flex flex-wrap gap-2 text-sm">
-          {views.map((v) => <a key={v.id} href={`#b-${v.id}`} className="rounded-full bg-surface px-4 py-1.5 ring-1 ring-white/10 hover:ring-accent">{v.name} — {v.city}{v.women_access === "women_only" && " 💗"}</a>)}
+        <nav className="mt-3 flex flex-wrap gap-2 text-sm" aria-label="فروع النشاط">
+          {views.map((v) => <a key={v.id} href={`#b-${v.id}`} className="inline-flex min-h-11 items-center rounded-full bg-surface px-4 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none">{v.name} — {v.city}{v.women_access === "women_only" && " 💗"}</a>)}
         </nav>
       )}
 
@@ -303,7 +304,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         <a href={`/g/${org.slug}/card?s=1`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">📱 كرت للستوري</a>
       </div>
       <details className="mt-3 w-fit rounded-xl bg-surface ring-1 ring-white/10 [&[open]]:p-4">
-        <summary className="cursor-pointer list-none rounded-xl px-5 py-2.5 [&::-webkit-details-marker]:hidden">📲 QR للمشاركة</summary>
+        <summary className="min-h-11 cursor-pointer list-none rounded-xl px-5 py-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent [&::-webkit-details-marker]:hidden">📲 QR للمشاركة</summary>
         <div className="mt-3 flex flex-col items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={`/g/${org.slug}/qr`} alt={`رمز QR لصفحة ${org.name_ar}`} width={208} height={208} loading="lazy" className="size-52 rounded-xl bg-white p-1" />
@@ -318,7 +319,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         const jumps = [offers.length > 0 && ["#offers", "العروض"], services.length > 0 && ["#prices", "الأسعار"], hours.length > 0 && ["#hours", "الدوام"], media.length > 1 && ["#photos", "الصور"], ["#faq", "أسئلة"], ["#ask", "استفسار"]].filter(Boolean) as [string, string][];
         return jumps.length > 2 && (
           <nav aria-label="أقسام الصفحة" className="sticky top-0 z-20 -mx-4 mt-4 flex gap-2 overflow-x-auto border-y border-white/10 bg-background/95 px-4 py-3 text-sm shadow-lg shadow-black/10 backdrop-blur [scrollbar-width:none] sm:-mx-6 sm:px-6">
-            {jumps.map(([h, l]) => <a key={h} href={h} className="min-h-10 whitespace-nowrap rounded-full bg-surface px-4 py-2 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300">{l}</a>)}
+            {jumps.map(([h, l]) => <a key={h} href={h} className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-surface px-4 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 motion-reduce:transition-none">{l}</a>)}
           </nav>
         );
       })()}
