@@ -46,7 +46,7 @@ export function NowLocate({ type, label = "📍 حدّد موقعي" }: { type?:
         onClick={go}
         disabled={loading}
         aria-busy={loading}
-        className="rounded-xl bg-accent px-6 py-3 font-bold text-accent-foreground transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+        className="min-h-11 rounded-xl bg-accent px-6 py-3 font-bold text-accent-foreground transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 motion-reduce:transition-none"
       >
         {loading ? "⏳ جاري تحديد الموقع…" : label}
       </button>
