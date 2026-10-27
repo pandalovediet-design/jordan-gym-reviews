@@ -7,7 +7,7 @@ import { JsonLd } from "@/lib/jsonld";
 import { PwaRegister } from "@/components/PwaRegister";
 import { QuranAudioProvider, QuranMiniBar } from "@/components/QuranAudio";
 
-export const viewport: Viewport = { themeColor: "#07211c" };
+export const viewport: Viewport = { themeColor: "#101827" };
 
 export const metadata: Metadata = {
   applicationName: "Jordan Gym",
@@ -24,7 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="ar" dir="rtl" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
         <JsonLd data={{ "@context": "https://schema.org", "@graph": [
-          { "@type": "Organization", "@id": `${baseUrl()}/#org`, name: "Jordan Gym Reviews", url: baseUrl(), logo: `${baseUrl()}/logo-mark.png`, areaServed: { "@type": "Country", name: "Jordan" }, knowsLanguage: "ar" },
+          { "@type": "Organization", "@id": `${baseUrl()}/#org`, name: "Jordan Gym Reviews", url: baseUrl(), logo: `${baseUrl()}/brand-mark.svg`, areaServed: { "@type": "Country", name: "Jordan" }, knowsLanguage: "ar" },
           { "@type": "WebSite", "@id": `${baseUrl()}/#site`, name: "Jordan Gym Reviews", url: baseUrl(), inLanguage: "ar", publisher: { "@id": `${baseUrl()}/#org` },
             potentialAction: { "@type": "SearchAction", target: `${baseUrl()}/search?q={search_term_string}`, "query-input": "required name=search_term_string" } },
         ] }} />
