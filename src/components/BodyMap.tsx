@@ -59,18 +59,18 @@ export function BodyMap({ view, active, onPick }: { view: "front" | "back"; acti
   const shapes = view === "front" ? FRONT : BACK;
   const firstIdx = (g: Muscle) => shapes.findIndex((x) => x.g === g);
   return (
-    <svg viewBox={`0 0 ${v.w} ${v.h}`} className="mx-auto h-[420px] w-auto touch-manipulation select-none rounded-2xl bg-[#101011]" role="img" aria-label="خريطة الجسم">
-      <image href={v.src} width={v.w} height={v.h} />
+    <svg viewBox={`0 0 ${v.w} ${v.h}`} className="mx-auto h-[420px] w-auto touch-manipulation select-none rounded-2xl bg-[#101011]" role="group" aria-label="خريطة الجسم التفاعلية">
+      <image href={v.src} width={v.w} height={v.h} aria-hidden="true" />
       {shapes.map((s, i) => {
         const on = Array.isArray(active) ? (active as readonly Muscle[]).includes(s.g) : active === s.g;
         const hot = hov === s.g;
         return (
-          <path key={i} d={s.d} onClick={() => onPick(s.g)} tabIndex={i === firstIdx(s.g) ? 0 : -1} role="button" aria-label={MUSCLE_LABEL[s.g]}
+          <path key={i} d={s.d} onClick={() => onPick(s.g)} tabIndex={i === firstIdx(s.g) ? 0 : -1} role="button" aria-label={MUSCLE_LABEL[s.g]} aria-pressed={on}
             onPointerEnter={(e) => { if (e.pointerType === "mouse") setHov(s.g); }} onPointerLeave={() => setHov(null)}
             onFocus={() => setHov(s.g)} onBlur={() => setHov(null)}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onPick(s.g); }}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPick(s.g); } }}
             strokeWidth={on ? 3 : 2} strokeLinejoin="round"
-            className={`cursor-pointer outline-none transition-colors duration-150 ${on ? "fill-accent/55 stroke-accent" : hot ? "fill-accent/30 stroke-accent/80" : "fill-transparent stroke-transparent"}`} />
+            className={`cursor-pointer outline-none transition-colors duration-150 focus-visible:stroke-accent focus-visible:[stroke-width:4] ${on ? "fill-accent/55 stroke-accent" : hot ? "fill-accent/30 stroke-accent/80" : "fill-transparent stroke-transparent"}`} />
         );
       })}
     </svg>
