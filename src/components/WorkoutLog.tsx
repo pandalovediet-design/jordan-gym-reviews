@@ -45,7 +45,7 @@ export function WorkoutLog() {
 
   const done = !!log[today];
   const s = streak(log, today), best = bestStreak(log), week = daysThisWeek(log, today);
-  const chip = (on: boolean) => `rounded-full px-3 py-1.5 text-sm ring-1 ring-white/10 ${on ? "bg-accent font-bold text-accent-foreground" : "bg-background/50 hover:ring-accent"}`;
+  const chip = (on: boolean) => `rounded-full px-3 py-1.5 text-sm ring-1 ring-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${on ? "bg-accent font-bold text-accent-foreground" : "bg-background/50 hover:ring-accent"}`;
   const box = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
 
   const toggleDay = (d: string) => {
@@ -82,7 +82,7 @@ export function WorkoutLog() {
             <div className="flex flex-wrap gap-2">{KINDS.map((k) => <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} className={chip(kind === k)}>{k}</button>)}</div>
             <p className="text-xs text-muted">المدة</p>
             <div className="flex flex-wrap gap-2">{MINUTES.map((m) => <button key={m} type="button" aria-pressed={min === m} onClick={() => setMin(m)} className={chip(min === m)}>{ar(m)} دقيقة</button>)}</div>
-            <button type="button" onClick={() => toggleDay(today)} className="w-full rounded-xl bg-accent py-3 text-lg font-extrabold text-accent-foreground active:scale-[0.99]">تمرنت اليوم ✓</button>
+            <button type="button" onClick={() => toggleDay(today)} className="w-full rounded-xl bg-accent py-3 text-lg font-extrabold text-accent-foreground active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface">تمرنت اليوم ✓</button>
           </>
         )}
       </section>
@@ -119,8 +119,8 @@ export function WorkoutLog() {
           <button type="button" onClick={() => { setBackup(JSON.stringify(log)); setNote("انسخ النص تحت واحفظه عندك."); }} className="rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/20">نسخة احتياطية</button>
           <button type="button" onClick={() => { try { const l = sanitize(JSON.parse(backup)); if (!Object.keys(l).length) throw new Error(); save({ ...log, ...l }); setNote("تم الاسترجاع ✓"); } catch { setNote("النص مش صحيح."); } }} className="rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/20">استرجاع من النص</button>
         </div>
-        <textarea value={backup} onChange={(e) => setBackup(e.target.value)} dir="ltr" rows={3} placeholder="الصق النسخة الاحتياطية هون للاسترجاع" className="w-full rounded-xl bg-background p-2 text-[11px] ring-1 ring-white/10 outline-none focus:ring-accent" />
-        {note && <p className="text-accent">{note}</p>}
+        <textarea value={backup} onChange={(e) => setBackup(e.target.value)} aria-label="نص النسخة الاحتياطية أو البيانات المراد استرجاعها" dir="ltr" rows={3} placeholder="الصق النسخة الاحتياطية هون للاسترجاع" className="w-full rounded-xl bg-background p-2 text-[11px] ring-1 ring-white/10 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface" />
+        {note && <p role="status" aria-live="polite" className="text-accent">{note}</p>}
       </section>
     </div>
   );
