@@ -52,7 +52,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
       <div className="mb-7 rounded-3xl border border-white/10 bg-[radial-gradient(ellipse_at_10%_0%,rgba(54,120,246,.16),transparent_45%),linear-gradient(135deg,rgba(255,255,255,.035),transparent)] p-4 sm:p-7"><div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="mb-2 text-xs font-bold tracking-wider text-cyan-200">اكتشف خياراتك</p><h1 className="text-2xl font-black sm:text-3xl">{q ? `نتائج البحث عن «${q}»` : mode === "products" ? "السوق الرياضي" : "دليل الأنشطة الرياضية"}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">قارن الأماكن والخدمات حسب المدينة والسعر والمرافق، واختار الأنسب لهدفك.</p></div><Link href="/sections" className="rounded-full border border-white/10 bg-surface px-4 py-2 text-sm font-bold transition hover:border-cyan-300/40">تصفّح الأقسام ←</Link></div><form className="mb-0">
         <div className="flex gap-2">
-          <input name="q" defaultValue={q} placeholder="ابحث..." className={`${field} min-w-0 flex-1`} />
+          <input name="q" aria-label="كلمات البحث" defaultValue={q} placeholder="ابحث..." className={`${field} min-w-0 flex-1`} />
           <button className="min-h-11 shrink-0 rounded-xl bg-accent px-5 font-bold text-accent-foreground transition hover:brightness-110 sm:px-6">بحث</button>
         </div>
         <details open={activeFilters > 0} className="mt-3 rounded-2xl bg-surface/60 ring-1 ring-white/10">
@@ -61,24 +61,24 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
             {activeFilters > 0 && <Link href={q ? `/search?q=${encodeURIComponent(q)}` : "/search"} className="shrink-0 rounded-lg px-2 py-1 text-xs text-muted underline underline-offset-4 hover:text-foreground">مسح الفلاتر</Link>}
           </summary>
           <div className="grid gap-2 p-3 pt-0 sm:grid-cols-3 lg:grid-cols-4">
-            <select name="in" defaultValue={mode} className={field}>
+            <select name="in" aria-label="نوع النتائج" defaultValue={mode} className={field}>
               <option value="orgs">أنشطة</option><option value="products">منتجات</option>
             </select>
-            <select name="type" defaultValue={type} className={field}>
+            <select name="type" aria-label="نوع النشاط" defaultValue={type} className={field}>
               <option value="">كل الأنواع</option>
               {Object.entries(ORG_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
-            <select name="category" defaultValue={category} className={field}>
+            <select name="category" aria-label="تصنيف النشاط" defaultValue={category} className={field}>
               <option value="">كل التصنيفات</option>
               {categories.map((c) => <option key={c.id} value={c.slug}>{c.name_ar}</option>)}
             </select>
-            <select name="women" defaultValue={women} className={field}>
+            <select name="women" aria-label="خيارات الوصول النسائي" defaultValue={women} className={field}>
               <option value="">للجميع</option>
               <option value="only">💗 Pink Zone فقط</option>
               <option value="any">يشمل أوقات نسائية</option>
             </select>
             <CityAreaPicker defaultCity={city} defaultArea={area} allowAll labels={false} />
-            <input name="max" type="number" min="1" step="1" defaultValue={maxPrice || ""} placeholder="أقصى سعر شهري (د.أ)" className={field} />
+            <input name="max" aria-label="أقصى سعر شهري بالدينار الأردني" type="number" min="1" step="1" defaultValue={maxPrice || ""} placeholder="أقصى سعر شهري (د.أ)" className={field} />
             <label className={`${field} flex items-center gap-2` }><input type="checkbox" name="trial" value="1" defaultChecked={trial} /> 🎟 يوم تجريبي مجاني</label>
             <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="mosque" value="1" defaultChecked={mosque} /> 🕌 فيه مصلى</label>
             <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="quiet" value="1" defaultChecked={quiet} /> 🔇 بدون موسيقى</label>
