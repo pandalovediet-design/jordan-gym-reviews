@@ -45,7 +45,7 @@ export default async function Home() {
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 opacity-40 [background-image:linear-gradient(rgba(255,255,255,.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.035)_1px,transparent_1px)] [background-size:36px_36px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
         <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[1.1fr_.9fr] lg:gap-14">
           <div className="text-right">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-xs font-bold text-cyan-200 sm:text-sm"><span className="size-2 animate-pulse rounded-full bg-emerald-400" /> دليلك الرياضي من عمّان لكل الأردن</div>
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-xs font-bold text-cyan-200 sm:text-sm"><span className="size-2 animate-pulse rounded-full bg-emerald-400 motion-reduce:animate-none" /> دليلك الرياضي من عمّان لكل الأردن</div>
             <h1 className="max-w-3xl text-4xl font-black leading-[1.25] tracking-tight sm:text-5xl lg:text-6xl">
               {cfg.heroTitle}<br /><span className="bg-gradient-to-l from-cyan-200 via-blue-300 to-blue-500 bg-clip-text text-transparent">{cfg.heroAccent}</span>
             </h1>
