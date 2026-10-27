@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, type ReactNode } from "react";
 
-type Ev = "page_view" | "whatsapp_click" | "phone_click";
+type Ev = "page_view" | "whatsapp_click" | "phone_click" | "qr_visit";
 function send(organization_id: string, event_type: Ev) {
   try {
     const body = JSON.stringify({ organization_id, event_type });
@@ -11,8 +11,11 @@ function send(organization_id: string, event_type: Ev) {
   } catch {}
 }
 
-export function PageView({ orgId }: { orgId: string }) {
-  useEffect(() => send(orgId, "page_view"), [orgId]);
+export function PageView({ orgId, qrVisit = false }: { orgId: string; qrVisit?: boolean }) {
+  useEffect(() => {
+    send(orgId, "page_view");
+    if (qrVisit) send(orgId, "qr_visit");
+  }, [orgId, qrVisit]);
   return null;
 }
 
