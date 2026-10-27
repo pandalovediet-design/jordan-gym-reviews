@@ -262,7 +262,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
       <p className="text-sm text-muted">{category ?? ORG_TYPE_LABEL[org.type]}{isVerified(org) && <span className="text-accent"> · ✓ موثّق</span>}{multi && <span> · {views.length} فروع</span>}</p>
       {coachProfile && (coachProfile.education || coachProfile.experience_years != null) && (
-        <p className="mt-1 text-sm text-muted">{[coachProfile.experience_years != null ? `🏅 ${coachProfile.experience_years} سنة خبرة` : null, coachProfile.education ? `🎓 ${[coachProfile.education, coachProfile.education_place].filter(Boolean).join(" — ")}` : null, coachProfile.session_mode ? { onsite: "حضوري", online: "أونلاين", both: "حضوري وأونلاين" }[coachProfile.session_mode] ?? null : null : null].filter(Boolean).join("  ·  ")}</p>)}
+        <p className="mt-1 text-sm text-muted">{[coachProfile.experience_years != null ? `🏅 ${coachProfile.experience_years} سنة خبرة` : null, coachProfile.education ? `🎓 ${[coachProfile.education, coachProfile.education_place].filter(Boolean).join(" — ")}` : null, coachProfile.session_mode ? { onsite: "حضوري", online: "أونلاين", both: "حضوري وأونلاين" }[coachProfile.session_mode] ?? null : null].filter(Boolean).join("  ·  ")}</p>)}
       {coachProfile?.certificates && <p className="mt-1 text-sm text-muted">📜 {coachProfile.certificates}</p>}
       {coachGyms.length > 0 && (
         <p className="mt-1 text-sm">{org.type === "nutritionist" ? "يتعاون مع: " : "يتدرب في: "}{coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
