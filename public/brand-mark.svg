@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+<title id="title">Jordan Gym Reviews</title>
+<rect width="128" height="128" rx="30" fill="#101827"/>
+<path d="M25 75 47 28h22L47 75H25Z" fill="#3678F6"/>
+<path d="M48 100 70 53h22L70 100H48Z" fill="#62D6E8"/>
+<path d="M65 75h37l-9 20H56l9-20Z" fill="#FF6B4A"/>
+<circle cx="91" cy="32" r="10" fill="#FF6B4A"/>
+<path d="M18 104h31" stroke="#F4F7FC" stroke-width="5" stroke-linecap="round"/>
+</svg>
