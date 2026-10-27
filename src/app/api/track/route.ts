@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 const schema = z.object({
   organization_id: z.string().uuid(),
-  event_type: z.enum(["page_view", "whatsapp_click", "phone_click"]),
+  event_type: z.enum(["page_view", "whatsapp_click", "phone_click", "qr_visit"]),
 });
 
 // Best-effort, in-memory throttle per instance: 1 identical event / 30s per IP+org.
