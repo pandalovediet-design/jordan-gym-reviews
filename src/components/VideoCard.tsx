@@ -46,7 +46,7 @@ export function VideoCard({ v, showOrg = true }: { v: VideoItem; showOrg?: boole
           <button type="button" disabled={!parsed?.embed} onClick={() => { setPlay(true); countView(v.id).catch(() => {}); }} aria-label={`تشغيل الفيديو: ${v.title_ar ?? PLATFORM_LABEL[platform]}`} className="group absolute inset-0 flex items-center justify-center disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-accent">
             {thumb ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={thumb} alt="" loading="lazy" decoding="async" sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 320px" className="absolute inset-0 size-full object-cover" />
+              <img src={thumb} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" />
             ) : <span aria-hidden="true" className={`absolute inset-0 bg-gradient-to-b ${BRAND[platform]}`} />}
             <span aria-hidden="true" className="absolute inset-0 bg-black/25 transition-colors group-hover:bg-black/10 motion-reduce:transition-none" />
             <span aria-hidden="true" className="relative flex size-14 items-center justify-center rounded-full bg-white/90 text-2xl text-black">▶</span>
