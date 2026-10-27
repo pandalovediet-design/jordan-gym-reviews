@@ -252,7 +252,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {media[0] && (
         <figure className="mb-6 overflow-hidden rounded-3xl border border-white/10 bg-surface shadow-2xl shadow-black/20">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} className="aspect-[4/3] w-full object-cover sm:aspect-[21/9]" />
+          <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} fetchPriority="high" decoding="async" className="aspect-[4/3] w-full object-cover sm:aspect-[21/9]" />
         </figure>
       )}
       {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
