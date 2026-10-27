@@ -22,16 +22,23 @@ export async function login(_: AuthState, fd: FormData): Promise<AuthState> {
   redirect(/^\/(?!\/)[\w\-./?=&%]*$/.test(next) ? next : "/dashboard");
 }
 
+/** Only same-site paths are allowed as a post-login destination. */
+const safeNext = (v: FormDataEntryValue | null) => {
+  const n = String(v ?? "");
+  return /^\/(?!\/)[\w\-./?=&%]*$/.test(n) ? n : "/dashboard";
+};
+
 export async function signup(_: AuthState, fd: FormData): Promise<AuthState> {
   if (String(fd.get("website") ?? "") !== "") return { error: "تعذّر إنشاء الحساب." }; // honeypot
   const p = schema.safeParse(Object.fromEntries(fd));
   if (!p.success) return { error: p.error.issues[0].message };
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({ ...p.data, options: { emailRedirectTo: `${await siteUrl()}/auth/callback?next=/dashboard` } });
+  const next = safeNext(fd.get("next"));
+  const { data, error } = await supabase.auth.signUp({ ...p.data, options: { emailRedirectTo: `${await siteUrl()}/auth/callback?next=${encodeURIComponent(next)}` } });
   if (error) return { error: "تعذّر إنشاء الحساب. تأكد من البيانات أو جرّب بريد ثاني." };
   await notifyAdmin(`🆕 تسجيل جديد على Jordan Gym Reviews\n${p.data.email}`);
-  if (!data.session) return { notice: "أرسلنا لك رابط تأكيد على بريدك. افتحه وبعدين سجّل دخولك." };
-  redirect("/dashboard");
+  if (!data.session) return { notice: "أرسلنا لك رابط تأكيد على بريدك. افتحه وبيرجعك هون تلقائياً." };
+  redirect(next);
 }
 
 export async function signout() {

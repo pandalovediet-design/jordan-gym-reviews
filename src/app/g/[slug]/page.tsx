@@ -268,7 +268,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       <h1 className="mt-1 text-3xl font-extrabold">{org.name_ar}</h1>
       {org.is_claimed === false && (
         <p className="mt-2 rounded-xl bg-white/5 p-3 text-sm text-muted ring-1 ring-white/10">
-          بيانات أولية من مصادر عامة، وصاحب النادي لسا ما استلم صفحته. <Link href="/join" className="font-bold text-accent underline">هذا ناديي؟ استلم صفحتك</Link>
+          بيانات أولية من مصادر عامة، وصاحب النادي لسا ما استلم صفحته. <Link href={`/claim/${org.slug}`} className="font-bold text-accent underline">هذا ناديي؟ استلم صفحتك مجاناً</Link>
         </p>
       )}
       {(org.has_mosque || org.no_music || org.has_kids_area || org.kids_friendly || org.kids_transport) && (

@@ -24,6 +24,7 @@ export async function saveSiteSettings(_: FormState, fd: FormData): Promise<Form
     heroTitle: String(fd.get("heroTitle") ?? ""),
     heroAccent: String(fd.get("heroAccent") ?? ""),
     heroSubtitle: String(fd.get("heroSubtitle") ?? ""),
+    outreachTemplate: String(fd.get("outreachTemplate") ?? ""),
   });
 
   const { error } = await supabase.from("site_settings").upsert({ id: 1, data: settings, updated_at: new Date().toISOString() });

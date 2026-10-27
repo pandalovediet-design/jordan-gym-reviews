@@ -1103,6 +1103,7 @@ export type Database = {
           id: string
           instagram: string | null
           is_claimed: boolean
+          outreach_at: string | null
           theme: string | null
           license_authority: string | null
           license_number: string | null
@@ -1146,6 +1147,7 @@ export type Database = {
           id?: string
           instagram?: string | null
           is_claimed?: boolean
+          outreach_at?: string | null
           theme?: string | null
           license_authority?: string | null
           license_number?: string | null
@@ -1189,6 +1191,7 @@ export type Database = {
           id?: string
           instagram?: string | null
           is_claimed?: boolean
+          outreach_at?: string | null
           theme?: string | null
           license_authority?: string | null
           license_number?: string | null
@@ -1406,6 +1409,12 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      claim_requests: {
+        Row: { id: string; organization_id: string; user_id: string; contact_name: string; phone: string; role: string | null; note: string | null; status: string; created_at: string; decided_at: string | null }
+        Insert: { id?: string; organization_id: string; user_id: string; contact_name: string; phone: string; role?: string | null; note?: string | null; status?: string; created_at?: string; decided_at?: string | null }
+        Update: { id?: string; organization_id?: string; user_id?: string; contact_name?: string; phone?: string; role?: string | null; note?: string | null; status?: string; created_at?: string; decided_at?: string | null }
+        Relationships: [{ foreignKeyName: "claim_requests_organization_id_fkey"; columns: ["organization_id"]; isOneToOne: false; referencedRelation: "organizations"; referencedColumns: ["id"] }]
       }
       site_settings: {
         Row: { id: number; data: Json; updated_at: string }

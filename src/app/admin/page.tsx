@@ -15,11 +15,12 @@ const STATUS_LABEL: Record<string, string> = { draft: "مسودة", pending: "ب
 
 export default async function AdminHome() {
   const { supabase } = await requireUser();
-  const [statsRes, topRes, usersRes, pendingRes] = await Promise.all([
+  const [statsRes, topRes, usersRes, pendingRes, claimsRes] = await Promise.all([
     supabase.rpc("admin_stats"),
     supabase.rpc("admin_top_orgs", { p_days: 30 }),
     supabase.rpc("admin_list_users"),
     supabase.from("organizations").select("id,name_ar,type,city,created_at").eq("status", "pending").order("created_at").limit(20),
+    supabase.from("claim_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
   ]);
   const s = (statsRes.data ?? {}) as Stats;
   const top = topRes.data ?? [];
@@ -41,7 +42,7 @@ export default async function AdminHome() {
       <nav className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4" aria-label="اختصارات">
         <Link href="/admin/orgs" className="rounded-xl bg-accent px-4 py-3 text-center font-bold text-accent-foreground">📋 راجع الأنشطة</Link>
         <Link href="/dashboard/new" className="rounded-xl bg-surface px-4 py-3 text-center font-semibold ring-1 ring-white/10 hover:ring-accent">➕ أضف نشاط</Link>
-        <Link href="/admin/ads" className="rounded-xl bg-surface px-4 py-3 text-center font-semibold ring-1 ring-white/10 hover:ring-accent">📣 الإعلانات</Link>
+        <Link href="/admin/outreach" className="rounded-xl bg-surface px-4 py-3 text-center font-semibold ring-1 ring-white/10 hover:ring-accent">📞 التواصل والاستلام{(claimsRes.count ?? 0) > 0 && <span className="ms-1 rounded-full bg-accent px-2 text-xs font-bold text-accent-foreground">{claimsRes.count}</span>}</Link>
         <Link href="/admin/settings" className="rounded-xl bg-surface px-4 py-3 text-center font-semibold ring-1 ring-white/10 hover:ring-accent">⚙️ إعدادات الموقع</Link>
       </nav>
       {(statsRes.error || topRes.error) && <p className="rounded-xl bg-red-400/15 p-3 text-sm text-red-200">تعذّر تحميل بعض الإحصائيات.</p>}

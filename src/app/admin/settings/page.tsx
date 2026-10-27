@@ -73,6 +73,11 @@ export default async function SiteSettingsPage() {
             <textarea id="heroSubtitle" name="heroSubtitle" defaultValue={s.heroSubtitle} maxLength={300} rows={2} className={`${fld} mt-1`} />
           </label>
         </section>
+        <section className={box}>
+          <h2 className="text-lg font-bold">رسالة التواصل مع النوادي</h2>
+          <p className="text-sm text-muted">هاي الرسالة اللي بتنفتح بالواتساب من صفحة «📞 التواصل والاستلام». بنعبّي مكان <b dir="ltr">{"{name}"}</b> اسم النادي، و<b dir="ltr">{"{page}"}</b> رابط صفحته، و<b dir="ltr">{"{claim}"}</b> رابط الاستلام.</p>
+          <textarea id="outreachTemplate" name="outreachTemplate" defaultValue={s.outreachTemplate} maxLength={1000} rows={5} aria-label="نص رسالة التواصل" className={fld} />
+        </section>
       </ActionForm>
     </div>
   );

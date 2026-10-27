@@ -12,6 +12,7 @@ const GROUPS = [
     label: "🏋️ الأنشطة",
     tabs: [
       { href: "/admin/orgs", label: "الأنشطة" },
+      { href: "/admin/outreach", label: "📞 التواصل والاستلام" },
       { href: "/admin/categories", label: "التصنيفات" },
       { href: "/admin/products", label: "المنتجات" },
       { href: "/admin/reports", label: "البلاغات" },

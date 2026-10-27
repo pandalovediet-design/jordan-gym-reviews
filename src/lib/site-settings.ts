@@ -47,6 +47,8 @@ export type SiteSettings = {
   heroTitle: string;
   heroAccent: string;
   heroSubtitle: string;
+  /** WhatsApp message for reaching unclaimed places; {name}, {page} and {claim} are filled in. */
+  outreachTemplate: string;
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {
@@ -57,6 +59,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   heroTitle: "دليلك للرياضة في الأردن،",
   heroAccent: "أسعار حقيقية وتواصل مباشر",
   heroSubtitle: "نوادي، مدربين، منشآت ومتاجر رياضية: الأسعار، الدوام، الموقع والتواصل المباشر في مكان واحد.",
+  outreachTemplate:
+    "مرحبا 👋 معكم Jordan Gym Reviews، دليل الرياضة بالأردن.\n{name} موجود على المنصة: {page}\nتقدروا تستلموا الصفحة مجاناً وتضيفوا أسعاركم وصوركم وواتساب النادي من هون: {claim}\nأي سؤال احكولي.",
 };
 
 const NAV_HREFS = new Set<string>(NAV_CATALOG.map((n) => n.href));
@@ -81,6 +85,7 @@ export function normalizeSettings(raw: unknown): SiteSettings {
     heroTitle: text(r.heroTitle, 120, DEFAULT_SETTINGS.heroTitle),
     heroAccent: typeof r.heroAccent === "string" ? r.heroAccent.trim().slice(0, 80) : DEFAULT_SETTINGS.heroAccent,
     heroSubtitle: text(r.heroSubtitle, 300, DEFAULT_SETTINGS.heroSubtitle),
+    outreachTemplate: text(r.outreachTemplate, 1000, DEFAULT_SETTINGS.outreachTemplate),
   };
 }
 

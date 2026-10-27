@@ -15,6 +15,7 @@ export default async function Dashboard() {
     .select("organizations(id,name_ar,type,status,city,slug,is_claimed)")
     .eq("user_id", user.id);
   const { data: isAdmin } = await supabase.rpc("is_platform_admin");
+  const { data: myClaims } = await supabase.from("claim_requests").select("id,organizations(name_ar)").eq("user_id", user.id).eq("status", "pending");
   const { data: newInq } = await supabase.from("inquiries").select("organization_id").eq("status", "new").limit(1000);
   const newOf = (id: string) => (newInq ?? []).filter((q) => q.organization_id === id).length;
   const all = (memberships ?? []).flatMap((m) => (m.organizations ? [m.organizations] : []));
@@ -29,6 +30,9 @@ export default async function Dashboard() {
       </div>
       {isAdmin && unclaimed > 0 && (
         <p className="mb-4 rounded-xl bg-surface p-3 text-sm text-muted ring-1 ring-white/10">{unclaimed} نادي غير مُستلَم (بيانات أولية) بتلاقيهم وتدير ربطهم بأصحابهم من <Link href="/admin/orgs" className="font-bold text-accent underline">لوحة صاحب المنصة</Link>.</p>
+      )}
+      {(myClaims ?? []).length > 0 && (
+        <p className="mb-4 rounded-xl bg-accent/10 p-3 text-sm text-accent ring-1 ring-accent/30">طلب استلام «{(myClaims ?? []).map((c) => c.organizations?.name_ar).filter(Boolean).join("، ")}» قيد المراجعة. بعد الموافقة بيظهر النادي هون.</p>
       )}
       <Link href="/dashboard/new" className="mb-5 inline-block rounded-xl bg-accent px-6 py-2.5 font-bold text-accent-foreground">+ إضافة نشاط</Link>
       {orgs.length === 0 ? (
