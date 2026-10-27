@@ -54,7 +54,8 @@ export default async function Overview({ params }: PageProps<"/dashboard/[id]/ov
       {org.status === "published" && (
         <div className={`${box} space-y-2`}><p className="font-bold">رابط صفحتك</p>
           <p className="break-all text-sm text-accent" dir="ltr">{base}/g/{org.slug}</p>
-          <Link href={`/g/${org.slug}`} className="text-sm underline">فتح الصفحة العامة</Link></div>
+          <Link href={`/g/${org.slug}`} className="text-sm underline">فتح الصفحة العامة</Link>
+          <Link href={`/dashboard/${id}/qr`} className="mr-3 inline-block rounded-lg bg-accent px-3 py-2 text-sm font-bold text-accent-foreground">إنشاء ملصق QR للطباعة</Link></div>
       )}
 
       <section><h2 className="mb-3 text-lg font-bold">آخر 7 أيام</h2>
