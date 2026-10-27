@@ -47,8 +47,8 @@ export function CategoryPicker({ types, categories }: { types: Record<string, st
           </option>
           {options.map((c) => <option key={c.id} value={c.id}>{c.name_ar}</option>)}
         </select>
-        <p id="org-category-help" className="text-xs leading-5 text-muted">
-          تتغير التصنيفات تلقائيًا حسب نوع النشاط الذي تختاره.
+        <p id="org-category-help" role="status" aria-live="polite" className="text-xs leading-5 text-muted">
+          {options.length ? "تتغير التصنيفات تلقائيًا حسب نوع النشاط الذي تختاره." : "لا توجد تصنيفات متاحة لهذا النوع حاليًا. اختر نوعًا آخر للمتابعة."}
         </p>
       </div>
     </div>
