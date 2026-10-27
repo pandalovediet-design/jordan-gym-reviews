@@ -45,7 +45,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
     if (mode === "products") u.set("in", "products"); u.set("page", String(p));
     return `/search?${u}`;
   };
-  const activeFilters = [type, city, area, category, women, maxPrice, trial, mosque, quiet, kidsArea, kids, transport, access].filter(Boolean).length + (mode === "products" ? 1 : 0);
+  const activeFilters = [type, city, area, category, women, maxPrice, trial, mosque, quiet, kidsArea, kids, transport, access].filter(Boolean).length + (near ? 1 : 0) + (mode === "products" ? 1 : 0);
   const field = "min-h-11 w-full rounded-xl bg-surface px-3 py-2.5 ring-1 ring-white/10 outline-none transition focus-visible:ring-2 focus-visible:ring-cyan-300";
 
   return (
