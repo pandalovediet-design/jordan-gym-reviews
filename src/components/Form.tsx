@@ -28,11 +28,11 @@ export function ActionForm({ action, children, submit = "حفظ", className = "s
 }) {
   const { state, onSubmit, pending, ref } = useKeepForm(action);
   return (
-    <form ref={ref} onSubmit={onSubmit} className={className}>
+    <form ref={ref} onSubmit={onSubmit} className={className} aria-busy={pending}>
       {children}
       {state?.error && <p role="alert" className="text-sm text-red-300">{state.error}</p>}
-      {state?.ok && <p className="text-sm text-accent">{state.ok}</p>}
-      <button disabled={pending} className="rounded-xl bg-accent px-6 py-2.5 font-bold text-accent-foreground disabled:opacity-60">{pending ? "لحظة..." : submit}</button>
+      {state?.ok && <p role="status" aria-live="polite" className="text-sm text-accent">{state.ok}</p>}
+      <button type="submit" disabled={pending} className="min-h-11 rounded-xl bg-accent px-6 py-2.5 font-bold text-accent-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 motion-reduce:transition-none">{pending ? "جاري الحفظ..." : submit}</button>
     </form>
   );
 }
