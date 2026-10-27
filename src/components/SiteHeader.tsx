@@ -19,7 +19,7 @@ export async function SiteHeader() {
           className="group flex min-w-0 items-center gap-2.5 rounded-xl text-sm font-black tracking-tight transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:gap-3 sm:text-lg"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand-mark.svg" alt="" width={44} height={44} className="size-10 shrink-0 rounded-2xl object-cover shadow-lg shadow-blue-950/30 transition-transform duration-300 group-hover:-rotate-3 sm:size-11" />
+          <img src="/brand-mark.svg" alt="" width={44} height={44} className="size-10 shrink-0 rounded-2xl object-cover shadow-lg shadow-blue-950/30 transition-transform duration-300 group-hover:-rotate-3 motion-reduce:transition-none motion-reduce:transform-none sm:size-11" />
           <span className="truncate">Jordan <span className="text-accent">Gym</span> Reviews</span>
         </Link>
         <div className="flex shrink-0 items-center gap-1.5 text-sm sm:gap-2">
@@ -42,13 +42,13 @@ export function SiteFooter() {
           </Link>
           <p className="text-sm leading-6 text-muted">دليلك لاكتشاف الأندية والأنشطة الرياضية في الأردن</p>
           <nav aria-label="روابط تذييل الموقع" className="flex max-w-3xl flex-wrap justify-center gap-x-4 gap-y-3 text-sm">
-            <Link href="/directory" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">الدليل</Link>
-            <Link href="/guides" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">أدلة</Link>
-            <Link href="/pink" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Pink Zone</Link>
-            <Link href="/join" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">سجّل نشاطك</Link>
-            <Link href="/sponsors" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">للرعاة</Link>
-            <Link href="/terms" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">الشروط</Link>
-            <Link href="/privacy" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">الخصوصية</Link>
+            <Link href="/directory" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">الدليل</Link>
+            <Link href="/guides" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">أدلة</Link>
+            <Link href="/pink" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">Pink Zone</Link>
+            <Link href="/join" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">سجّل نشاطك</Link>
+            <Link href="/sponsors" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">للرعاة</Link>
+            <Link href="/terms" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">الشروط</Link>
+            <Link href="/privacy" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">الخصوصية</Link>
           </nav>
           <div className="h-px w-full max-w-3xl bg-white/10" />
           <p className="text-xs text-muted">© {new Date().getFullYear()} Jordan Gym Reviews. جميع الحقوق محفوظة.</p>
