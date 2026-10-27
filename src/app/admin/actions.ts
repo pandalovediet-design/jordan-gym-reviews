@@ -110,6 +110,18 @@ export async function setOrgType(id: string, fd: FormData): Promise<void> {
   revalidatePath("/", "layout");
 }
 
+/** Moves a place to any category (value "type:slug"), changing type and category together, e.g. gym -> pool -> park. */
+export async function setOrgCategory(id: string, fd: FormData): Promise<void> {
+  const { supabase } = await requireAdmin();
+  const [t, slug] = String(fd.get("cat") ?? "").split(":");
+  if (!t || !slug || !(TYPES as readonly string[]).includes(t)) return;
+  const { data: c } = await supabase.from("org_categories").select("id").eq("org_type", t as (typeof TYPES)[number]).eq("slug", slug).maybeSingle();
+  if (!c) return;
+  await supabase.from("organizations").update({ type: t as (typeof TYPES)[number], category_id: c.id }).eq("id", id);
+  revalidatePath("/admin", "layout");
+  revalidatePath("/", "layout");
+}
+
 export async function setReportHandled(id: string, handled: boolean): Promise<void> {
   const { supabase } = await requireAdmin();
   await supabase.from("listing_reports").update({ status: handled ? "handled" : "new" }).eq("id", id);
