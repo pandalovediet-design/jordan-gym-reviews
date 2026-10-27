@@ -23,6 +23,7 @@ export function ReportListing({ id }: { id: string }) {
           {pending ? "جارٍ الإرسال..." : "إرسال البلاغ"}
         </button>
       </form>
+      {pending && <p role="status" aria-live="polite" className="mt-2 leading-relaxed text-muted">جارٍ إرسال البلاغ، يرجى الانتظار…</p>}
       {state?.error && <p role="alert" className="mt-2 leading-relaxed text-red-300">{state.error}</p>}
     </details>
   );
