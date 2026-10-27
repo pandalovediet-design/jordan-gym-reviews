@@ -38,7 +38,7 @@ function Report({ r, sex, goal, f, activity, innerRef }: { r: CalcOk; sex: Sex; 
   );
 }
 
-const inp = "w-full rounded-xl bg-background px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-accent";
+const inp = "w-full rounded-xl bg-background px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 const n = (v: string) => (v.trim() === "" ? null : Number(v));
 const Stat = ({ k, v, sub }: { k: string; v: string; sub?: string }) => (
   <div className="rounded-xl bg-background/60 p-3 text-center ring-1 ring-white/10"><p className="text-[11px] text-muted">{k}</p><p className="text-lg font-black">{v}</p>{sub && <p className="text-[10px] text-muted">{sub}</p>}</div>
@@ -110,9 +110,9 @@ export function NutritionCalc() {
       <div className="mt-2 grid grid-cols-2 gap-1.5">
         {(Object.keys(GOALS) as Goal[]).map((g) => <button key={g} type="button" onClick={() => setGoal(g)} aria-pressed={goal === g} className={`rounded-xl px-2 py-1.5 text-xs ring-1 ring-white/10 ${goal === g ? "bg-white font-bold text-black" : "bg-background/50"}`}>{GOALS[g].label}</button>)}
       </div>
-      <button type="button" onClick={() => setAdv((x) => !x)} className="mt-3 text-xs text-accent underline">{adv ? "▲ إخفاء" : "▼ دقّة أعلى: نسبة الدهون أو القياسات"}</button>
+      <button type="button" onClick={() => setAdv((x) => !x)} aria-expanded={adv} aria-controls="nutrition-advanced-fields" className="mt-3 rounded-md text-xs text-accent underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface">{adv ? "▲ إخفاء" : "▼ دقّة أعلى: نسبة الدهون أو القياسات"}</button>
       {adv && (
-        <div className="mt-2 space-y-2 rounded-2xl bg-background/50 p-3 text-xs">
+        <div id="nutrition-advanced-fields" className="mt-2 space-y-2 rounded-2xl bg-background/50 p-3 text-xs">
           <label className="block">نسبة الدهون % (إذا بتعرفها)<input inputMode="decimal" value={f.bf} onChange={set("bf")} className={inp} placeholder="مثال: 18" /></label>
           <p className="text-muted">أو قياسات الجسم (سم) لتقدير نسبة الدهون بطريقة البحرية الأمريكية:</p>
           <div className="grid grid-cols-3 gap-2">
@@ -124,7 +124,7 @@ export function NutritionCalc() {
       )}
 
       <div className="mt-4" aria-live="polite">
-        {!r.ok ? <p className="rounded-xl bg-red-500/10 p-3 text-center text-xs text-red-200 ring-1 ring-red-400/30">{r.error}</p> : (
+        {!r.ok ? <p role="alert" className="rounded-xl bg-red-500/10 p-3 text-center text-xs text-red-200 ring-1 ring-red-400/30">{r.error}</p> : (
           <>
             <div className="rounded-2xl bg-accent p-4 text-center text-accent-foreground">
               <p className="text-xs font-bold opacity-80">سعراتك اليومية — {GOALS[goal].label}</p>
@@ -143,8 +143,8 @@ export function NutritionCalc() {
               {r.meals.map((m) => <li key={m.key} className="flex justify-between rounded-lg bg-background/50 px-3 py-1.5"><span>{m.label}</span><span className="text-muted">{m.kcal} سعرة · {m.protein}g بروتين</span></li>)}
             </ul>
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <button type="button" onClick={download} disabled={busy} className="rounded-xl bg-white px-3 py-2 text-xs font-bold text-black hover:brightness-95 disabled:opacity-60">{busy ? "لحظة..." : "📄 تنزيل PDF"}</button>
-              <button type="button" onClick={share} className="rounded-xl bg-[#25D366] px-3 py-2 text-xs font-bold text-black hover:brightness-95">واتساب 💬</button>
+              <button type="button" onClick={download} disabled={busy} aria-busy={busy} className="rounded-xl bg-white px-3 py-2 text-xs font-bold text-black hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60">{busy ? "جارٍ تجهيز الملف..." : "📄 تنزيل PDF"}</button>
+              <button type="button" onClick={share} className="rounded-xl bg-[#25D366] px-3 py-2 text-xs font-bold text-black hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">واتساب 💬</button>
             </div>
             <Report r={r} sex={sex} goal={goal} f={f} activity={activity} innerRef={repRef} />
             <p className="mt-3 text-[10px] leading-relaxed text-muted">تقدير تقريبي وليس نصيحة طبية. الحرق الأساسي بطريقة {r.bmrMethod === "katch" ? "Katch-McArdle (على FFM)" : "Mifflin-St Jeor"}. اعمل متابعة كل 2-3 أسابيع وعدّل حسب نتيجتك.</p>
