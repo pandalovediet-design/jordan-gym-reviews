@@ -38,6 +38,7 @@ export function InquiryForm({ action }: { action: A }) {
       </div>
       <input name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
       <Msg s={s} />
+      {pending && <p role="status" aria-live="polite" className="text-sm text-muted">جارٍ إرسال الاستفسار، يرجى الانتظار…</p>}
       <button type="submit" disabled={pending} className="min-h-11 w-full rounded-xl bg-accent px-6 py-2.5 font-bold text-accent-foreground transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-wait disabled:opacity-60 sm:w-auto motion-reduce:transition-none">
         {pending ? "جارٍ الإرسال..." : "إرسال الاستفسار"}
       </button>
@@ -68,10 +69,11 @@ export function ReportForm({ action }: { action: A }) {
         </div>
         <div>
           <label htmlFor="report-contact" className={label}>وسيلة تواصل <span className="font-normal text-muted">(اختياري)</span></label>
-          <input id="report-contact" name="contact" maxLength={100} autoComplete="email" placeholder="رقم هاتف أو بريد إلكتروني" dir="auto" className={field} />
+          <input id="report-contact" name="contact" maxLength={100} autoComplete="off" placeholder="رقم هاتف أو بريد إلكتروني" dir="auto" className={field} />
         </div>
         <input name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
         <Msg s={s} />
+        {pending && <p role="status" aria-live="polite" className="text-sm text-muted">جارٍ إرسال البلاغ، يرجى الانتظار…</p>}
         <button type="submit" disabled={pending} className="min-h-11 rounded-xl bg-white/10 px-5 py-2 font-bold text-foreground transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-wait disabled:opacity-60 motion-reduce:transition-none">
           {pending ? "جارٍ إرسال البلاغ..." : "إرسال البلاغ"}
         </button>
