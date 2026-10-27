@@ -10,22 +10,52 @@ export function DirectoryView({ type, city, items, total, cities }: {
 }) {
   const title = city ? `${ORG_TYPE_PLURAL[type]} في ${city}` : `${ORG_TYPE_PLURAL[type]} في الأردن`;
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      <nav className="mb-3 text-sm text-muted">
-        <Link href="/" className="hover:text-foreground">الرئيسية</Link> / <Link href={`/directory/${type}`} className="hover:text-foreground">{ORG_TYPE_PLURAL[type]}</Link>
-        {city && <> / {city}</>}
+    <main className="mx-auto max-w-5xl px-4 py-8 sm:py-10">
+      <nav aria-label="مسار التنقل" className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
+        <Link href="/" className="rounded-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">الرئيسية</Link>
+        <span aria-hidden="true">/</span>
+        <Link href={`/directory/${type}`} className="rounded-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">{ORG_TYPE_PLURAL[type]}</Link>
+        {city && <><span aria-hidden="true">/</span><span aria-current="page" className="text-foreground">{city}</span></>}
       </nav>
-      <h1 className="text-3xl font-extrabold">{title}</h1>
-      <p className="mt-2 text-muted">{total} نتيجة. الأسعار والدوام والموقع وطرق التواصل المباشر لكل نشاط.</p>
+
+      <header className="rounded-2xl border border-white/10 bg-surface/70 p-5 sm:p-6">
+        <h1 className="text-2xl font-extrabold sm:text-3xl">{title}</h1>
+        <p className="mt-2 text-sm leading-6 text-muted">تصفّح الأنشطة وقارن الأسعار والدوام والموقع وطرق التواصل المباشر.</p>
+        <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1.5 text-sm font-semibold text-accent" aria-live="polite">
+          <span aria-hidden="true" className="h-2 w-2 rounded-full bg-current" />
+          {total.toLocaleString("ar-JO")} {total === 1 ? "نتيجة" : "نتيجة متاحة"}
+        </p>
+      </header>
+
       {cities.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-2 text-sm">
-          {cities.map((c) => (
-            <Link key={c.city} href={`/directory/${type}/${encodeURIComponent(c.city)}`}
-              className={`rounded-full px-4 py-1.5 ring-1 ring-white/10 ${c.city === city ? "bg-accent text-accent-foreground" : "bg-surface hover:ring-accent"}`}>{c.city} ({c.n})</Link>
-          ))}
-        </div>
+        <nav aria-label="تصفية حسب المدينة" className="mt-5">
+          <p className="mb-2 text-sm font-semibold text-muted">{city ? "مدن أخرى" : "تصفّح حسب المدينة"}</p>
+          <div className="flex gap-2 overflow-x-auto pb-2 text-sm sm:flex-wrap sm:overflow-visible">
+            {cities.map((c) => {
+              const active = c.city === city;
+              return (
+                <Link key={c.city} href={`/directory/${type}/${encodeURIComponent(c.city)}`}
+                  aria-current={active ? "page" : undefined}
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${active ? "bg-accent text-accent-foreground ring-accent" : "bg-surface ring-white/10 hover:ring-accent"}`}>
+                  {c.city}<span className={active ? "opacity-80" : "text-muted"}>{c.n.toLocaleString("ar-JO")}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
       )}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{items.map((o) => <OrgCard key={o.id} org={o} />)}</div>
-    </div>
+
+      {items.length > 0 ? (
+        <section aria-label="نتائج الدليل" className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {items.map((o) => <OrgCard key={o.id} org={o} />)}
+        </section>
+      ) : (
+        <section className="mt-6 rounded-2xl border border-dashed border-white/15 px-5 py-10 text-center" aria-live="polite">
+          <p className="text-lg font-bold">ما لقينا نتائج في هذا القسم حاليًا</p>
+          <p className="mt-2 text-sm text-muted">جرّب مدينة ثانية أو ارجع للدليل الكامل لاستكشاف الخيارات المتاحة.</p>
+          <Link href={`/directory/${type}`} className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-accent px-5 py-2 text-sm font-bold text-accent-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">عرض الدليل الكامل</Link>
+        </section>
+      )}
+    </main>
   );
 }
