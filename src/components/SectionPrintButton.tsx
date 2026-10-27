@@ -31,7 +31,7 @@ export function SectionPrintButton({ target, label }: { target: string; label: s
     <button
       type="button"
       onClick={go}
-      className="no-print rounded-lg bg-white/10 px-3 py-1 text-xs transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent active:scale-[0.98]"
+      className="no-print inline-flex min-h-11 items-center justify-center rounded-lg bg-white/10 px-4 py-2 text-xs transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none"
     >
       {label}
     </button>
