@@ -16,14 +16,15 @@ const isPlatform = (value: string): value is Platform =>
 
 function Report({ id }: { id: string }) {
   const [state, run, pending] = useActionState(reportVideo.bind(null, id), undefined);
-  if (state?.ok) return <span className="text-xs text-accent" role="status">{state.ok}</span>;
+  if (state?.ok) return <span className="text-xs text-accent" role="status" aria-live="polite">{state.ok}</span>;
   return (
     <details className="text-xs text-muted">
-      <summary className="cursor-pointer hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">🚩 بلّغ</summary>
-      <form action={run} className="mt-2 flex gap-2">
-        <input name="reason" maxLength={200} placeholder="السبب" aria-label="سبب الإبلاغ" className="min-w-0 flex-1 rounded-lg bg-background px-2 py-1 ring-1 ring-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" />
-        <button type="submit" disabled={pending} className="rounded-lg bg-white/10 px-3 py-1 disabled:cursor-wait disabled:opacity-60">{pending ? "جارٍ الإرسال…" : "إرسال"}</button>
+      <summary className="inline-flex min-h-11 cursor-pointer items-center rounded-lg px-2 py-1 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">🚩 بلّغ عن الفيديو</summary>
+      <form action={run} aria-busy={pending} className="mt-2 flex flex-col gap-2 sm:flex-row">
+        <input name="reason" maxLength={200} autoComplete="off" placeholder="السبب (اختياري)" aria-label="سبب الإبلاغ" className="min-h-11 min-w-0 flex-1 rounded-lg bg-background px-3 py-2 ring-1 ring-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" />
+        <button type="submit" disabled={pending} className="min-h-11 rounded-lg bg-white/10 px-3 py-2 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">{pending ? "جارٍ الإرسال…" : "إرسال"}</button>
       </form>
+      {pending && <p role="status" aria-live="polite" className="mt-1">جارٍ إرسال البلاغ…</p>}
       {state?.error && <p role="alert" className="mt-1 text-red-300">{state.error}</p>}
     </details>
   );
@@ -42,23 +43,23 @@ export function VideoCard({ v, showOrg = true }: { v: VideoItem; showOrg?: boole
         {play && parsed?.embed ? (
           <iframe src={parsed.embed} title={v.title_ar ?? "فيديو"} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen loading="lazy" referrerPolicy="strict-origin-when-cross-origin" className="absolute inset-0 size-full border-0" />
         ) : (
-          <button type="button" disabled={!parsed?.embed} onClick={() => { setPlay(true); countView(v.id).catch(() => {}); }} aria-label={`تشغيل الفيديو: ${v.title_ar ?? PLATFORM_LABEL[platform]}`} className="group absolute inset-0 flex items-center justify-center disabled:cursor-not-allowed">
+          <button type="button" disabled={!parsed?.embed} onClick={() => { setPlay(true); countView(v.id).catch(() => {}); }} aria-label={`تشغيل الفيديو: ${v.title_ar ?? PLATFORM_LABEL[platform]}`} className="group absolute inset-0 flex items-center justify-center disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-accent">
             {thumb ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={thumb} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />
             ) : <span aria-hidden="true" className={`absolute inset-0 bg-gradient-to-b ${BRAND[platform]}`} />}
-            <span aria-hidden="true" className="absolute inset-0 bg-black/25 group-hover:bg-black/10" />
+            <span aria-hidden="true" className="absolute inset-0 bg-black/25 transition-colors group-hover:bg-black/10 motion-reduce:transition-none" />
             <span aria-hidden="true" className="relative flex size-14 items-center justify-center rounded-full bg-white/90 text-2xl text-black">▶</span>
-            <span className="absolute start-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs">{PLATFORM_LABEL[platform]}</span>
-            {v.kind === "review" && <span className="absolute end-2 top-2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">مراجعة عبد الكريم</span>}
+            <span aria-hidden="true" className="absolute start-2 top-2 rounded-full bg-black/60 px-2 py-1 text-xs">{PLATFORM_LABEL[platform]}</span>
+            {v.kind === "review" && <span className="absolute end-2 top-2 rounded-full bg-accent px-2 py-1 text-xs font-bold text-accent-foreground">مراجعة عبد الكريم</span>}
           </button>
         )}
       </div>
       {v.title_ar && <p className="text-sm font-semibold">{v.title_ar}</p>}
-      {showOrg && v.org && <p className="text-xs text-muted"><a href={`/g/${v.org.slug}`} className="text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">{v.org.name_ar}</a> · {v.org.city}</p>}
+      {showOrg && v.org && <p className="text-xs text-muted"><a href={`/g/${v.org.slug}`} className="rounded-sm text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">{v.org.name_ar}</a> · {v.org.city}</p>}
       <div className="flex flex-wrap items-center gap-2">
-        {wa && v.org && <TrackedLink orgId={v.org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${encodeURIComponent("مرحبا، شفت فيديو لكم على Jordan Gym Reviews")}`} className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-bold text-white">واتساب</TrackedLink>}
-        <a href={v.url} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-white/10 px-3 py-1.5 text-xs hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">افتح الفيديو ↗</a>
+        {wa && v.org && <TrackedLink orgId={v.org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${encodeURIComponent("مرحبا، شفت فيديو لكم على Jordan Gym Reviews")}`} className="inline-flex min-h-11 items-center rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">واتساب</TrackedLink>}
+        <a href={v.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-lg bg-white/10 px-3 py-2 text-xs hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">افتح الفيديو ↗</a>
         <Report id={v.id} />
       </div>
     </div>
