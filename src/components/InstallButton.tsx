@@ -21,15 +21,19 @@ export function InstallButton({ className = "" }: { className?: string }) {
       );
       setReady(!!getEvt());
     };
-    syncState();
-    const on = () => setReady(true);
-    window.addEventListener("pwa-ready", on);
-    window.addEventListener("appinstalled", () => {
+    const onReady = () => setReady(true);
+    const onInstalled = () => {
       setStandalone(true);
       setReady(false);
       setTip(false);
-    });
-    return () => window.removeEventListener("pwa-ready", on);
+    };
+    syncState();
+    window.addEventListener("pwa-ready", onReady);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("pwa-ready", onReady);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
   }, []);
 
   if (standalone) return null;
