@@ -16,12 +16,12 @@ const MORE = [
 
 export default function Sections() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-extrabold">كل الأقسام</h1>
-      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+      <div className="mb-8 rounded-3xl border border-white/10 bg-surface p-6 sm:p-9"><p className="mb-2 text-xs font-extrabold tracking-widest text-cyan-200">JORDAN GYM REVIEWS</p><h1 className="text-3xl font-black sm:text-4xl">كل اللي تحتاجه لرحلتك الرياضية</h1><p className="mt-3 max-w-2xl text-sm leading-7 text-muted sm:text-base">من اختيار النادي والمدرب، إلى اكتشاف المسارات والتمارين والعروض — رتّبنا لك الأدوات والأقسام بمكان واحد.</p><div className="mt-5"><Link href="/search" className="rounded-xl bg-blue-500 px-5 py-3 text-sm font-extrabold text-white">اكتشف الأنشطة ←</Link></div></div><h2 className="mb-4 text-xl font-extrabold">استكشف المنصة</h2>
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {[...NAV_CATALOG, ...MORE].map((l) => (
           <li key={l.href}>
-            <Link href={l.href} className="flex h-full items-center rounded-2xl bg-surface px-4 py-4 font-semibold ring-1 ring-white/10 hover:ring-accent">{l.label}</Link>
+            <Link href={l.href} className="flex min-h-24 h-full items-center rounded-2xl border border-white/10 bg-surface px-4 py-5 font-bold shadow-lg transition hover:-translate-y-1 hover:border-cyan-300/30">{l.label}</Link>
           </li>
         ))}
       </ul>
