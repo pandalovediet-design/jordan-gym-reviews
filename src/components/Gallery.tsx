@@ -6,6 +6,7 @@ export type GalleryItem = { src: string; alt: string; caption?: string | null };
 /** Photo grid with a full-screen viewer, swipe and keyboard navigation. */
 export function Gallery({ items, start = 0 }: { items: GalleryItem[]; start?: number }) {
   const [i, setI] = useState<number | null>(null);
+  const opener = useRef<HTMLButtonElement | null>(null);
   const ref = useRef<HTMLDialogElement>(null);
   const x0 = useRef<number | null>(null);
   const go = (d: number) => setI((v) => v == null || items.length < 2 ? v : (v + d + items.length) % items.length);
@@ -15,6 +16,7 @@ export function Gallery({ items, start = 0 }: { items: GalleryItem[]; start?: nu
     if (!dlg) return;
     if (i != null && !dlg.open) dlg.showModal();
     if (i == null && dlg.open) dlg.close();
+    if (i == null && !dlg.open) opener.current?.focus();
   }, [i]);
 
   const shown = items.slice(Math.max(0, start));
@@ -27,7 +29,7 @@ export function Gallery({ items, start = 0 }: { items: GalleryItem[]; start?: nu
           <figure key={m.src} className="min-w-0">
             <button
               type="button"
-              onClick={() => setI(Math.max(0, start) + k)}
+              onClick={(e) => { opener.current = e.currentTarget; setI(Math.max(0, start) + k); }}
               className="group block min-h-11 w-full overflow-hidden rounded-xl bg-surface ring-1 ring-white/10 outline-none transition hover:ring-accent focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none"
               aria-label={`عرض الصورة: ${m.alt}`}
               aria-haspopup="dialog"
