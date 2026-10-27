@@ -108,8 +108,11 @@ export async function listCategories() {
   return data ?? [];
 }
 
-/** Homepage: one section per category (latest/featured first), plus the Pink Zone row. */
-export async function listHomeSections() {
+/**
+ * Homepage: one section per category (latest/featured first), plus the Pink Zone row.
+ * perSection limits the cards each section carries (0 = all); totals always count everything.
+ */
+export async function listHomeSections(perSection = 0) {
   const db = createPublicClient();
   const [cats, listing] = await Promise.all([
     listCategories(),
@@ -128,12 +131,13 @@ export async function listHomeSections() {
   const uncategorized = rows.filter((o) => !o.category_id);
   if (uncategorized.length) sections.push({ key: "other", title: "أنشطة أخرى", href: "/search", items: uncategorized, total: uncategorized.length });
   const pink = rows.filter((o) => o.women_access === "women_only" || o.branch_women_only);
-  const shown = new Set([...sections.flatMap((s) => s.items), ...pink].map((o) => o.id));
+  const cut = <T,>(a: T[]) => (perSection > 0 ? a.slice(0, perSection) : a);
+  const shown = new Set([...sections.flatMap((s) => cut(s.items)), ...cut(pink)].map((o) => o.id));
   const withCover = await withCovers(db, rows.filter((o) => shown.has(o.id)));
   const byId = new Map(withCover.map((o) => [o.id, o]));
   return {
-    sections: sections.map((s) => ({ ...s, items: s.items.map((o) => byId.get(o.id)!) })),
-    pink: { total: pink.length, items: pink.map((o) => byId.get(o.id)!) },
+    sections: sections.map((s) => ({ ...s, items: cut(s.items).map((o) => byId.get(o.id)!) })),
+    pink: { total: pink.length, items: cut(pink).map((o) => byId.get(o.id)!) },
   };
 }
 

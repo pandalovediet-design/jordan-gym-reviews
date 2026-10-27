@@ -2,32 +2,13 @@ import Link from "next/link";
 import { HeaderAuth } from "@/components/HeaderAuth";
 import { InstallButton } from "@/components/InstallButton";
 import { SiteTabs, type NavLink } from "@/components/SiteTabs";
+import { NAV_CATALOG, getSiteSettings } from "@/lib/site-settings";
 
-const LINKS: NavLink[] = [
-  { href: "/search", label: "البحث" },
-  { href: "/pink", label: "💗 Pink Zone", cls: "text-pink-300" },
-  { href: "/now", label: "⏱️ هسا" },
-  { href: "/awards", label: "🏆 نادي الشهر" },
-  { href: "/exercises", label: "🏋️ التمارين" },
-  { href: "/log", label: "🔥 سجل تمريني" },
-  { href: "/deals", label: "🎟️ أكواد خصم" },
-  { href: "/no-gym", label: "🏠 من غير جيم" },
-  { href: "/no-deprivation", label: "🥗 من غير حرمان" },
-  { href: "/rooh-w-jasad", label: "🕌 روح وجسد" },
-  { href: "/reels", label: "🎬 ريلز" },
-  { href: "/market", label: "🔄 سوق المعدات" },
-  { href: "/trails", label: "المسارات" },
-  { href: "/tools", label: "الحاسبة" },
-  { href: "/favorites", label: "❤️ المفضلة" },
-  { href: "/join", label: "سجّل نشاطك" },
-  { href: "/login", label: "دخول الأنشطة" },
-];
-
-const REGISTER = "/join";
-const LOGIN = "/login";
-
-export function SiteHeader() {
-  const tabs = LINKS.filter((l) => l.href !== REGISTER && l.href !== LOGIN);
+export async function SiteHeader() {
+  // The platform owner picks the tabs and their order in /admin/settings; everything else is on /sections.
+  const { nav } = await getSiteSettings();
+  const byHref = new Map<string, NavLink>(NAV_CATALOG.map((n) => [n.href, { ...n }]));
+  const tabs: NavLink[] = [...nav.flatMap((h) => byHref.get(h) ?? []), { href: "/sections", label: "☰ كل الأقسام" }];
   return (
     <header className="border-b border-white/10 print:hidden">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-3">

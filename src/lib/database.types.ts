@@ -1407,6 +1407,12 @@ export type Database = {
           },
         ]
       }
+      site_settings: {
+        Row: { id: number; data: Json; updated_at: string }
+        Insert: { id?: number; data?: Json; updated_at?: string }
+        Update: { id?: number; data?: Json; updated_at?: string }
+        Relationships: []
+      }
       review_responses: {
         Row: {
           body: string

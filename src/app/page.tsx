@@ -4,6 +4,7 @@ import { OrgCard } from "@/components/OrgCard";
 import { TrailCard } from "@/components/TrailCard";
 import { adImageUrl, listLiveAds } from "@/lib/ads";
 import { listActiveOffers, listCities, listHomeSections, listLiveFlash, listPartners, listTrails } from "@/lib/queries";
+import { getSiteSettings } from "@/lib/site-settings";
 
 const TYPE_TILES = [
   { href: "/search?type=gym", icon: "🏋️", label: "نوادي" },
@@ -15,14 +16,14 @@ const TYPE_TILES = [
   { href: "/search?type=store", icon: "🛍️", label: "متاجر" },
   { href: "/search?type=sports_health", icon: "🩺", label: "علاج رياضي" },
 ];
-/** Cards visible before the "show all" fold inside each section; nothing is hidden for good. */
-const VISIBLE = 6;
-
 export const revalidate = 300;
 
 export default async function Home() {
+  // What shows here (blocks, cards per section, hero text) is set by the platform owner in /admin/settings.
+  const cfg = await getSiteSettings();
+  const show = cfg.home;
   const [home, offersRaw, ads, flash, partners, trails, cities] = await Promise.all([
-    listHomeSections().catch(() => ({ sections: [], pink: { total: 0, items: [] } })),
+    listHomeSections(cfg.perSection).catch(() => ({ sections: [], pink: { total: 0, items: [] } })),
     listActiveOffers(6).catch(() => []),
     listLiveAds().catch(() => []),
     listLiveFlash(6).catch(() => []),
@@ -32,7 +33,8 @@ export default async function Home() {
   ]);
   // One card per offer title per place (seeded data repeats titles).
   const offers = offersRaw.filter((o, i, a) => a.findIndex((x) => x.title_ar === o.title_ar && x.organizations?.slug === o.organizations?.slug) === i);
-  const full = [...home.sections].sort((a, b) => b.total - a.total);
+  const sorted = [...home.sections].sort((a, b) => b.total - a.total);
+  const full = cfg.maxSections > 0 ? sorted.slice(0, cfg.maxSections) : sorted;
   const fullKeys = new Set(full.map((s) => s.key));
   const tiles = home.sections.filter((s) => !fullKeys.has(s.key));
   const banner = ads.find((a) => a.placement === "banner");
@@ -41,11 +43,9 @@ export default async function Home() {
     <div className="mx-auto max-w-5xl px-4">
       <section className="py-10 text-center sm:py-14">
         <h1 className="text-3xl font-extrabold leading-tight sm:text-5xl">
-          دليلك للرياضة في الأردن، <span className="text-accent">أسعار حقيقية</span> وتواصل مباشر
+          {cfg.heroTitle}{cfg.heroAccent && <> <span className="text-accent">{cfg.heroAccent}</span></>}
         </h1>
-        <p className="mx-auto mt-3 max-w-xl text-sm text-muted sm:text-base">
-          نوادي، مدربين، منشآت ومتاجر رياضية: الأسعار، الدوام، الموقع والتواصل المباشر في مكان واحد.
-        </p>
+        <p className="mx-auto mt-3 max-w-xl text-sm text-muted sm:text-base">{cfg.heroSubtitle}</p>
         <form action="/search" className="mx-auto mt-6 grid max-w-2xl gap-2 rounded-2xl bg-surface p-2 ring-1 ring-white/10 sm:grid-cols-[1fr_auto_auto]">
           <input name="q" aria-label="بحث" placeholder="ابحث عن نادي أو مدرب أو رياضة..." className="rounded-xl bg-background px-4 py-3 outline-none ring-1 ring-white/10 focus:ring-accent" />
           <select name="city" aria-label="المدينة" defaultValue="" className="rounded-xl bg-background px-3 py-3 ring-1 ring-white/10">
@@ -54,15 +54,15 @@ export default async function Home() {
           </select>
           <button className="rounded-xl bg-accent px-6 py-3 font-bold text-accent-foreground">بحث</button>
         </form>
-        <div className="mx-auto mt-6 grid max-w-3xl grid-cols-4 gap-2 text-xs sm:grid-cols-4 sm:text-sm">
+        {show.tiles && <div className="mx-auto mt-6 grid max-w-3xl grid-cols-4 gap-2 text-xs sm:grid-cols-4 sm:text-sm">
           {TYPE_TILES.map((t) => (
             <Link key={t.href} href={t.href} className="flex flex-col items-center gap-1 rounded-2xl bg-surface px-2 py-3 ring-1 ring-white/10 transition hover:-translate-y-0.5 hover:ring-accent">
               <span className="text-2xl" aria-hidden>{t.icon}</span><span className="font-semibold">{t.label}</span>
             </Link>
           ))}
-        </div>
+        </div>}
       </section>
-      {banner && (
+      {show.banner && banner && (
         <a href={`/a/${banner.id}`} rel="sponsored noopener" className="relative mb-10 block overflow-hidden rounded-2xl bg-surface ring-1 ring-white/10">
           {banner.image_path && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -72,7 +72,7 @@ export default async function Home() {
           <div className="p-4"><p className="font-bold">{banner.title}</p>{banner.subtitle && <p className="text-sm text-muted">{banner.subtitle}</p>}</div>
         </a>
       )}
-      {sponsored.length > 0 && (
+      {show.sponsored && sponsored.length > 0 && (
         <section className="mb-12">
           <h2 className="mb-4 text-xl font-bold">ممول</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -89,8 +89,8 @@ export default async function Home() {
           </div>
         </section>
       )}
-      <FlashStrip items={flash} />
-      {offers.length > 0 && (
+      {show.flash && <FlashStrip items={flash} />}
+      {show.offers && offers.length > 0 && (
         <section className="mb-12">
           <h2 className="mb-4 text-xl font-bold">عروض ودورات حالية</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -104,20 +104,16 @@ export default async function Home() {
           </div>
         </section>
       )}
-      {home.pink.items.length > 0 && (
+      {show.pink && home.pink.items.length > 0 && (
         <section className="mb-12 rounded-3xl bg-pink-500/10 p-5 ring-1 ring-pink-400/30">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold text-pink-200">💗 Pink Zone — خاص بالنساء</h2>
             <Link href="/search?women=only" className="text-sm text-pink-200 underline">عرض الكل ({home.pink.total})</Link>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{home.pink.items.slice(0, VISIBLE).map((o) => <OrgCard key={o.id} org={o} />)}</div>
-          {home.pink.items.length > VISIBLE && (
-            <details className="mt-4"><summary className="cursor-pointer text-sm text-pink-200 underline">عرض كل الأماكن ({home.pink.items.length})</summary>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{home.pink.items.slice(VISIBLE).map((o) => <OrgCard key={o.id} org={o} />)}</div></details>
-          )}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{home.pink.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>
         </section>
       )}
-      {home.sections.length === 0 ? (
+      {!show.sections ? null : home.sections.length === 0 ? (
         <p className="rounded-2xl bg-surface p-8 text-center text-muted">لا توجد أنشطة منشورة بعد. كن أول من يضيف نشاطه!</p>
       ) : (
         <>
@@ -127,10 +123,9 @@ export default async function Home() {
                 <h2 className="text-xl font-bold">{s.title}</h2>
                 <Link href={s.href} className="text-sm text-accent underline">عرض الكل ({s.total})</Link>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{s.items.slice(0, VISIBLE).map((o) => <OrgCard key={o.id} org={o} />)}</div>
-              {s.items.length > VISIBLE && (
-                <details className="mt-4"><summary className="cursor-pointer text-sm text-accent underline">عرض كل الأماكن ({s.items.length})</summary>
-                  <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{s.items.slice(VISIBLE).map((o) => <OrgCard key={o.id} org={o} />)}</div></details>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{s.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>
+              {s.total > s.items.length && (
+                <Link href={s.href} className="mt-4 inline-block rounded-xl bg-surface px-4 py-2 text-sm font-bold text-accent ring-1 ring-white/10 hover:ring-accent">عرض كل {s.title} ({s.total})</Link>
               )}
             </section>
           ))}
@@ -148,13 +143,13 @@ export default async function Home() {
           )}
         </>
       )}
-      {trails.length > 0 && (
+      {show.trails && trails.length > 0 && (
         <section className="mb-12">
           <div className="mb-4 flex items-baseline justify-between"><h2 className="text-xl font-bold">🥾 مسارات المشي والهايكنق</h2><Link href="/trails" className="text-sm text-accent underline">كل المسارات</Link></div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{trails.slice(0, 6).map((t) => <TrailCard key={t.id} t={t} />)}</div>
         </section>
       )}
-      {partners.length > 0 && (
+      {show.partners && partners.length > 0 && (
         <section className="mb-12">
           <h2 className="mb-4 text-center text-sm font-bold text-muted">شركاء المنصة</h2>
           <div className="flex flex-wrap items-center justify-center gap-6">

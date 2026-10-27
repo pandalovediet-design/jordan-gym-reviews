@@ -21,6 +21,8 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
   const status = one(sp.status);
   const type = one(sp.type);
   const review = one(sp.review) === "done" ? "done" : one(sp.review) === "all" ? "all" : "pending";
+  const PAGE = 40;
+  const page = Math.max(1, Math.floor(Number(one(sp.p)) || 1));
   const { supabase } = await requireUser();
   // Start of "today" in Jordan time (UTC+3), for the daily goal counter.
   const todayStart = jordanTodayStartIso();
@@ -31,10 +33,10 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
   ]);
   const nPending = pendingCount.count ?? 0, nDone = doneCount.count ?? 0, nToday = todayCount.count ?? 0;
   const DAILY_GOAL = 20;
-  let query = supabase.from("organizations").select("id,review_done_at,name_ar,type,category_id,city,status,verified_at,verified_until,slug,women_access,has_mosque,no_music,has_kids_area,kids_friendly,kids_transport,accessibility").order("created_at", { ascending: false }).limit(200);
+  let query = supabase.from("organizations").select("id,review_done_at,name_ar,type,category_id,city,area,is_claimed,status,verified_at,verified_until,slug,women_access,has_mosque,no_music,has_kids_area,kids_friendly,kids_transport,accessibility", { count: "exact" }).order("created_at", { ascending: false }).range((page - 1) * PAGE, page * PAGE - 1);
   if (review === "pending") query = query.is("review_done_at", null);
   if (review === "done") query = query.not("review_done_at", "is", null).order("review_done_at", { ascending: false });
-  if (q) query = query.or(`name_ar.ilike.%${q}%,name_en.ilike.%${q}%,city.ilike.%${q}%`);
+  if (q) query = query.or(`name_ar.ilike.%${q}%,name_en.ilike.%${q}%,city.ilike.%${q}%,area.ilike.%${q}%`);
   if ((STATUSES as readonly string[]).includes(status)) query = query.eq("status", status as (typeof STATUSES)[number]);
   if (isOrgType(type)) query = query.eq("type", type);
   const [orgs, promos, owners, users, cats] = await Promise.all([
@@ -50,12 +52,22 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
   };
   const promoOf = (id: string) => (promos.data ?? []).find((p) => p.organization_id === id);
   const isLive = (id: string) => { const p = promoOf(id); return !!p?.featured_until && new Date(p.featured_until) > new Date(); };
+  const total = orgs.count ?? (orgs.data ?? []).length;
+  const pages = Math.max(1, Math.ceil(total / PAGE));
+  const pageHref = (n: number) => ({ pathname: "/admin/orgs", query: { review, p: String(n), ...(q ? { q } : {}), ...(status ? { status } : {}), ...(type ? { type } : {}) } });
+  const pager = pages > 1 && (
+    <nav className="flex flex-wrap items-center justify-center gap-2 text-sm" aria-label="الصفحات">
+      {page > 1 && <Link href={pageHref(page - 1)} className="rounded-full bg-surface px-4 py-1.5 ring-1 ring-white/10 hover:ring-accent">→ السابق</Link>}
+      <span className="text-muted">صفحة {page} من {pages} · {total} نشاط</span>
+      {page < pages && <Link href={pageHref(page + 1)} className="rounded-full bg-surface px-4 py-1.5 ring-1 ring-white/10 hover:ring-accent">التالي ←</Link>}
+    </nav>
+  );
   const box = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
   const btn = "rounded-lg bg-white/10 px-3 py-1 text-xs hover:bg-white/20";
   const fld = "rounded-xl bg-surface px-3 py-2 text-sm ring-1 ring-white/10 outline-none focus:ring-accent";
   return (
     <div className="mx-auto max-w-4xl space-y-5 px-4 py-8">
-      <h1 className="text-2xl font-extrabold">الأنشطة ({(orgs.data ?? []).length})</h1>
+      <h1 className="text-2xl font-extrabold">الأنشطة ({total})</h1>
       <div className={`${box} space-y-3`}>
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
           <span className="font-bold">هدف اليوم: {nToday} / {DAILY_GOAL}{nToday >= DAILY_GOAL ? " 🎉" : ""}</span>
@@ -73,26 +85,34 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
       </div>
       <form className="flex flex-wrap gap-2">
         <input type="hidden" name="review" value={review} />
-        <input name="q" defaultValue={q} placeholder="ابحث بالاسم أو المدينة" className={fld} />
+        <input name="q" defaultValue={q} placeholder="ابحث بالاسم أو المدينة أو المنطقة" className={fld} />
         <select name="status" defaultValue={status} className={fld}><option value="">كل الحالات</option>{STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}</select>
         <select name="type" defaultValue={type} className={fld}><option value="">كل الأنواع</option>{Object.entries(ORG_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
         <button className="rounded-xl bg-accent px-5 text-sm font-bold text-accent-foreground">فلترة</button>
       </form>
+      {pager}
       <ul className="space-y-2">{(orgs.data ?? []).map((o) => (
           <li key={o.id} className={`${box} space-y-3`}>
             <div className="flex flex-wrap items-center justify-between gap-3">
             <div><p className="font-semibold">{o.name_ar} {isVerified(o) && <span className="text-accent">✓</span>} {isLive(o.id) && <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">مميّز</span>}</p>
-              <p className="text-xs text-muted">{ORG_TYPE_LABEL[o.type]} · {o.city} · {STATUS_LABEL[o.status]} · {o.review_done_at ? "✔ منجز" : "غير منجز"}</p>
-              {emailOf(o.id) && <p className="text-xs text-muted">المالك: <span dir="ltr">{emailOf(o.id)}</span></p>}</div>
+              <p className="text-xs text-muted">{ORG_TYPE_LABEL[o.type]} · {[o.city, o.area].filter(Boolean).join("، ")} · {STATUS_LABEL[o.status]} · {o.review_done_at ? "✔ منجز" : "غير منجز"}</p>
+              {o.is_claimed === false
+                ? <p className="text-xs text-yellow-200">غير مُستلَم (بيانات أولية)</p>
+                : emailOf(o.id) && <p className="text-xs text-muted">المالك: <span dir="ltr">{emailOf(o.id)}</span></p>}</div>
             <div className="flex flex-wrap gap-2">
-              <Link href={`/dashboard/${o.id}/overview`} className={`${btn} !bg-accent text-accent-foreground`}>إدارة الحساب</Link>
+              <Link href={`/dashboard/${o.id}/overview`} className={`${btn} !bg-accent text-accent-foreground`}>تعديل البيانات</Link>
               {o.status === "published" ? <Link href={`/g/${o.slug}`} className={btn}>الصفحة العامة</Link> : <span className="px-2 py-1 text-xs text-muted">الصفحة العامة بعد النشر</span>}
-              <Link href={`/admin/qr/${o.id}/sticker`} className={btn}>ستكر QR</Link>
               {o.review_done_at
                 ? <form action={setReviewDone.bind(null, o.id, false)}><button className={btn}>↩ رجّعه لغير منجز</button></form>
                 : <form action={setReviewDone.bind(null, o.id, true)}><button className={`${btn} !bg-green-600 text-white`}>✔ تم</button></form>}
               {o.status !== "published" && <form action={setOrgStatus.bind(null, o.id, "published")}><button className={`${btn} !bg-accent text-accent-foreground`}>نشر</button></form>}
               {o.status === "published" && <form action={setOrgStatus.bind(null, o.id, "suspended")}><button className={btn}>إيقاف</button></form>}
+            </div></div>
+            <details className="rounded-xl bg-background/40 p-3 text-xs">
+              <summary className="cursor-pointer font-semibold text-muted">⚙️ أدوات أكثر (صاحب النادي، التوثيق، التصنيف، التمييز، QR)</summary>
+              <div className="mt-3 space-y-3">
+            <div className="flex flex-wrap gap-2">
+              <Link href={`/admin/qr/${o.id}/sticker`} className={btn}>ستكر QR</Link>
               {o.women_access !== "none" && <form action={clearWomenAccess.bind(null, o.id)}><button className={btn}>💗 إزالة {o.women_access === "women_only" ? "Pink Zone" : "الأوقات النسائية"}</button></form>}
               {o.has_mosque && <form action={clearOrgBadge.bind(null, o.id, "has_mosque")}><button className={btn}>🕌 إزالة شارة المصلى</button></form>}
               {o.no_music && <form action={clearOrgBadge.bind(null, o.id, "no_music")}><button className={btn}>🔇 إزالة شارة بدون موسيقى</button></form>}
@@ -100,7 +120,7 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
               {o.kids_friendly && <form action={clearOrgBadge.bind(null, o.id, "kids_friendly")}><button className={btn}>👶 إزالة شارة الأطفال</button></form>}
               {o.kids_transport && <form action={clearOrgBadge.bind(null, o.id, "kids_transport")}><button className={btn}>🚌 إزالة المواصلات</button></form>}
               {(o.accessibility ?? []).length > 0 && <form action={clearOrgBadge.bind(null, o.id, "accessibility")}><button className={btn}>♿ إزالة التهيئة</button></form>}
-            </div></div>
+            </div>
             <details className="text-xs">
               <summary className="cursor-pointer text-muted">🔗 ربط النشاط بحساب صاحبه</summary>
               <ActionForm action={assignOrgOwner.bind(null, o.id)} submit="ربط" className="mt-2 flex flex-wrap items-center gap-2">
@@ -166,8 +186,11 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
               <input name="days" type="number" min="0" max="1100" placeholder="عدد الأيام (0 = إلغاء)" defaultValue={0} className="w-40 rounded-lg bg-background px-2 py-1 ring-1 ring-white/10" />
               <button className={btn}>حفظ</button>
               {promoOf(o.id)?.glow_until && new Date(promoOf(o.id)!.glow_until!) > new Date() && <span className="text-muted">{GLOW_NAME[promoOf(o.id)!.glow_color as keyof typeof GLOW_NAME] ?? ""} حتى {promoOf(o.id)!.glow_until!.slice(0, 10)}</span>}
-            </form></li>))}
+            </form>
+              </div>
+            </details></li>))}
           {(orgs.data ?? []).length === 0 && <li className="text-muted">لا توجد أنشطة مطابقة.</li>}</ul>
+      {pager}
     </div>
   );
 }
