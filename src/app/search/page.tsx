@@ -89,7 +89,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
             <button className="rounded-xl bg-accent px-6 py-2.5 font-bold text-accent-foreground">تطبيق</button>
           </div>
         </details>
-      </form>
+      </form></div>
 
       {mode === "orgs" && <div className="mb-4 flex flex-wrap items-center gap-3"><NearMeButton active={!!near} />{near && <span className="text-sm text-muted">مرتبة من الأقرب للأبعد (الأنشطة اللي حدّدت موقعها فقط)</span>}</div>}
 
