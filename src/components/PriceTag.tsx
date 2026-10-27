@@ -6,16 +6,20 @@ export function PriceTag({ price, oldPrice, className = "" }: { price: number; o
   const off = hasDiscount ? Math.round((1 - price / oldPrice) * 100) : 0;
 
   return (
-    <span className={`inline-flex flex-wrap items-center gap-x-2 gap-y-1 ${className}`}>
-      <span className="font-extrabold tabular-nums text-accent" aria-label={`السعر ${jod(price)}`}>
+    <span
+      className={`inline-flex flex-wrap items-center gap-x-2 gap-y-1 ${className}`}
+      role="group"
+      aria-label={hasDiscount ? `السعر الحالي ${jod(price)}، السعر السابق ${jod(oldPrice)}، خصم ${off} بالمئة` : `السعر ${jod(price)}`}
+    >
+      <span className="font-extrabold tabular-nums text-accent">
         {jod(price)}
       </span>
       {hasDiscount && (
         <>
-          <s className="text-sm tabular-nums text-muted" aria-label={`السعر السابق ${jod(oldPrice)}`}>
+          <del className="text-sm tabular-nums text-muted">
             {jod(oldPrice)}
-          </s>
-          <span className="inline-flex items-center rounded-full bg-red-500/15 px-2.5 py-1 text-xs font-bold text-red-500 ring-1 ring-inset ring-red-500/25" aria-label={`خصم ${off} بالمئة`}>
+          </del>
+          <span className="inline-flex items-center rounded-full bg-red-500/15 px-2.5 py-1 text-xs font-bold text-red-500 ring-1 ring-inset ring-red-500/25">
             خصم {off}%
           </span>
         </>
