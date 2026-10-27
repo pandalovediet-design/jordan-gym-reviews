@@ -1,12 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #07211c;
-  --surface: #0d2f28;
-  --foreground: #eef6f2;
-  --muted: #9bb5ab;
-  --accent: #b6f23a;
-  --accent-foreground: #07211c;
+  --background: #101827;
+  --surface: #192438;
+  --foreground: #F4F7FC;
+  --muted: #A7B3C7;
+  --accent: #FF6B4A;
+  --accent-foreground: #171B28;
+  --brand-blue: #3678F6;
+  --brand-cyan: #62D6E8;
+  --brand-border: #34435A;
 }
 
 @theme inline {
@@ -19,44 +22,33 @@
   --font-sans: "Cairo Variable", system-ui, sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: "Cairo Variable", system-ui, sans-serif;
+body { background: var(--background); color: var(--foreground); font-family: "Cairo Variable", system-ui, sans-serif; }
+::selection { background: rgb(255 107 74 / 30%); color: var(--foreground); }
+:where(a, button, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid var(--brand-cyan); outline-offset: 3px; }
+:where(button, a, input, select, textarea) { -webkit-tap-highlight-color: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
 
-/* Per-activity themes: override the color variables inside a wrapper (public page + dashboard). */
+/* Per-activity themes remain available to organizations. */
 .theme-night { --background: #0a0d24; --surface: #151a3f; --foreground: #eef0ff; --muted: #a3a9d6; --accent: #7c6cff; --accent-foreground: #ffffff; }
 .theme-gold { --background: #15110a; --surface: #241c10; --foreground: #fbf5e6; --muted: #c8b88f; --accent: #f5c542; --accent-foreground: #1a1405; }
 .theme-ocean { --background: #04182a; --surface: #0a2840; --foreground: #e8f4ff; --muted: #9cbcd6; --accent: #38bdf8; --accent-foreground: #04182a; }
 .theme-rose { --background: #1f0a19; --surface: #311128; --foreground: #fff0f7; --muted: #d6a3bf; --accent: #f472b6; --accent-foreground: #1f0a19; }
 .theme-ember { --background: #1a0d06; --surface: #2a160b; --foreground: #fff3ea; --muted: #d4ab90; --accent: #fb923c; --accent-foreground: #1a0d06; }
 .themed { background: var(--background); color: var(--foreground); }
-/* Night: the soft blue/violet glow and faint grid of the reference design. */
 .theme-night.themed {
-  background:
-    radial-gradient(60rem 30rem at 85% -10%, rgba(91, 140, 255, 0.22), transparent 60%),
-    radial-gradient(40rem 25rem at 0% 30%, rgba(139, 92, 246, 0.16), transparent 60%),
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px) 0 0 / 32px 32px,
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px) 0 0 / 32px 32px,
-    var(--background);
+  background: radial-gradient(60rem 30rem at 85% -10%, rgba(91,140,255,.22), transparent 60%), radial-gradient(40rem 25rem at 0% 30%, rgba(139,92,246,.16), transparent 60%), linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 32px 32px, var(--background);
 }
 .theme-night .bg-accent { background-image: linear-gradient(90deg, #5b8cff, #8b5cf6); }
-
-/* Colored glow behind a member card (gold / blue / green / pink), granted by the platform admin. */
 .glow { position: relative; isolation: isolate; }
-.glow::before {
-  content: ""; position: absolute; inset: -4px; z-index: -1; border-radius: 1.4rem;
-  background: var(--glow); filter: blur(14px); opacity: 0.7; animation: glow-pulse 3s ease-in-out infinite;
-}
-@keyframes glow-pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.95; } }
-@media (prefers-reduced-motion: reduce) { .glow::before { animation: none; opacity: 0.7; } }
+.glow::before { content: ""; position: absolute; inset: -4px; z-index: -1; border-radius: 1.4rem; background: var(--glow); filter: blur(14px); opacity: .7; animation: glow-pulse 3s ease-in-out infinite; }
+@keyframes glow-pulse { 0%,100% { opacity: .4; } 50% { opacity: .95; } }
+@media (prefers-reduced-motion: reduce) { .glow::before { animation: none; opacity: .7; } }
 .glow-gold { --glow: linear-gradient(135deg, #ffe08a, #ff9f1c, #ffd76a); }
 .glow-blue { --glow: linear-gradient(135deg, #38bdf8, #6366f1, #22d3ee); }
 .glow-green { --glow: linear-gradient(135deg, #34d399, #10b981, #86efac); }
 .glow-pink { --glow: linear-gradient(135deg, #f472b6, #ec4899, #fb7185); }
-
-/* Print a single section of the member page as a clean PDF (window.print -> "Save as PDF"). */
 @media print {
   .printing-one { background: #fff !important; }
   .printing-one [data-sec]:not([data-print-active]) { display: none !important; }
