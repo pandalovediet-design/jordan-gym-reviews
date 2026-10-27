@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { notifyAdmin } from "@/lib/notify";
+import { findSimilar } from "@/lib/similar";
 import { requireUser } from "@/lib/auth";
 import { missingForPublish } from "@/lib/completeness";
 import { resolveMapsCoords } from "@/lib/maps";
@@ -38,7 +39,10 @@ export async function createOrg(_: FormState, fd: FormData): Promise<FormState> 
     .insert({ ...p.data, slug, created_by: user.id })
     .select("id").single();
   if (error) return { error: error.message.includes("category") ? "التصنيف لا يناسب نوع النشاط." : error.message.includes("max") || error.message.includes("limit") ? "وصلت الحد الأقصى من الأنشطة." : "تعذّر إنشاء النشاط." };
-  await notifyAdmin(`🏷️ نشاط جديد: ${p.data.name_ar}\nالنوع: ${p.data.type} · ${p.data.city}\n${user.email ?? ""}`);
+  // Flag a probable duplicate of a place we already list (imported from public sources), so it gets merged instead of doubled.
+  const twins = await findSimilar(supabase, p.data.name_ar, { city: p.data.city, excludeId: data.id }).catch(() => []);
+  const warn = twins.length ? `\n⚠️ ممكن يكون نفس: ${twins.map((t) => `${t.name_ar}${t.area ? ` (${t.area})` : ""}${t.is_claimed ? "" : " [غير مستلَم]"}`).join("، ")}` : "";
+  await notifyAdmin(`🏷️ نشاط جديد: ${p.data.name_ar}\nالنوع: ${p.data.type} · ${p.data.city}\n${user.email ?? ""}${warn}`);
   redirect(`/dashboard/${data.id}`);
 }
 

@@ -59,6 +59,11 @@ export default async function Outreach({ searchParams }: { searchParams: Promise
         <p className="mt-1 text-sm text-muted">راسل النوادي اللي لسا ما استلمت صفحاتها. كل رسالة فيها رابط صفحة النادي ورابط الاستلام، وصاحب النادي بيسجّل وبيبعت طلب، وإنت بتوافق من فوق. نص الرسالة بتغيّره من <Link href="/admin/settings" className="underline">إعدادات الموقع</Link>.</p>
       </div>
 
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-accent/10 p-4 text-sm ring-1 ring-accent/30">
+        <span className="flex-1">🔗 <b>الرابط العام</b> للانستغرام والقروبات: صاحب النادي بيدوّر على ناديه، إذا موجود بيستلمه، وإذا جديد بيسجّله. <span dir="ltr" className="break-all text-muted">{base}/claim</span></span>
+        <CopyButton text={`${base}/claim`} label="📋 انسخ الرابط" className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-accent-foreground" />
+      </div>
+
       <section className="space-y-3">
         <h2 className="text-lg font-bold">طلبات الاستلام ({(claims.data ?? []).length})</h2>
         {(claims.data ?? []).length === 0 && <p className={`${box} text-sm text-muted`}>ما في طلبات هسا. أول ما حدا يطلب، بيوصلك تنبيه على تيليجرام وبيطلع هون.</p>}

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { ORG_TYPE_LABEL, dateAr } from "@/lib/format";
 import { setOrgStatus } from "./actions";
+import { findSimilar } from "@/lib/similar";
 
 export const metadata: Metadata = { title: "لوحة الإدارة", robots: { index: false } };
 type Stats = {
@@ -26,6 +27,8 @@ export default async function AdminHome() {
   const top = topRes.data ?? [];
   const recent = (usersRes.data ?? []).slice(0, 5);
   const pending = pendingRes.data ?? [];
+  // A place registering again while we already list it (imported, unclaimed) shows up here as a twin.
+  const twins = await Promise.all(pending.map((o) => findSimilar(supabase, o.name_ar, { city: o.city, excludeId: o.id, limit: 3 }).catch(() => [])));
   const e7 = s.events_7d ?? {}, e30 = s.events_30d ?? {};
   const byStatus = s.orgs_by_status ?? {}, byType = s.orgs_by_type ?? {};
   const orgsTotal = Object.values(byStatus).reduce((a, b) => a + b, 0);
@@ -66,9 +69,10 @@ export default async function AdminHome() {
       {(pending.length > 0 || (s.products_pending ?? 0) > 0) && (
         <section><h2 className="mb-3 text-lg font-bold">يحتاج إجراء</h2>
           <ul className="space-y-2">
-            {pending.map((o) => (
+            {pending.map((o, i) => (
               <li key={o.id} className={`${box} flex flex-wrap items-center justify-between gap-3`}>
-                <span><span className="font-semibold">{o.name_ar}</span> <span className="text-xs text-muted">{ORG_TYPE_LABEL[o.type]} · {o.city} · أُرسل {dateAr(o.created_at)}</span></span>
+                <span><span className="font-semibold">{o.name_ar}</span> <span className="text-xs text-muted">{ORG_TYPE_LABEL[o.type]} · {o.city} · أُرسل {dateAr(o.created_at)}</span>
+                  {twins[i].length > 0 && <span className="mt-1 block text-xs text-yellow-200">⚠️ ممكن يكون موجود: {twins[i].map((t, j) => <span key={t.id}>{j > 0 && "، "}<Link href={`/g/${t.slug}`} className="underline">{t.name_ar}</Link>{t.is_claimed ? "" : " (غير مستلَم)"}</span>)}. إذا نفس المكان، لا تنشر الجديد، وخليه يستلم الموجود.</span>}</span>
                 <span className="flex gap-2"><Link href={`/admin/orgs?q=${encodeURIComponent(o.name_ar)}`} className={btn}>فتح</Link>
                   <form action={setOrgStatus.bind(null, o.id, "published")}><button className={`${btn} !bg-accent text-accent-foreground`}>نشر</button></form></span>
               </li>))}
