@@ -45,7 +45,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
     if (mode === "products") u.set("in", "products"); u.set("page", String(p));
     return `/search?${u}`;
   };
-  const activeFilters = [type, city, area, category, women, maxPrice, trial, mosque, quiet, kidsArea, kids, transport, access].filter(Boolean).length + (near ? 1 : 0) + (mode === "products" ? 1 : 0);
+  const activeFilters = mode === "products" ? 0 : [type, city, area, category, women, maxPrice, trial, mosque, quiet, kidsArea, kids, transport, access].filter(Boolean).length + (near ? 1 : 0);
   const field = "min-h-11 w-full rounded-xl bg-surface px-3 py-2.5 ring-1 ring-white/10 outline-none transition focus-visible:ring-2 focus-visible:ring-cyan-300";
 
   return (
@@ -56,16 +56,18 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
           <input name="q" aria-label="كلمات البحث" defaultValue={q} placeholder="ابحث..." className={`${field} min-w-0 flex-1`} />
           <button className="min-h-11 shrink-0 rounded-xl bg-accent px-5 font-bold text-accent-foreground transition hover:brightness-110 sm:px-6">بحث</button>
         </div>
-        <details open={activeFilters > 0} className="mt-3 rounded-2xl bg-surface/60 ring-1 ring-white/10">
+        <label className="mt-3 block text-sm font-semibold text-muted">نوع النتائج
+          <select name="in" aria-label="نوع النتائج" defaultValue={mode} className={`${field} mt-1`}>
+            <option value="orgs">الأنشطة والأماكن</option><option value="products">المنتجات الرياضية</option>
+          </select>
+        </label>
+        {mode === "orgs" && <details open={activeFilters > 0} className="mt-3 rounded-2xl bg-surface/60 ring-1 ring-white/10">
           <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 px-4 py-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">
             <span>⚙️ الفلاتر</span>
             {activeFilters > 0 && <span className="rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground">{activeFilters}</span>}
           </summary>
           {activeFilters > 0 && <div className="px-4 pb-3"><Link href={q ? `/search?q=${encodeURIComponent(q)}` : "/search"} className="rounded-lg py-1 text-xs text-muted underline underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300">مسح الفلاتر</Link></div>}
           <div className="grid gap-2 p-3 pt-0 sm:grid-cols-3 lg:grid-cols-4">
-            <select name="in" aria-label="نوع النتائج" defaultValue={mode} className={field}>
-              <option value="orgs">أنشطة</option><option value="products">منتجات</option>
-            </select>
             <select name="type" aria-label="نوع النشاط" defaultValue={type} className={field}>
               <option value="">كل الأنواع</option>
               {Object.entries(ORG_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -90,7 +92,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
             <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="access" value="1" defaultChecked={access} /> ♿ مهيّأ لذوي الاحتياجات</label>
             <button className="rounded-xl bg-accent px-6 py-2.5 font-bold text-accent-foreground">تطبيق</button>
           </div>
-        </details>
+        </details>}
       </form></div>
 
       {mode === "orgs" && <div className="mb-4 flex flex-wrap items-center gap-3"><NearMeButton active={!!near} />{near && <span className="text-sm text-muted">مرتبة من الأقرب للأبعد (الأنشطة اللي حدّدت موقعها فقط)</span>}</div>}
