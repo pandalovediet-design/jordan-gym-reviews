@@ -35,7 +35,7 @@ export function HeaderAuth() {
     };
   }, []);
 
-  const base = "inline-flex min-h-11 items-center justify-center rounded-xl px-3 py-2 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+  const base = "inline-flex min-h-11 items-center justify-center rounded-xl px-3 py-2 text-sm font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background";
   const hide = state === "checking" ? "invisible" : "";
 
   if (state === "in") {
