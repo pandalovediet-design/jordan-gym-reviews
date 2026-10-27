@@ -43,6 +43,10 @@ export function OrgCard({ org }: {
         {org.min_price_jod != null && <span className="rounded-full bg-white/10 px-2 py-0.5">من {jod(org.min_price_jod)}</span>}
         {org.free_trial_note && <span className="rounded-full bg-accent/15 px-2 py-0.5 font-bold text-accent">🎟 {org.free_trial_note}</span>}
       </div>
+      <div className="mx-5 flex items-center justify-between border-t border-white/10 py-3 text-sm sm:mx-6">
+        <span className="font-bold text-accent transition group-hover:text-cyan-200">عرض التفاصيل</span>
+        <span aria-hidden="true" className="text-lg text-muted transition group-hover:-translate-x-1 group-hover:text-accent">←</span>
+      </div>
       </div>
     </Link>
     <FavButton slug={org.slug} />
