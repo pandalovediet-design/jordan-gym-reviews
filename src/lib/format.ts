@@ -120,3 +120,9 @@ export const ammanMonthStart = (offsetMonths = 0) => {
 export const EQUIP_COND: Record<string, string> = { new: "جديد", like_new: "كالجديد", used: "مستعمل" };
 
 export const isPast = (iso: string) => new Date(iso).getTime() < Date.now();
+
+/** ISO timestamp of 00:00 "today" in Jordan time (UTC+3, no DST). */
+export function jordanTodayStartIso(): string {
+  const jo = new Date(Date.now() + 3 * 3_600_000);
+  return new Date(Date.UTC(jo.getUTCFullYear(), jo.getUTCMonth(), jo.getUTCDate()) - 3 * 3_600_000).toISOString();
+}

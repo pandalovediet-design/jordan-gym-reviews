@@ -79,6 +79,13 @@ export async function setOrgStatus(id: string, status: "published" | "suspended"
   revalidatePath("/");
 }
 
+/** Marks a listing as reviewed/completed by the admin (or puts it back to "not done"). */
+export async function setReviewDone(id: string, done: boolean): Promise<void> {
+  const { supabase } = await requireAdmin();
+  await supabase.from("organizations").update({ review_done_at: done ? new Date().toISOString() : null }).eq("id", id);
+  revalidatePath("/admin", "layout");
+}
+
 /** fd.days: "off" removes the badge, "0" = no expiry, otherwise a number of days. */
 export async function setVerified(id: string, fd: FormData): Promise<void> {
   const { supabase } = await requireAdmin();
