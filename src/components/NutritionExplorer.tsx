@@ -29,7 +29,8 @@ export function NutritionExplorer({ items, presets = [] }: { items: NutritionIte
   }, [preset, presets, items]);
   const list = presetList ?? routine;
   const filtered = meals.size > 0 || kind !== "";
-  const pill = "whitespace-nowrap rounded-full px-4 py-1.5 text-sm ring-1 ring-white/10 transition-colors";
+  const pill = "whitespace-nowrap rounded-full px-4 py-1.5 text-sm ring-1 ring-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+  const clearFilters = () => { setMeals(new Set()); setKind(""); setPreset(null); setSeries(false); };
   return (
     <div className="mt-8 grid gap-8 md:grid-cols-[320px_1fr]">
       <div className="h-fit md:sticky md:top-4"><NutritionCalc /></div>
@@ -37,10 +38,11 @@ export function NutritionExplorer({ items, presets = [] }: { items: NutritionIte
         {presets.length > 0 && (
           <div className="mb-5">
             <p className="mb-2 text-sm font-bold text-muted">⭐ سلاسل جاهزة</p>
-            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2" aria-label="السلاسل الجاهزة">
               {presets.map((p) => (
                 <button key={p.id} type="button" onClick={() => { setPreset(p.id); setSeries(true); requestAnimationFrame(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }}
-                  className="min-w-[200px] max-w-[260px] shrink-0 rounded-2xl bg-accent/10 p-3 text-start ring-1 ring-accent/40 transition hover:bg-accent/20">
+                  aria-pressed={preset === p.id}
+                  className={`min-w-[200px] max-w-[260px] shrink-0 rounded-2xl bg-accent/10 p-3 text-start ring-1 transition hover:bg-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${preset === p.id ? "ring-accent" : "ring-accent/40"}`}>
                   <span className="block text-sm font-extrabold">▶ {p.title}</span>
                   {p.description && <span className="mt-0.5 block text-[11px] text-muted">{p.description}</span>}
                   <span className="mt-1 block text-[10px] text-accent">{p.ids.length} عناصر</span>
@@ -50,37 +52,37 @@ export function NutritionExplorer({ items, presets = [] }: { items: NutritionIte
           </div>
         )}
         <p className="mb-3 text-sm font-bold text-muted">شو بدك تاكل؟ <span className="font-normal">(اختار وجبة أو أكثر)</span></p>
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5" aria-label="تصفية حسب الوجبة">
           {MEALS.map((m) => (
-            <button key={m} type="button" onClick={() => { setMeals((s) => toggle(s, m)); setSeries(false); }} aria-pressed={meals.has(m)}
-              className={`flex flex-col items-center gap-1 rounded-2xl p-3 text-xs ring-1 ring-white/10 transition ${meals.has(m) ? "bg-accent font-bold text-accent-foreground" : "bg-surface hover:ring-accent"}`}>
-              <span className="text-2xl">{mealIcon(m)}</span>{mealLabel(m)}
+            <button key={m} type="button" onClick={() => { setMeals((s) => toggle(s, m)); setPreset(null); setSeries(false); }} aria-pressed={meals.has(m)}
+              className={`flex flex-col items-center gap-1 rounded-2xl p-3 text-xs ring-1 ring-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${meals.has(m) ? "bg-accent font-bold text-accent-foreground" : "bg-surface hover:ring-accent"}`}>
+              <span className="text-2xl" aria-hidden="true">{mealIcon(m)}</span>{mealLabel(m)}
               <span className={`text-[10px] ${meals.has(m) ? "opacity-70" : "text-muted"}`}>{count.get(m) ?? 0}</span>
             </button>
           ))}
         </div>
-        <div className="mt-3 flex gap-2">
-          {([["", "الكل"], ["video", "🎬 فيديو"], ["plan", "📋 خطط"]] as const).map(([k, l]) => (
-            <button key={k} type="button" onClick={() => { setKind(k); setSeries(false); }} aria-pressed={kind === k} className={`${pill} ${kind === k ? "bg-white font-bold text-black" : "bg-surface hover:ring-accent"}`}>{l}</button>
+        <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="نوع المحتوى">
+          {([[ "", "الكل"], ["video", "🎬 فيديو"], ["plan", "📋 خطط"]] as const).map(([k, l]) => (
+            <button key={k} type="button" onClick={() => { setKind(k); setPreset(null); setSeries(false); }} aria-pressed={kind === k} className={`${pill} ${kind === k ? "bg-white font-bold text-black" : "bg-surface hover:ring-accent"}`}>{l}</button>
           ))}
         </div>
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-accent/10 p-4 ring-1 ring-accent/30">
-          <div>
+          <div aria-live="polite" aria-atomic="true">
             <p className="font-extrabold">{shown.length ? `${shown.length} وصفة وخطة` : "ما في شي بهالاختيار"}</p>
-            <p className="text-xs text-muted">{shown.length ? "شغّلها كيوم كامل: فطور، غداء، عشاء…" : "جرّب تشيل فلتر."}</p>
+            <p className="text-xs text-muted">{shown.length ? "شغّلها كيوم كامل: فطور، غداء، عشاء…" : "جرّب تغيّر الفلاتر أو امسحها لعرض كل المحتوى."}</p>
           </div>
-          <div className="flex gap-2">
-            {filtered && <button type="button" onClick={() => { setMeals(new Set()); setKind(""); setSeries(false); }} className="rounded-xl bg-white/10 px-4 py-2 text-sm hover:bg-white/20">مسح</button>}
+          <div className="flex flex-wrap gap-2">
+            {(filtered || preset) && <button type="button" onClick={clearFilters} className={`${pill} bg-white/10 hover:bg-white/20`}>مسح الفلاتر</button>}
             <button type="button" disabled={!routine.length} onClick={() => { setPreset(null); setSeries(true); requestAnimationFrame(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }}
-              className="rounded-xl bg-accent px-5 py-2 text-sm font-extrabold text-accent-foreground hover:brightness-110 disabled:opacity-40">▶ ابدأ السلسلة ({routine.length})</button>
+              className="rounded-xl bg-accent px-5 py-2 text-sm font-extrabold text-accent-foreground hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40">▶ ابدأ السلسلة ({routine.length})</button>
           </div>
         </div>
         {series && list.length > 0 ? (
           <div className="mt-5"><NutritionSeries key={list.map((r) => r.id).join()} items={list} onClose={() => setSeries(false)} /></div>
-        ) : (
-          <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
+        ) : shown.length > 0 ? (
+          <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-3" aria-label="الوصفات والخطط">
             {shown.map((w) => (
-              <Link key={w.id} href={`/no-deprivation/${w.slug}`} className="group relative block aspect-[4/5] overflow-hidden rounded-2xl bg-black ring-1 ring-white/10 transition hover:-translate-y-0.5 hover:ring-accent">
+              <Link key={w.id} href={`/no-deprivation/${w.slug}`} className="group relative block aspect-[4/5] overflow-hidden rounded-2xl bg-black ring-1 ring-white/10 transition hover:-translate-y-0.5 hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">
                 {w.cover ? <img src={w.cover} alt="" loading="lazy" className="absolute inset-0 size-full object-cover transition duration-300 group-hover:scale-105" />
                   : <span className={`absolute inset-0 bg-gradient-to-br ${mealGradient(w.meal)}`}><span className="absolute inset-0 flex items-center justify-center text-6xl opacity-60">{mealIcon(w.meal)}</span></span>}
                 <span className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/30" />
@@ -95,6 +97,12 @@ export function NutritionExplorer({ items, presets = [] }: { items: NutritionIte
                 </span>
               </Link>
             ))}
+          </div>
+        ) : (
+          <div className="mt-5 rounded-2xl border border-white/10 bg-surface p-8 text-center" role="status">
+            <p className="text-lg font-extrabold">ما لقينا نتائج مطابقة</p>
+            <p className="mt-2 text-sm text-muted">جرّب وجبة ثانية أو اعرض كل الوصفات والخطط.</p>
+            <button type="button" onClick={clearFilters} className={`${pill} mt-4 bg-accent font-bold text-accent-foreground`}>عرض كل المحتوى</button>
           </div>
         )}
       </div>
