@@ -11,8 +11,6 @@ import { sendInquiry, sendReport } from "./actions";
 import { getOrgBySlug } from "@/lib/queries";
 import { createPublicClient } from "@/lib/supabase/public";
 import { listVideos } from "@/lib/videos";
-import { FaqSection, JsonLd, faqLd } from "@/lib/jsonld";
-import { orgFaq } from "@/lib/faq";
 import { VideoCard } from "@/components/VideoCard";
 import { BILLING_LABEL, DELIVERY_LABEL, GLOW_LABEL, ORG_TYPE_LABEL, WEEKDAYS, WOMEN_LABEL, ammanDate, dateAr, dayLabelAr, hhmm, isVerified, jod, publicMediaUrl, waNumber } from "@/lib/format";
 import type { Tables } from "@/lib/database.types";
@@ -199,7 +197,6 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       address: { "@type": "PostalAddress", addressLocality: v.city, streetAddress: v.address ?? undefined, addressCountry: "JO" },
     })) : undefined,
   };
-  const faq = orgFaq({ name: org.name_ar, city: org.city, area: org.area, address: org.address, phone: org.phone, whatsapp: org.whatsapp, services, hours: hours.filter((h) => h.branch_id === views[0].id), womenAccess: views[0].women_access, womenNote: views[0].women_hours_note });
   const crumbs = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -250,7 +247,6 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       <PageView orgId={org.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs).replace(/</g, "\\u003c") }} />
-      {faqLd(faq) && <JsonLd data={faqLd(faq)} />}
       {!multi && womenBanner(views[0])}
       <div className={glow ? `glow glow-${glow} rounded-2xl bg-surface p-5` : ""}>
       {media[0] && (
@@ -316,7 +312,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </div>
       </details>
       {!multi && (() => {
-        const jumps = [offers.length > 0 && ["#offers", "العروض"], services.length > 0 && ["#prices", "الأسعار"], hours.length > 0 && ["#hours", "الدوام"], media.length > 1 && ["#photos", "الصور"], ["#faq", "أسئلة"], ["#ask", "استفسار"]].filter(Boolean) as [string, string][];
+        const jumps = [offers.length > 0 && ["#offers", "العروض"], services.length > 0 && ["#prices", "الأسعار"], hours.length > 0 && ["#hours", "الدوام"], media.length > 1 && ["#photos", "الصور"], ["#ask", "استفسار"]].filter(Boolean) as [string, string][];
         return jumps.length > 2 && (
           <nav aria-label="أقسام الصفحة" className="sticky top-0 z-20 -mx-4 mt-4 flex gap-2 overflow-x-auto border-y border-white/10 bg-background/95 px-4 py-3 text-sm shadow-lg shadow-black/10 backdrop-blur [scrollbar-width:none] sm:-mx-6 sm:px-6">
             {jumps.map(([h, l]) => <a key={h} href={h} className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-surface px-4 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 motion-reduce:transition-none">{l}</a>)}
@@ -434,7 +430,6 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </>
       )}
 
-      <div id="faq" className="scroll-mt-20"><FaqSection items={faq} title={`أسئلة شائعة عن ${org.name_ar}`} /></div>
       <section id="ask" className="mt-8 scroll-mt-20"><InquiryForm action={sendInquiry.bind(null, org.id, org.slug)} /><ReportForm action={sendReport.bind(null, org.id, org.slug)} /></section>
     </div>
       {!multi && (waNumber(views[0].whatsapp) || views[0].phone || views[0].mapsHref) && (
