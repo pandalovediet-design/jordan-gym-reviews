@@ -241,7 +241,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       </>
     );
   };
-  const contact = (v: BV) => <div className="mt-3 flex flex-wrap gap-3">{contactButtons(v)}</div>;
+  const contact = (v: BV) => <div className="mt-3 flex flex-wrap gap-2 sm:gap-3 [&>a]:min-h-11 [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center">{contactButtons(v)}</div>;
 
   return (
     <div className={`min-h-[70vh] ${themeClass(org.theme)}`}>
@@ -295,7 +295,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </nav>
       )}
 
-      <div className="mt-5 flex flex-wrap gap-3">
+      <div className="mt-5 flex flex-wrap gap-2 sm:gap-3 [&>a]:min-h-11 [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center [&>a]:text-center">
         {!multi && contactButtons(views[0])}
         {wa && org.free_trial_note && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${trialMsg}`} className="rounded-xl bg-accent/15 px-5 py-2.5 font-bold text-accent ring-1 ring-accent/50">🎟 {org.free_trial_note}</TrackedLink>}
         <a href={shareHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">شارك على واتساب</a>
@@ -317,8 +317,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {!multi && (() => {
         const jumps = [offers.length > 0 && ["#offers", "العروض"], services.length > 0 && ["#prices", "الأسعار"], hours.length > 0 && ["#hours", "الدوام"], media.length > 1 && ["#photos", "الصور"], ["#faq", "أسئلة"], ["#ask", "استفسار"]].filter(Boolean) as [string, string][];
         return jumps.length > 2 && (
-          <nav aria-label="أقسام الصفحة" className="sticky top-0 z-20 -mx-4 mt-4 flex gap-2 overflow-x-auto bg-background/90 px-4 py-2 text-sm backdrop-blur [scrollbar-width:none]">
-            {jumps.map(([h, l]) => <a key={h} href={h} className="whitespace-nowrap rounded-full bg-surface px-4 py-1.5 ring-1 ring-white/10 hover:ring-accent">{l}</a>)}
+          <nav aria-label="أقسام الصفحة" className="sticky top-0 z-20 -mx-4 mt-4 flex gap-2 overflow-x-auto border-y border-white/10 bg-background/95 px-4 py-3 text-sm shadow-lg shadow-black/10 backdrop-blur [scrollbar-width:none] sm:-mx-6 sm:px-6">
+            {jumps.map(([h, l]) => <a key={h} href={h} className="min-h-10 whitespace-nowrap rounded-full bg-surface px-4 py-2 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300">{l}</a>)}
           </nav>
         );
       })()}
