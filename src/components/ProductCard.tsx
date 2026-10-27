@@ -15,7 +15,7 @@ export function ProductCard({ p, store }: {
         {out && <span className="absolute right-3 top-3 z-10 rounded-full border border-red-300/20 bg-red-500/90 px-3 py-1 text-xs font-bold text-white shadow-lg">نفد المخزون</span>}
         {p.image_path ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={publicMediaUrl(p.image_path)} alt={p.name_ar} loading="lazy" className={`aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-[1.035] ${out ? "grayscale" : ""}`} />
+          <img src={publicMediaUrl(p.image_path)} alt={p.name_ar} loading="lazy" decoding="async" className={`aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-[1.035] ${out ? "grayscale" : ""}`} />
         ) : (
           <div className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 bg-[radial-gradient(ellipse_at_center,rgba(98,214,232,.10),transparent_70%)] text-muted">
             <span aria-hidden className="flex size-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-2xl">◇</span>
