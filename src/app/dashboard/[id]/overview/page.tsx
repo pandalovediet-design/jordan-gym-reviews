@@ -60,10 +60,10 @@ export default async function Overview({ params }: PageProps<"/dashboard/[id]/ov
 
       <section><h2 className="mb-3 text-lg font-bold">آخر 7 أيام</h2>
         <div className="grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
-          {([["مشاهدات", "page_view"], ["واتساب", "whatsapp_click"], ["اتصال", "phone_click"], ["مسح QR", "qr_scan"]] as const).map(([l, t]) => (
+          {([["مشاهدات", "page_view"], ["واتساب", "whatsapp_click"], ["اتصال", "phone_click"], ["زيارات QR", "qr_visit"]] as const).map(([l, t]) => (
             <div key={t} className={box}><p className="text-2xl font-extrabold text-accent">{n(t, true)}</p><p className="text-xs text-muted">{l}</p></div>))}
         </div>
-        <p className="mt-2 text-xs text-muted">آخر 30 يوم: {n("page_view")} مشاهدة · {n("whatsapp_click")} واتساب · {n("phone_click")} اتصال · {n("qr_scan")} مسح QR</p>
+        <p className="mt-2 text-xs text-muted">آخر 30 يوم: {n("page_view")} مشاهدة · {n("whatsapp_click")} واتساب · {n("phone_click")} اتصال · {n("qr_visit")} زيارات QR</p>
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2">
