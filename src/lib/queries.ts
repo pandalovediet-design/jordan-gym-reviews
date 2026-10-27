@@ -48,14 +48,14 @@ function mapListing(data: ListingRow[]) {
       : [],
   );
 }
+const chunk = <T,>(a: T[], n: number) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
+
 async function withCovers<T extends { id: string }>(db: ReturnType<typeof createPublicClient>, rows: T[]) {
-  const ids = rows.map((o) => o.id);
-  const covers = ids.length
-    ? (await db.from("organization_media").select("organization_id,storage_path,alt_text,is_cover,sort_order").in("organization_id", ids).order("is_cover", { ascending: false }).order("sort_order")).data ?? []
-    : [];
-  const hours = ids.length
-    ? (await db.from("organization_hours").select("organization_id,weekday,opens_at,closes_at,is_closed").in("organization_id", ids)).data ?? []
-    : [];
+  const groups = chunk(rows.map((o) => o.id), 80); // keep the `in (...)` URL short when many rows are shown
+  const covers = (await Promise.all(groups.map(async (ids) =>
+    (await db.from("organization_media").select("organization_id,storage_path,alt_text,is_cover,sort_order").in("organization_id", ids).order("is_cover", { ascending: false }).order("sort_order")).data ?? []))).flat();
+  const hours = (await Promise.all(groups.map(async (ids) =>
+    (await db.from("organization_hours").select("organization_id,weekday,opens_at,closes_at,is_closed").in("organization_id", ids)).data ?? []))).flat();
   const { weekday, minutes } = ammanNow();
   return rows.map((o) => {
     const h = hours.filter((x) => x.organization_id === o.id);
@@ -109,28 +109,31 @@ export async function listCategories() {
 }
 
 /** Homepage: one section per category (latest/featured first), plus the Pink Zone row. */
-export async function listHomeSections(perSection = 6) {
+export async function listHomeSections() {
   const db = createPublicClient();
   const [cats, listing] = await Promise.all([
     listCategories(),
     db.from("organizations_listing").select(LISTING_COLS)
-      .order("is_featured", { ascending: false }).order("featured_rank", { ascending: false }).order("created_at", { ascending: false }).limit(400),
+      .order("is_featured", { ascending: false }).order("featured_rank", { ascending: false }).order("created_at", { ascending: false }).limit(2000),
   ]);
   if (listing.error) throw new Error(listing.error.message);
-  const rows = mapListing(listing.data ?? []);
+  // Featured (paid) places stay first; everyone else rotates in a fair order that changes every day.
+  const day = Math.floor(Date.now() / 86_400_000);
+  const mix = (id: string) => { let h = day; for (let i = 0; i < id.length; i++) h = (Math.imul(h, 31) + id.charCodeAt(i)) | 0; return h; };
+  const rows = mapListing(listing.data ?? []).sort((a, b) => Number(!!b.is_featured) - Number(!!a.is_featured) || mix(a.id) - mix(b.id));
   const sections = cats
     .map((c) => ({ key: c.slug, title: c.name_ar, href: `/search?category=${c.slug}`, items: rows.filter((o) => o.category_id === c.id) }))
     .filter((s) => s.items.length > 0)
-    .map((s) => ({ ...s, total: s.items.length, items: s.items.slice(0, perSection) }));
+    .map((s) => ({ ...s, total: s.items.length }));
   const uncategorized = rows.filter((o) => !o.category_id);
-  if (uncategorized.length) sections.push({ key: "other", title: "أنشطة أخرى", href: "/search", items: uncategorized.slice(0, perSection), total: uncategorized.length });
+  if (uncategorized.length) sections.push({ key: "other", title: "أنشطة أخرى", href: "/search", items: uncategorized, total: uncategorized.length });
   const pink = rows.filter((o) => o.women_access === "women_only" || o.branch_women_only);
-  const shown = new Set([...sections.flatMap((s) => s.items), ...pink.slice(0, perSection)].map((o) => o.id));
+  const shown = new Set([...sections.flatMap((s) => s.items), ...pink].map((o) => o.id));
   const withCover = await withCovers(db, rows.filter((o) => shown.has(o.id)));
   const byId = new Map(withCover.map((o) => [o.id, o]));
   return {
     sections: sections.map((s) => ({ ...s, items: s.items.map((o) => byId.get(o.id)!) })),
-    pink: { total: pink.length, items: pink.slice(0, perSection).map((o) => byId.get(o.id)!) },
+    pink: { total: pink.length, items: pink.map((o) => byId.get(o.id)!) },
   };
 }
 
