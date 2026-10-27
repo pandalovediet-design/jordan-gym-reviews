@@ -6,7 +6,7 @@ import { GLOW_COLORS, GLOW_NAME, ORG_TYPE_LABEL, isVerified, jordanTodayStartIso
 import { cleanQuery } from "@/lib/format";
 import { isOrgType } from "@/lib/queries";
 import { ActionForm } from "@/components/Form";
-import { assignOrgOwner, createOwnerAccount, clearWomenAccess, clearOrgBadge, setFeatured, setGlow, setOrgStatus, setOrgType, setReviewDone, setVerified } from "../actions";
+import { assignOrgOwner, createOwnerAccount, clearWomenAccess, clearOrgBadge, setFeatured, setGlow, setOrgStatus, setOrgCategory, setOrgType, setReviewDone, setVerified } from "../actions";
 
 export const metadata: Metadata = { title: "الأنشطة", robots: { index: false } };
 const STATUSES = ["draft", "pending", "published", "suspended"] as const;
@@ -31,17 +31,18 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
   ]);
   const nPending = pendingCount.count ?? 0, nDone = doneCount.count ?? 0, nToday = todayCount.count ?? 0;
   const DAILY_GOAL = 20;
-  let query = supabase.from("organizations").select("id,review_done_at,name_ar,type,city,status,verified_at,verified_until,slug,women_access,has_mosque,no_music,has_kids_area,kids_friendly,kids_transport,accessibility").order("created_at", { ascending: false }).limit(200);
+  let query = supabase.from("organizations").select("id,review_done_at,name_ar,type,category_id,city,status,verified_at,verified_until,slug,women_access,has_mosque,no_music,has_kids_area,kids_friendly,kids_transport,accessibility").order("created_at", { ascending: false }).limit(200);
   if (review === "pending") query = query.is("review_done_at", null);
   if (review === "done") query = query.not("review_done_at", "is", null).order("review_done_at", { ascending: false });
   if (q) query = query.or(`name_ar.ilike.%${q}%,name_en.ilike.%${q}%,city.ilike.%${q}%`);
   if ((STATUSES as readonly string[]).includes(status)) query = query.eq("status", status as (typeof STATUSES)[number]);
   if (isOrgType(type)) query = query.eq("type", type);
-  const [orgs, promos, owners, users] = await Promise.all([
+  const [orgs, promos, owners, users, cats] = await Promise.all([
     query,
     supabase.from("org_promotions").select("organization_id,featured_until,featured_rank,glow_color,glow_until"),
     supabase.from("organization_members").select("organization_id,user_id,role").eq("role", "owner"),
     supabase.rpc("admin_list_users"),
+    supabase.from("org_categories").select("id,slug,org_type,name_ar,sort_order").eq("is_active", true).order("sort_order"),
   ]);
   const emailOf = (orgId: string) => {
     const m = (owners.data ?? []).find((x) => x.organization_id === orgId);
@@ -129,6 +130,18 @@ export default async function AdminOrgs({ searchParams }: PageProps<"/admin/orgs
                 <option value="365">سنة</option><option value="180">6 شهور</option><option value="90">3 شهور</option><option value="0">بدون انتهاء</option><option value="off">إلغاء التوثيق</option>
               </select>
               <button className={btn}>حفظ</button>
+            </form>
+            <form action={setOrgCategory.bind(null, o.id)} className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="text-muted">نقل لتصنيف:</span>
+              <select name="cat" defaultValue={(cats.data ?? []).find((c) => c.id === o.category_id) ? `${o.type}:${(cats.data ?? []).find((c) => c.id === o.category_id)!.slug}` : ""} className="rounded-lg bg-background px-2 py-1 ring-1 ring-white/10">
+                <option value="" disabled>اختر…</option>
+                {Object.entries(ORG_TYPE_LABEL).map(([t, label]) => (
+                  <optgroup key={t} label={label}>
+                    {(cats.data ?? []).filter((c) => c.org_type === t).map((c) => <option key={c.id} value={`${t}:${c.slug}`}>{c.name_ar}</option>)}
+                  </optgroup>
+                ))}
+              </select>
+              <button className={btn}>نقل</button>
             </form>
             <form action={setOrgType.bind(null, o.id)} className="flex flex-wrap items-center gap-2 text-xs">
               <span className="text-muted">نوع النشاط ({ORG_TYPE_LABEL[o.type]}):</span>
