@@ -45,24 +45,24 @@ const GROUPS = [
 ];
 
 const matches = (path: string, href: string) => path === href || (href !== "/admin" && path.startsWith(href + "/"));
+const navLink = "inline-flex min-h-10 shrink-0 items-center whitespace-nowrap rounded-full px-4 py-2 ring-1 ring-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 export function AdminTabs() {
   const path = usePathname();
   const current = GROUPS.find((g) => g.tabs.some((t) => matches(path, t.href))) ?? GROUPS[0];
-  const pill = "whitespace-nowrap rounded-full px-4 py-1.5 ring-1 ring-white/10";
   return (
     <div className="mx-auto max-w-5xl space-y-2 px-4 pt-6 text-sm">
-      <nav aria-label="أقسام لوحة صاحب المنصة" className="flex gap-2 overflow-x-auto [scrollbar-width:none] md:flex-wrap">
+      <nav aria-label="أقسام لوحة صاحب المنصة" className="flex snap-x gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:thin] md:flex-wrap">
         {GROUPS.map((g) => (
           <Link key={g.label} href={g.tabs[0].href} aria-current={g === current ? "true" : undefined}
-            className={`${pill} ${g === current ? "bg-accent font-bold text-accent-foreground" : "bg-surface hover:ring-accent"}`}>{g.label}</Link>
+            className={`${navLink} snap-start ${g === current ? "bg-accent font-bold text-accent-foreground" : "bg-surface hover:ring-accent"}`}>{g.label}</Link>
         ))}
       </nav>
       {current.tabs.length > 1 && (
-        <nav aria-label={current.label} className="flex gap-2 overflow-x-auto border-t border-white/10 pt-2 text-xs [scrollbar-width:none] md:flex-wrap">
+        <nav aria-label={current.label} className="flex snap-x gap-2 overflow-x-auto overscroll-x-contain border-t border-white/10 pt-2 pb-1 text-xs [scrollbar-width:thin] md:flex-wrap">
           {current.tabs.map((t) => (
             <Link key={t.href} href={t.href} aria-current={matches(path, t.href) ? "page" : undefined}
-              className={`${pill} ${matches(path, t.href) ? "bg-white/15 font-bold text-foreground" : "text-muted hover:text-foreground"}`}>{t.label}</Link>
+              className={`${navLink} snap-start ${matches(path, t.href) ? "bg-white/15 font-bold text-foreground" : "text-muted hover:text-foreground"}`}>{t.label}</Link>
           ))}
         </nav>
       )}
