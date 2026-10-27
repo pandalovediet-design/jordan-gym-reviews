@@ -10,9 +10,13 @@ import { QuranAudioProvider, QuranMiniBar } from "@/components/QuranAudio";
 export const viewport: Viewport = { themeColor: "#101827" };
 
 export const metadata: Metadata = {
-  applicationName: "Jordan Gym",
+  applicationName: "Jordan Gym Reviews",
   appleWebApp: { capable: true, title: "Jordan Gym", statusBarStyle: "black-translucent" },
-  icons: { apple: "/icons/apple-touch-icon.png" },
+  icons: {
+    icon: [{ url: "/brand-mark.svg", type: "image/svg+xml" }],
+    shortcut: "/brand-mark.svg",
+    apple: "/icons/apple-touch-icon.png",
+  },
   metadataBase: new URL(baseUrl()),
   title: "Jordan Gym Reviews | دليل الرياضة في الأردن",
   description:
