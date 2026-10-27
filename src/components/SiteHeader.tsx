@@ -10,11 +10,11 @@ export async function SiteHeader() {
   const byHref = new Map<string, NavLink>(NAV_CATALOG.map((n) => [n.href, { ...n }]));
   const tabs: NavLink[] = [...nav.flatMap((h) => byHref.get(h) ?? []), { href: "/sections", label: "☰ كل الأقسام" }];
   return (
-    <header className="border-b border-white/10 print:hidden">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-3">
-        <Link href="/" className="flex items-center gap-2 text-lg font-extrabold">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-background/90 shadow-lg shadow-black/5 backdrop-blur-xl print:hidden">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-3">
+        <Link href="/" className="flex items-center gap-3 text-base font-black tracking-tight sm:text-lg">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand-mark.svg" alt="" width={44} height={44} className="size-11 rounded-2xl object-cover" />
+          <img src="/brand-mark.svg" alt="" width={44} height={44} className="size-10 rounded-2xl object-cover shadow-lg shadow-blue-950/30 transition duration-300 group-hover:rotate-3" />
           <span>Jordan <span className="text-accent">Gym</span> Reviews</span>
         </Link>
         <div className="flex items-center gap-2 text-sm">
