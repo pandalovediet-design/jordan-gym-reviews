@@ -245,7 +245,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
 
   return (
     <div className={`min-h-[70vh] ${themeClass(org.theme)}`}>
-    <div className="mx-auto max-w-5xl px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
       <PageView orgId={org.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs).replace(/</g, "\\u003c") }} />
@@ -253,9 +253,9 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {!multi && womenBanner(views[0])}
       <div className={glow ? `glow glow-${glow} rounded-2xl bg-surface p-5` : ""}>
       {media[0] && (
-        <figure className="mb-4">
+        <figure className="mb-6 overflow-hidden rounded-3xl border border-white/10 bg-surface shadow-2xl shadow-black/20">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} className="aspect-[4/3] w-full rounded-xl object-cover sm:aspect-[16/9]" />
+          <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} className="aspect-[4/3] w-full object-cover sm:aspect-[21/9]" />
         </figure>
       )}
       {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
@@ -265,7 +265,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {coachProfile?.certificates && <p className="mt-1 text-sm text-muted">📜 {coachProfile.certificates}</p>}
       {coachGyms.length > 0 && (
         <p className="mt-1 text-sm">{org.type === "nutritionist" ? "يتعاون مع: " : "يتدرب في: "}{coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
-      <h1 className="mt-1 text-3xl font-extrabold">{org.name_ar}</h1>
+      <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">{org.name_ar}</h1>
       {org.is_claimed === false && (
         <p className="mt-2 rounded-xl bg-white/5 p-3 text-sm text-muted ring-1 ring-white/10">
           بيانات أولية من مصادر عامة، وصاحب النادي لسا ما استلم صفحته. <Link href={`/claim/${org.slug}`} className="font-bold text-accent underline">هذا ناديي؟ استلم صفحتك مجاناً</Link>
