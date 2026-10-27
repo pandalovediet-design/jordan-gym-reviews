@@ -52,8 +52,10 @@ export function ImageInput(props: Omit<InputHTMLAttributes<HTMLInputElement>, "t
   }
   return (
     <>
-      <input {...props} ref={ref} type="file" accept={props.accept ?? "image/jpeg,image/png,image/webp"} onChange={onChange} />
-      {busy && <span className="block text-xs text-muted">جاري تجهيز الصورة...</span>}
+      <input {...props} ref={ref} type="file" aria-busy={busy} accept={props.accept ?? "image/jpeg,image/png,image/webp"} onChange={onChange} />
+      <span className="block text-xs text-muted" role="status" aria-live="polite" aria-atomic="true">
+        {busy ? "جاري تجهيز الصورة لتسريع الرفع..." : "تُجهّز الصور الكبيرة تلقائيًا قبل الرفع."}
+      </span>
     </>
   );
 }
