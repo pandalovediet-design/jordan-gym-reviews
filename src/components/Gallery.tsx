@@ -28,7 +28,7 @@ export function Gallery({ items, start = 0 }: { items: GalleryItem[]; start?: nu
             <button
               type="button"
               onClick={() => setI(Math.max(0, start) + k)}
-              className="group block w-full overflow-hidden rounded-xl bg-surface ring-1 ring-white/10 outline-none transition hover:ring-accent focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none"
+              className="group block min-h-11 w-full overflow-hidden rounded-xl bg-surface ring-1 ring-white/10 outline-none transition hover:ring-accent focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none"
               aria-label={`عرض الصورة: ${m.alt}`}
               aria-haspopup="dialog"
             >
@@ -43,6 +43,7 @@ export function Gallery({ items, start = 0 }: { items: GalleryItem[]; start?: nu
         ref={ref}
         aria-label="عارض الصور"
         onClose={() => setI(null)}
+        onClick={(e) => { if (e.target === ref.current) setI(null); }}
         onKeyDown={(e) => {
           if (e.key === "ArrowLeft") { e.preventDefault(); go(1); }
           if (e.key === "ArrowRight") { e.preventDefault(); go(-1); }
@@ -58,7 +59,7 @@ export function Gallery({ items, start = 0 }: { items: GalleryItem[]; start?: nu
       >
         {i != null && items[i] && (
           <div className="flex h-full min-h-0 flex-col">
-            <div className="flex shrink-0 items-center justify-between gap-3 p-3 text-sm sm:p-4">
+            <div className="flex shrink-0 items-center justify-between gap-3 p-3 pt-[max(0.75rem,env(safe-area-inset-top))] text-sm sm:p-4">
               <span className="text-white/70" aria-live="polite" aria-atomic="true">{i + 1} من {items.length}</span>
               <button type="button" autoFocus onClick={() => setI(null)} className="min-h-11 rounded-full bg-white/10 px-4 py-2 font-bold transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white motion-reduce:transition-none">✕ إغلاق</button>
             </div>
@@ -70,7 +71,7 @@ export function Gallery({ items, start = 0 }: { items: GalleryItem[]; start?: nu
                 <button type="button" onClick={() => go(1)} aria-label="الصورة التالية" className="absolute left-2 flex min-h-11 min-w-11 items-center justify-center rounded-full bg-white/15 px-4 py-3 text-xl transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white motion-reduce:transition-none">‹</button>
               </>}
             </div>
-            {items[i].caption && <p className="shrink-0 px-4 pb-4 pt-2 text-center text-sm leading-relaxed text-white/80">{items[i].caption}</p>}
+            {items[i].caption && <p className="shrink-0 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2 text-center text-sm leading-relaxed text-white/80">{items[i].caption}</p>}
           </div>
         )}
       </dialog>
