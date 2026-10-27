@@ -30,6 +30,7 @@ export default async function Stats({ params }: { params: Promise<{ id: string }
   const of = (t: string) => ev.filter((e) => e.event_type === t);
   const views = of("page_view");
   const contacts = [...of("whatsapp_click"), ...of("phone_click")];
+  const qrVisits = of("qr_visit");
 
   // last 30 Amman days, oldest first
   const days = Array.from({ length: 30 }, (_, i) => ammanDate(i - 29));
@@ -60,10 +61,11 @@ export default async function Stats({ params }: { params: Promise<{ id: string }
       <h1 className="text-2xl font-extrabold">📊 إحصائيات {org.name_ar}</h1>
       <p className="text-xs text-muted">آخر 30 يوم، بتوقيت عمّان. بنحسب مشاهدات الصفحة والنقر على واتساب أو الاتصال. ما بنسجّل أسماء ولا أرقام الزوار.</p>
 
-      <section className="grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 text-center sm:grid-cols-5">
         <div className={box}><p className="text-2xl font-extrabold text-accent">{ar(views.length)}</p><p className="text-xs text-muted">مشاهدة</p></div>
         <div className={box}><p className="text-2xl font-extrabold text-accent">{ar(of("whatsapp_click").length)}</p><p className="text-xs text-muted">نقرة واتساب</p></div>
         <div className={box}><p className="text-2xl font-extrabold text-accent">{ar(of("phone_click").length)}</p><p className="text-xs text-muted">نقرة اتصال</p></div>
+        <div className={box}><p className="text-2xl font-extrabold text-accent">{ar(qrVisits.length)}</p><p className="text-xs text-muted">زيارات QR</p></div>
         <div className={box}><p className="text-2xl font-extrabold text-accent">{ar(rate)}٪</p><p className="text-xs text-muted">من الزوار تواصلوا</p></div>
       </section>
 
