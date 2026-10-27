@@ -99,7 +99,7 @@ function Trainers({ items }: { items: TrainerCard[] }) {
         <div className="relative aspect-[4/3] w-full bg-background/40">
           {t.photo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={publicMediaUrl(t.photo)} alt={t.name} loading="lazy" className="size-full object-cover" />
+            <img src={publicMediaUrl(t.photo)} alt={t.name} loading="lazy" decoding="async" className="size-full object-cover" />
           ) : <div className="flex size-full items-center justify-center text-5xl">🏋️</div>}
           {t.head && <span className="absolute start-3 top-3 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">⭐ المدرب الرئيسي</span>}
           {t.licensed && <span className="absolute start-3 top-3 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">✓ مرخّص</span>}
@@ -128,7 +128,7 @@ function Menu({ items }: { items: Tables<"menu_items">[] }) {
           <div key={m.id} className={`${card} flex gap-3 ${m.is_available ? "" : "opacity-60"}`}>
             {m.image_path && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={publicMediaUrl(m.image_path)} alt={m.name_ar} loading="lazy" className={`size-20 shrink-0 rounded-xl object-cover ${m.is_available ? "" : "grayscale"}`} />
+              <img src={publicMediaUrl(m.image_path)} alt={m.name_ar} loading="lazy" decoding="async" className={`size-20 shrink-0 rounded-xl object-cover ${m.is_available ? "" : "grayscale"}`} />
             )}
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-2"><h4 className="font-bold">{m.name_ar}</h4><span className="shrink-0 text-accent">{jod(m.price_jod)}</span></div>
