@@ -2,11 +2,10 @@ import Link from "next/link";
 import { HeaderAuth } from "@/components/HeaderAuth";
 import { InstallButton } from "@/components/InstallButton";
 import { SiteTabs, type NavLink } from "@/components/SiteTabs";
-import { NAV_CATALOG, getSiteSettings } from "@/lib/site-settings";
+import { NAV_CATALOG } from "@/lib/site-settings";
 
 export async function SiteHeader() {
   // Keep every main service directly visible in the navigation; /sections remains the full directory.
-  await getSiteSettings();
   const tabs: NavLink[] = [...NAV_CATALOG.map((n) => ({ ...n })), { href: "/sections", label: "☰ كل الأقسام" }];
 
   return (
