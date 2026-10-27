@@ -5,10 +5,9 @@ import { SiteTabs, type NavLink } from "@/components/SiteTabs";
 import { NAV_CATALOG, getSiteSettings } from "@/lib/site-settings";
 
 export async function SiteHeader() {
-  // The platform owner picks the tabs and their order in /admin/settings; everything else is on /sections.
-  const { nav } = await getSiteSettings();
-  const byHref = new Map<string, NavLink>(NAV_CATALOG.map((n) => [n.href, { ...n }]));
-  const tabs: NavLink[] = [...nav.flatMap((h) => byHref.get(h) ?? []), { href: "/sections", label: "☰ كل الأقسام" }];
+  // Keep every main service directly visible in the navigation; /sections remains the full directory.
+  await getSiteSettings();
+  const tabs: NavLink[] = [...NAV_CATALOG.map((n) => ({ ...n })), { href: "/sections", label: "☰ كل الأقسام" }];
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-background/90 shadow-lg shadow-black/5 backdrop-blur-xl print:hidden">
