@@ -15,8 +15,8 @@ const TYPE_TILES = [
   { href: "/search?type=store", icon: "🛍️", label: "متاجر" },
   { href: "/search?type=sports_health", icon: "🩺", label: "علاج رياضي" },
 ];
-/** Full sections shown on the home page; the rest become compact category tiles. */
-const FULL_SECTIONS = 3;
+/** Cards visible before the "show all" fold inside each section; nothing is hidden for good. */
+const VISIBLE = 6;
 
 export const revalidate = 300;
 
@@ -32,7 +32,7 @@ export default async function Home() {
   ]);
   // One card per offer title per place (seeded data repeats titles).
   const offers = offersRaw.filter((o, i, a) => a.findIndex((x) => x.title_ar === o.title_ar && x.organizations?.slug === o.organizations?.slug) === i);
-  const full = [...home.sections].sort((a, b) => b.total - a.total).slice(0, FULL_SECTIONS);
+  const full = [...home.sections].sort((a, b) => b.total - a.total);
   const fullKeys = new Set(full.map((s) => s.key));
   const tiles = home.sections.filter((s) => !fullKeys.has(s.key));
   const banner = ads.find((a) => a.placement === "banner");
@@ -110,7 +110,11 @@ export default async function Home() {
             <h2 className="text-xl font-bold text-pink-200">💗 Pink Zone — خاص بالنساء</h2>
             <Link href="/search?women=only" className="text-sm text-pink-200 underline">عرض الكل ({home.pink.total})</Link>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{home.pink.items.slice(0, 3).map((o) => <OrgCard key={o.id} org={o} />)}</div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{home.pink.items.slice(0, VISIBLE).map((o) => <OrgCard key={o.id} org={o} />)}</div>
+          {home.pink.items.length > VISIBLE && (
+            <details className="mt-4"><summary className="cursor-pointer text-sm text-pink-200 underline">عرض كل الأماكن ({home.pink.items.length})</summary>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{home.pink.items.slice(VISIBLE).map((o) => <OrgCard key={o.id} org={o} />)}</div></details>
+          )}
         </section>
       )}
       {home.sections.length === 0 ? (
@@ -123,7 +127,11 @@ export default async function Home() {
                 <h2 className="text-xl font-bold">{s.title}</h2>
                 <Link href={s.href} className="text-sm text-accent underline">عرض الكل ({s.total})</Link>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{s.items.slice(0, 3).map((o) => <OrgCard key={o.id} org={o} />)}</div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{s.items.slice(0, VISIBLE).map((o) => <OrgCard key={o.id} org={o} />)}</div>
+              {s.items.length > VISIBLE && (
+                <details className="mt-4"><summary className="cursor-pointer text-sm text-accent underline">عرض كل الأماكن ({s.items.length})</summary>
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{s.items.slice(VISIBLE).map((o) => <OrgCard key={o.id} org={o} />)}</div></details>
+              )}
             </section>
           ))}
           {tiles.length > 0 && (
