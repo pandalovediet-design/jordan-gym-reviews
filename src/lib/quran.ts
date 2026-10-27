@@ -60,7 +60,7 @@ export async function getRestContent(): Promise<RestContent & { errors: string[]
   const refs = [...SHORT, ...LONG];
   const nums = [...new Set(refs.map((r) => r[0]))];
   const loaded = new Map<number, NonNullable<Awaited<ReturnType<typeof surah>>>>();
-  // Keep retry errors local to each surah; concurrent workers must not remove each other's errors.
+  // Fetch one surah at a time to avoid upstream HTTP 429 rate limits.
   let next = 0;
   const worker = async () => {
     while (next < nums.length) {
@@ -81,7 +81,7 @@ export async function getRestContent(): Promise<RestContent & { errors: string[]
       }
     }
   };
-  await Promise.all(Array.from({ length: 2 }, worker));
+  await worker();
   const build = (list: [number, number, number][], kind: string): Passage[] =>
     list.flatMap(([s, from, to]) => {
       const d = loaded.get(s);
