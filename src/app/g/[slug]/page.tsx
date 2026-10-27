@@ -151,8 +151,9 @@ function Products({ items }: { items: Data["products"] }) {
   return <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">{items.map((p) => <ProductCard key={p.id} p={p} />)}</div>;
 }
 
-export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
+export default async function OrgPage({ params, searchParams }: PageProps<"/g/[slug]">) {
   const { slug } = await params;
+  const query = await searchParams;
   const d = await load(decodeURIComponent(slug));
   if (!d) notFound();
   const { org, hours, services, media, offers, products, classes, branches, trainers, glow, menu, coaches, coachGyms, coachProfile, slots } = d;
@@ -246,7 +247,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   return (
     <div className={`min-h-[70vh] ${themeClass(org.theme)}`}>
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <PageView orgId={org.id} />
+      <PageView orgId={org.id} qrVisit={query?.utm_source === "qr"} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs).replace(/</g, "\\u003c") }} />
       {faqLd(faq) && <JsonLd data={faqLd(faq)} />}
