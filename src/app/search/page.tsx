@@ -56,10 +56,13 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
           <button className="min-h-11 shrink-0 rounded-xl bg-accent px-5 font-bold text-accent-foreground transition hover:brightness-110 sm:px-6">بحث</button>
         </div>
         <details open={activeFilters > 0} className="mt-3 rounded-2xl bg-surface/60 ring-1 ring-white/10">
-          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">
-            <span>⚙️ الفلاتر{activeFilters > 0 && <span className="mr-2 rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground">{activeFilters}</span>}</span>
-            {activeFilters > 0 && <Link href={q ? `/search?q=${encodeURIComponent(q)}` : "/search"} className="shrink-0 rounded-lg px-2 py-1 text-xs text-muted underline underline-offset-4 hover:text-foreground">مسح الفلاتر</Link>}
-          </summary>
+          <div className="flex min-h-12 items-center justify-between gap-3 px-4 py-2">
+            <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 text-sm font-semibold [&::-webkit-details-marker]:hidden">
+              <span>⚙️ الفلاتر</span>
+              {activeFilters > 0 && <span className="rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground">{activeFilters}</span>}
+            </summary>
+            {activeFilters > 0 && <Link href={q ? `/search?q=${encodeURIComponent(q)}` : "/search"} className="shrink-0 rounded-lg px-2 py-1 text-xs text-muted underline underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300">مسح الفلاتر</Link>}
+          </div>
           <div className="grid gap-2 p-3 pt-0 sm:grid-cols-3 lg:grid-cols-4">
             <select name="in" aria-label="نوع النتائج" defaultValue={mode} className={field}>
               <option value="orgs">أنشطة</option><option value="products">منتجات</option>
