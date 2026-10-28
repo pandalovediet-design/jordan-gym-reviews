@@ -8,21 +8,20 @@
 **Personality:** energetic, clear, inclusive, credible, locally aware, digital-first.
 
 ## Visual concept
-A forward-moving geometric symbol built from three ascending forms. It represents personal progress, the journey of discovery, and the variety of sports destinations on one platform. It is intentionally not a shield, medical cross, or generic checkmark.
+A forward-moving geometric symbol built from three ascending forms. It represents progress, discovery, and the variety of sports destinations on one platform. It is intentionally not a shield, medical cross, or generic checkmark.
 
-## Color palette
+## Color palette — Momentum
 | Token | HEX | Use |
 |---|---|---|
-| Midnight Ink | #101827 | Main brand background |
-| Slate Surface | #192438 | Cards and navigation |
-| Motion Blue | #3678F6 | Primary brand recognition and links |
-| Coral Energy | #FF6B4A | Primary calls to action and key highlights |
-| Pulse Cyan | #62D6E8 | Secondary highlights and data visualization |
-| Cloud White | #F4F7FC | Main text |
-| Steel Mist | #A7B3C7 | Secondary text |
-| Border Slate | #34435A | Dividers and component borders |
+| Midnight Charcoal | #10130F | Main brand background |
+| Training Surface | #1B2119 | Cards and navigation |
+| Momentum Lime | #D4FF00 | Primary actions, highlights, active states |
+| Lime Shade | #A8CC18 | Secondary brand accent and gradients |
+| Chalk White | #F4F7EF | Main text |
+| Track Mist | #A7B2A0 | Secondary text |
+| Olive Border | #343E2B | Dividers and component borders |
 
-Use coral sparingly for the most important action; blue is the primary navigation/brand color. Never rely on color alone to convey status.
+Use lime as a deliberate accent rather than flooding every surface. Keep text readable and never rely on color alone to communicate status. Ads and sponsorships must remain clearly labeled.
 
 ## Typography
 - Arabic: Cairo, weights 400–800.
@@ -31,7 +30,7 @@ Use coral sparingly for the most important action; blue is the primary navigatio
 - Use tabular numerals for prices, ratings and analytics.
 
 ## Logo system
-- Primary: geometric mark + Jordan Gym Reviews wordmark.
+- Primary: geometric forward-motion mark + Jordan Gym Reviews wordmark.
 - Secondary: wordmark on light or dark backgrounds.
 - App icon: mark-only, centered with generous padding.
 - Clear space: at least one quarter of the mark's width around it.
@@ -40,8 +39,8 @@ Use coral sparingly for the most important action; blue is the primary navigatio
 
 ## Product UI
 - RTL-first and mobile-first. Use an 8 px spacing rhythm.
-- Cards: slate surfaces, restrained borders, consistent 16 px corners.
-- Primary buttons: coral fill with dark text; secondary actions use blue or outlined surfaces.
+- Cards: charcoal surfaces, restrained olive borders, consistent 16 px corners.
+- Primary buttons: lime fill with dark text; secondary actions use outlined surfaces.
 - Ratings show numeric score and review count alongside stars.
 - Paid placements must remain explicitly labeled إعلان or ممول.
 - Keep touch targets at least 44 px; show visible keyboard focus; respect reduced-motion preferences.
@@ -53,10 +52,10 @@ Show real-feeling Jordanian gyms, coaches, group classes and everyday athletes w
 Rounded geometric line icons, consistent 1.75–2 px stroke, simple silhouettes. Use the same icon family across categories, filters, dashboard and mobile navigation.
 
 ## Applications
-Social posts: one strong Arabic headline, dark ink background, coral CTA and authentic local imagery.
-QR posters: large high-contrast QR, short URL fallback and “امسح الرمز لزيارة الصفحة”.
-Partner pages: use the mark and blue accent; label sponsorships clearly.
-Dashboard: blue for navigation and data; coral for the next key action; cyan for secondary metrics.
+Social posts: charcoal background, one strong Arabic headline, lime CTA and authentic local imagery.
+QR posters: high-contrast QR, short URL fallback and “زورونا ع جوردان جيم”.
+Partner pages: use the mark and lime accent; label sponsorships clearly.
+Dashboard: charcoal navigation, lime for the next key action, muted neutrals for secondary metrics.
 
 ## Accessibility
 Maintain strong contrast, pair colors with labels/icons, include visible focus states, and preserve reduced-motion support.
