@@ -6,8 +6,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/ProductCard";
 import { PageView, TrackedLink } from "@/components/Track";
-import { InquiryForm, ReportForm } from "@/components/PublicForms";
-import { sendInquiry, sendReport } from "./actions";
+import { ReportForm } from "@/components/PublicForms";
+import { sendReport } from "./actions";
 import { getOrgBySlug } from "@/lib/queries";
 import { createPublicClient } from "@/lib/supabase/public";
 import { listVideos } from "@/lib/videos";
@@ -312,10 +312,10 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </div>
       </details>
       {!multi && (() => {
-        const jumps = [offers.length > 0 && ["#offers", "العروض"], services.length > 0 && ["#prices", "الأسعار"], hours.length > 0 && ["#hours", "الدوام"], media.length > 1 && ["#photos", "الصور"], ["#ask", "استفسار"]].filter(Boolean) as [string, string][];
+        const jumps = [offers.length > 0 && ["#offers", "العروض"], services.length > 0 && ["#prices", "الأسعار"], hours.length > 0 && ["#hours", "الدوام"], media.length > 1 && ["#photos", "الصور"]].filter(Boolean) as [string, string][];
         return jumps.length > 2 && (
           <nav aria-label="أقسام الصفحة" className="sticky top-0 z-20 -mx-4 mt-4 flex gap-2 overflow-x-auto border-y border-white/10 bg-background/95 px-4 py-3 text-sm shadow-lg shadow-black/10 backdrop-blur [scrollbar-width:none] sm:-mx-6 sm:px-6">
-            {jumps.map(([h, l]) => <a key={h} href={h} className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-surface px-4 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 motion-reduce:transition-none">{l}</a>)}
+            {jumps.map(([h, l]) => <a key={h} href={h} className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-surface px-4 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none">{l}</a>)}
           </nav>
         );
       })()}
@@ -430,7 +430,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </>
       )}
 
-      <section id="ask" className="mt-8 scroll-mt-20"><InquiryForm action={sendInquiry.bind(null, org.id, org.slug)} /><ReportForm action={sendReport.bind(null, org.id, org.slug)} /></section>
+      <section aria-label="الإبلاغ عن مشكلة" className="mt-8"><ReportForm action={sendReport.bind(null, org.id, org.slug)} /></section>
     </div>
       {!multi && (waNumber(views[0].whatsapp) || views[0].phone || views[0].mapsHref) && (
         <>
