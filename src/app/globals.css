@@ -1,15 +1,18 @@
 @import "tailwindcss";
 
+/* Jordan Gym Reviews — Momentum identity */
 :root {
-  --background: #101827;
-  --surface: #192438;
-  --foreground: #F4F7FC;
-  --muted: #A7B3C7;
-  --accent: #FF6B4A;
-  --accent-foreground: #171B28;
-  --brand-blue: #3678F6;
-  --brand-cyan: #62D6E8;
-  --brand-border: #34435A;
+  --background: #10130f;
+  --surface: #1b2119;
+  --foreground: #f4f7ef;
+  --muted: #a7b2a0;
+  --accent: #d4ff00;
+  --accent-foreground: #151a0b;
+  --brand-blue: #a8cc18;
+  --brand-cyan: #d4ff00;
+  --brand-border: #343e2b;
+  --brand-lime: #d4ff00;
+  --brand-lime-soft: #a8cc18;
 }
 
 @theme inline {
@@ -22,13 +25,25 @@
   --font-sans: "Cairo Variable", system-ui, sans-serif;
 }
 
+html { color-scheme: dark; scroll-behavior: smooth; }
 body { background: var(--background); color: var(--foreground); font-family: "Cairo Variable", system-ui, sans-serif; }
-::selection { background: rgb(255 107 74 / 30%); color: var(--foreground); }
-:where(a, button, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid var(--brand-cyan); outline-offset: 3px; }
+::selection { background: rgb(212 255 0 / 28%); color: var(--foreground); }
+:where(a, button, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid var(--brand-lime); outline-offset: 3px; }
 :where(button, a, input, select, textarea) { -webkit-tap-highlight-color: transparent; }
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
-}
+
+/* Keep the existing pages consistent with the new brand without changing their behavior. */
+.text-accent { color: var(--brand-lime) !important; }
+.bg-accent { background-color: var(--brand-lime) !important; color: var(--accent-foreground) !important; }
+.border-accent { border-color: var(--brand-lime) !important; }
+.text-cyan-200, .text-cyan-100 { color: #d4ff00 !important; }
+.bg-cyan-300\/10, .bg-cyan-200\/10 { background-color: rgb(212 255 0 / 9%) !important; }
+.border-cyan-300\/20, .border-cyan-200\/20 { border-color: rgb(212 255 0 / 24%) !important; }
+.text-blue-100, .text-blue-200, .text-blue-300 { color: #dce9b4 !important; }
+.bg-blue-500 { background-color: #a8cc18 !important; }
+.from-blue-500 { --tw-gradient-from: #d4ff00 var(--tw-gradient-from-position) !important; --tw-gradient-to: rgb(212 255 0 / 0%) var(--tw-gradient-to-position) !important; }
+.to-blue-600 { --tw-gradient-to: #a8cc18 var(--tw-gradient-to-position) !important; }
+.ring-cyan-300:focus { --tw-ring-color: #d4ff00 !important; }
+.shadow-blue-950\/30 { --tw-shadow-color: rgb(0 0 0 / .3) !important; }
 
 /* Per-activity themes remain available to organizations. */
 .theme-night { --background: #0a0d24; --surface: #151a3f; --foreground: #eef0ff; --muted: #a3a9d6; --accent: #7c6cff; --accent-foreground: #ffffff; }
@@ -44,11 +59,14 @@ body { background: var(--background); color: var(--foreground); font-family: "Ca
 .glow { position: relative; isolation: isolate; }
 .glow::before { content: ""; position: absolute; inset: -4px; z-index: -1; border-radius: 1.4rem; background: var(--glow); filter: blur(14px); opacity: .7; animation: glow-pulse 3s ease-in-out infinite; }
 @keyframes glow-pulse { 0%,100% { opacity: .4; } 50% { opacity: .95; } }
-@media (prefers-reduced-motion: reduce) { .glow::before { animation: none; opacity: .7; } }
 .glow-gold { --glow: linear-gradient(135deg, #ffe08a, #ff9f1c, #ffd76a); }
-.glow-blue { --glow: linear-gradient(135deg, #38bdf8, #6366f1, #22d3ee); }
-.glow-green { --glow: linear-gradient(135deg, #34d399, #10b981, #86efac); }
+.glow-blue { --glow: linear-gradient(135deg, #d4ff00, #a8cc18, #eefc9a); }
+.glow-green { --glow: linear-gradient(135deg, #d4ff00, #a8cc18, #eefc9a); }
 .glow-pink { --glow: linear-gradient(135deg, #f472b6, #ec4899, #fb7185); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  .glow::before { animation: none; opacity: .7; }
+}
 @media print {
   .printing-one { background: #fff !important; }
   .printing-one [data-sec]:not([data-print-active]) { display: none !important; }
