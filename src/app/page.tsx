@@ -56,25 +56,25 @@ export default async function Home() {
                 <input name="q" aria-label="بحث" placeholder="شو حاب تتمرّن؟ نادي، مدرب، ملاعب..." className="min-w-0 flex-1 bg-transparent py-4 outline-none placeholder:text-muted/80 focus:ring-0" />
               </label>
               <div className="grid grid-cols-[1fr_auto] gap-2">
-                <select name="city" aria-label="المدينة" defaultValue="" className="min-w-0 rounded-xl bg-background px-3 py-3 text-sm ring-1 ring-white/10 focus:ring-cyan-300">
+                <select name="city" aria-label="المدينة" defaultValue="" className="min-w-0 rounded-xl bg-background px-3 py-3 text-sm ring-1 ring-white/10 focus:ring-[#d4ff00]">
                   <option value="">كل المدن</option>
                   {cities.map((c) => <option key={c.city} value={c.city}>{c.city}</option>)}
                 </select>
-                <button className="rounded-xl bg-[#d4ff00] text-[#151a0b] px-6 py-3 font-extrabold text-white shadow-lg shadow-black/30 transition hover:-translate-y-0.5 hover:brightness-110">اكتشف الآن <span aria-hidden>←</span></button>
+                <button className="rounded-xl bg-[#d4ff00] text-[#151a0b] px-6 py-3 font-extrabold shadow-lg shadow-black/30 transition hover:-translate-y-0.5 hover:brightness-110">اكتشف الآن <span aria-hidden>←</span></button>
               </div>
             </form>
             <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted sm:text-sm"><span className="inline-flex items-center gap-2"><span className="text-emerald-300">✓</span> قارن قبل ما تشترك</span><span className="inline-flex items-center gap-2"><span className="text-emerald-300">✓</span> معلومات محلية</span><span className="inline-flex items-center gap-2"><span className="text-emerald-300">✓</span> تواصل مباشر</span></div>
           </div>
           <div className="relative mx-auto w-full max-w-lg lg:me-0">
-            <div aria-hidden className="absolute inset-8 rounded-full bg-blue-500/20 blur-3xl" />
+            <div aria-hidden className="absolute inset-8 rounded-full bg-[#d4ff00]/10 blur-3xl" />
             <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[#252c20] via-[#1b2119] to-[#10130f] p-4 shadow-2xl shadow-black/40 sm:p-6">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div><p className="text-xs text-muted">رحلتك الرياضية تبدأ هون</p><p className="mt-1 text-lg font-extrabold">اختار أسلوبك</p></div>
-                <span className="rounded-2xl border border-cyan-200/20 bg-cyan-200/10 p-3 text-2xl">✦</span>
+                <span className="rounded-2xl border border-[#d4ff00]/20 bg-[#d4ff00]/10 p-3 text-2xl">✦</span>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3">
-                <Link href="/search?type=gym" className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-blue-400/50 hover:bg-blue-400/10"><span className="mb-6 flex size-11 items-center justify-center rounded-xl bg-blue-500/20 text-2xl">🏋️</span><span className="block font-extrabold">نوادي رياضية</span><span className="mt-1 block text-xs text-muted">اعرف الأسعار والمرافق</span></Link>
-                <Link href="/search?type=independent_coach" className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-cyan-300/50 hover:bg-[#d4ff00]/10"><span className="mb-6 flex size-11 items-center justify-center rounded-xl bg-cyan-300/15 text-2xl">🧑‍🏫</span><span className="block font-extrabold">مدربين شخصيين</span><span className="mt-1 block text-xs text-muted">خطة تناسب هدفك</span></Link>
+                <Link href="/search?type=gym" className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-[#d4ff00]/40 hover:bg-[#d4ff00]/10"><span className="mb-6 flex size-11 items-center justify-center rounded-xl bg-[#d4ff00]/10 text-2xl">🏋️</span><span className="block font-extrabold">نوادي رياضية</span><span className="mt-1 block text-xs text-muted">اعرف الأسعار والمرافق</span></Link>
+                <Link href="/search?type=independent_coach" className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-[#d4ff00]/40 hover:bg-[#d4ff00]/10"><span className="mb-6 flex size-11 items-center justify-center rounded-xl bg-[#d4ff00]/10 text-2xl">🧑‍🏫</span><span className="block font-extrabold">مدربين شخصيين</span><span className="mt-1 block text-xs text-muted">خطة تناسب هدفك</span></Link>
                 <Link href="/search?type=sports_facility" className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-orange-300/50 hover:bg-orange-300/10"><span className="mb-6 flex size-11 items-center justify-center rounded-xl bg-orange-400/15 text-2xl">⚽</span><span className="block font-extrabold">ملاعب ومنشآت</span><span className="mt-1 block text-xs text-muted">احجز لعبتك الجاية</span></Link>
                 <Link href="/pink" className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-pink-300/50 hover:bg-pink-300/10"><span className="mb-6 flex size-11 items-center justify-center rounded-xl bg-pink-400/15 text-2xl">💗</span><span className="block font-extrabold">مساحات للنساء</span><span className="mt-1 block text-xs text-muted">خيارات تناسبك</span></Link>
               </div>
