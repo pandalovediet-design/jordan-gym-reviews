@@ -52,9 +52,23 @@ export default async function Overview({ params }: PageProps<"/dashboard/[id]/ov
           <Link href={`/dashboard/${id}`} className="mt-3 inline-block text-sm text-accent underline">أكمل البيانات</Link></div>
       )}
       {org.status === "published" && (
-        <div className={`${box} space-y-2`}><p className="font-bold">رابط صفحتك</p>
-          <p className="break-all text-sm text-accent" dir="ltr">{base}/g/{org.slug}</p>
-          <Link href={`/g/${org.slug}`} className="text-sm underline">فتح الصفحة العامة</Link></div>
+        <div className={`${box} space-y-3`}>
+          <div>
+            <p className="font-bold">رابط صفحتك</p>
+            <p className="break-all text-sm text-accent" dir="ltr">{base}/g/{org.slug}</p>
+            <Link href={`/g/${org.slug}`} className="mt-1 inline-block text-sm underline">فتح الصفحة العامة</Link>
+          </div>
+          <div className="rounded-xl border border-accent/25 bg-accent/5 p-4">
+            <p className="font-bold">📲 خلّي الزوار يوصلولك بسهولة</p>
+            <p className="mt-1 text-sm text-muted">نزّل رمز QR واطبعه عند المدخل أو حطه على الكاونتر — الزبون بمسحه وبوصل مباشرة لصفحتك على Jordan Gym Reviews.</p>
+            <p className="mt-2 text-sm font-extrabold text-accent">زورونا ع جوردان جيم</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <a href={`/g/${org.slug}/qr?format=png&download=1`} className="inline-flex min-h-10 items-center justify-center rounded-xl bg-accent px-4 py-2 text-sm font-bold text-accent-foreground">تنزيل QR — PNG</a>
+              <a href={`/g/${org.slug}/qr?format=svg&download=1`} className="inline-flex min-h-10 items-center justify-center rounded-xl border border-white/15 px-4 py-2 text-sm font-bold hover:border-accent">تنزيل للطباعة — SVG</a>
+              <Link href={`/g/${org.slug}/qr`} target="_blank" className="inline-flex min-h-10 items-center justify-center rounded-xl border border-white/15 px-4 py-2 text-sm font-bold hover:border-accent">معاينة الرمز</Link>
+            </div>
+          </div>
+        </div>
       )}
 
       <section>
