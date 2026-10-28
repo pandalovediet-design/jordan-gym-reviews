@@ -57,6 +57,27 @@ export default async function Overview({ params }: PageProps<"/dashboard/[id]/ov
           <Link href={`/g/${org.slug}`} className="text-sm underline">فتح الصفحة العامة</Link></div>
       )}
 
+      <section>
+        <h2 className="mb-3 text-lg font-bold">اختصارات سريعة</h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {[
+            { href: `/dashboard/${id}`, icon: "✏️", title: "تعديل صفحة النشاط", detail: "الصور والأسعار والخدمات" },
+            { href: `/dashboard/${id}/inquiries`, icon: "💬", title: "الرسائل والاستفسارات", detail: "تابع تواصل الزوار" },
+            { href: `/dashboard/${id}/stats`, icon: "📊", title: "أداء النشاط", detail: "المشاهدات والتواصل" },
+            ...(showMembers ? [{ href: `/dashboard/${id}/members`, icon: "👥", title: "الأعضاء والاشتراكات", detail: "إدارة المشتركين" }] : []),
+            { href: `/dashboard/${id}/growth`, icon: "🚀", title: "أدوات النمو", detail: "طرق زيادة الوصول" },
+          ].map((item) => (
+            <Link key={item.href} href={item.href} className="group flex min-h-28 flex-col justify-between gap-3 rounded-2xl border border-white/10 bg-surface p-4 transition hover:-translate-y-0.5 hover:border-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+              <span className="text-2xl" aria-hidden="true">{item.icon}</span>
+              <span>
+                <span className="block font-bold group-hover:text-accent">{item.title}</span>
+                <span className="mt-1 block text-xs leading-5 text-muted">{item.detail}</span>
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       <section><h2 className="mb-3 text-lg font-bold">آخر 7 أيام</h2>
         <div className="grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
           {([["مشاهدات", "page_view"], ["واتساب", "whatsapp_click"], ["اتصال", "phone_click"], ["مسح QR", "qr_scan"]] as const).map(([l, t]) => (
