@@ -62,7 +62,7 @@ export function AdminTabs() {
         <nav aria-label={current.label} className="flex snap-x gap-2 overflow-x-auto overscroll-x-contain border-t border-white/10 pt-2 pb-1 text-xs [scrollbar-width:thin] md:flex-wrap">
           {current.tabs.map((t) => (
             <Link key={t.href} href={t.href} aria-current={matches(path, t.href) ? "page" : undefined}
-              className={`${navLink} snap-start ${matches(path, t.href) ? "bg-white/15 font-bold text-foreground" : "text-muted hover:text-foreground"}`}>{t.label}</Link>
+              className={`${navLink} snap-start ${matches(path, t.href) ? "bg-accent/15 font-bold text-accent" : "text-muted hover:text-foreground"}`}>{t.label}</Link>
           ))}
         </nav>
       )}

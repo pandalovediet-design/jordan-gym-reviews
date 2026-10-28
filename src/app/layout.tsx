@@ -7,7 +7,7 @@ import { JsonLd } from "@/lib/jsonld";
 import { PwaRegister } from "@/components/PwaRegister";
 import { QuranAudioProvider, QuranMiniBar } from "@/components/QuranAudio";
 
-export const viewport: Viewport = { themeColor: "#101827" };
+export const viewport: Viewport = { themeColor: "#10130f" };
 
 export const metadata: Metadata = {
   applicationName: "Jordan Gym Reviews",

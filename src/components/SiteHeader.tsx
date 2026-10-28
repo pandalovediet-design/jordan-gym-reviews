@@ -17,7 +17,7 @@ export async function SiteHeader() {
           className="group flex min-w-0 items-center gap-2.5 rounded-xl text-sm font-black tracking-tight transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:gap-3 sm:text-lg"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand-mark.svg" alt="" width={44} height={44} className="size-10 shrink-0 rounded-2xl object-cover shadow-lg shadow-blue-950/30 transition-transform duration-300 group-hover:-rotate-3 motion-reduce:transition-none motion-reduce:transform-none sm:size-11" />
+          <img src="/brand-mark.svg" alt="" width={44} height={44} className="size-10 shrink-0 rounded-2xl object-cover shadow-lg shadow-black/30 transition-transform duration-300 group-hover:-rotate-3 motion-reduce:transition-none motion-reduce:transform-none sm:size-11" />
           <span className="truncate">Jordan <span className="text-accent">Gym</span> Reviews</span>
         </Link>
         <div className="flex shrink-0 items-center gap-1.5 text-sm sm:gap-2">
