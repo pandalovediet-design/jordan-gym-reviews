@@ -41,18 +41,18 @@ export default async function Home() {
   const sponsored = ads.filter((a) => a.placement === "sponsored").slice(0, 3);
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6">
-      <section className="relative isolate -mx-4 overflow-hidden rounded-b-[2rem] border-b border-white/10 bg-[radial-gradient(ellipse_at_15%_10%,rgba(54,120,246,.22),transparent_38%),radial-gradient(ellipse_at_85%_80%,rgba(98,214,232,.10),transparent_34%)] px-4 pb-10 pt-8 sm:rounded-b-[2.75rem] sm:px-8 sm:pb-16 sm:pt-12 lg:pb-20">
+      <section className="relative isolate -mx-4 overflow-hidden rounded-b-[2rem] border-b border-white/10 bg-[radial-gradient(ellipse_at_15%_10%,rgba(212,255,0,.15),transparent_38%),radial-gradient(ellipse_at_85%_80%,rgba(168,204,24,.09),transparent_34%)] px-4 pb-10 pt-8 sm:rounded-b-[2.75rem] sm:px-8 sm:pb-16 sm:pt-12 lg:pb-20">
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 opacity-40 [background-image:linear-gradient(rgba(255,255,255,.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.035)_1px,transparent_1px)] [background-size:36px_36px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
         <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[1.1fr_.9fr] lg:gap-14">
           <div className="text-right">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-xs font-bold text-cyan-200 sm:text-sm"><span className="size-2 animate-pulse rounded-full bg-emerald-400 motion-reduce:animate-none" /> دليلك الرياضي من عمّان لكل الأردن</div>
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#d4ff00]/20 bg-[#d4ff00]/10 px-3 py-1.5 text-xs font-bold text-[#d4ff00] sm:text-sm"><span className="size-2 animate-pulse rounded-full bg-emerald-400 motion-reduce:animate-none" /> دليلك الرياضي من عمّان لكل الأردن</div>
             <h1 className="max-w-3xl text-4xl font-black leading-[1.25] tracking-tight sm:text-5xl lg:text-6xl">
-              {cfg.heroTitle}<br /><span className="bg-gradient-to-l from-cyan-200 via-blue-300 to-blue-500 bg-clip-text text-transparent">{cfg.heroAccent}</span>
+              {cfg.heroTitle}<br /><span className="bg-gradient-to-l from-[#efffa0] via-[#d4ff00] to-[#a8cc18] bg-clip-text text-transparent">{cfg.heroAccent}</span>
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-muted sm:text-lg">{cfg.heroSubtitle}</p>
             <form action="/search" className="mt-8 grid gap-2 rounded-2xl border border-white/10 bg-surface/90 p-2 shadow-2xl shadow-black/20 backdrop-blur sm:grid-cols-[1fr_auto]">
               <label className="flex min-w-0 items-center gap-3 rounded-xl bg-background/70 px-4">
-                <span aria-hidden className="text-xl text-cyan-200">⌕</span>
+                <span aria-hidden className="text-xl text-[#d4ff00]">⌕</span>
                 <input name="q" aria-label="بحث" placeholder="شو حاب تتمرّن؟ نادي، مدرب، ملاعب..." className="min-w-0 flex-1 bg-transparent py-4 outline-none placeholder:text-muted/80 focus:ring-0" />
               </label>
               <div className="grid grid-cols-[1fr_auto] gap-2">
@@ -60,21 +60,21 @@ export default async function Home() {
                   <option value="">كل المدن</option>
                   {cities.map((c) => <option key={c.city} value={c.city}>{c.city}</option>)}
                 </select>
-                <button className="rounded-xl bg-gradient-to-l from-blue-500 to-blue-600 px-6 py-3 font-extrabold text-white shadow-lg shadow-blue-950/30 transition hover:-translate-y-0.5 hover:brightness-110">اكتشف الآن <span aria-hidden>←</span></button>
+                <button className="rounded-xl bg-[#d4ff00] text-[#151a0b] px-6 py-3 font-extrabold text-white shadow-lg shadow-black/30 transition hover:-translate-y-0.5 hover:brightness-110">اكتشف الآن <span aria-hidden>←</span></button>
               </div>
             </form>
             <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted sm:text-sm"><span className="inline-flex items-center gap-2"><span className="text-emerald-300">✓</span> قارن قبل ما تشترك</span><span className="inline-flex items-center gap-2"><span className="text-emerald-300">✓</span> معلومات محلية</span><span className="inline-flex items-center gap-2"><span className="text-emerald-300">✓</span> تواصل مباشر</span></div>
           </div>
           <div className="relative mx-auto w-full max-w-lg lg:me-0">
             <div aria-hidden className="absolute inset-8 rounded-full bg-blue-500/20 blur-3xl" />
-            <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[#243653] via-[#18253a] to-[#111827] p-4 shadow-2xl shadow-black/40 sm:p-6">
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[#252c20] via-[#1b2119] to-[#10130f] p-4 shadow-2xl shadow-black/40 sm:p-6">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div><p className="text-xs text-muted">رحلتك الرياضية تبدأ هون</p><p className="mt-1 text-lg font-extrabold">اختار أسلوبك</p></div>
                 <span className="rounded-2xl border border-cyan-200/20 bg-cyan-200/10 p-3 text-2xl">✦</span>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <Link href="/search?type=gym" className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-blue-400/50 hover:bg-blue-400/10"><span className="mb-6 flex size-11 items-center justify-center rounded-xl bg-blue-500/20 text-2xl">🏋️</span><span className="block font-extrabold">نوادي رياضية</span><span className="mt-1 block text-xs text-muted">اعرف الأسعار والمرافق</span></Link>
-                <Link href="/search?type=independent_coach" className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-cyan-300/50 hover:bg-cyan-300/10"><span className="mb-6 flex size-11 items-center justify-center rounded-xl bg-cyan-300/15 text-2xl">🧑‍🏫</span><span className="block font-extrabold">مدربين شخصيين</span><span className="mt-1 block text-xs text-muted">خطة تناسب هدفك</span></Link>
+                <Link href="/search?type=independent_coach" className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-cyan-300/50 hover:bg-[#d4ff00]/10"><span className="mb-6 flex size-11 items-center justify-center rounded-xl bg-cyan-300/15 text-2xl">🧑‍🏫</span><span className="block font-extrabold">مدربين شخصيين</span><span className="mt-1 block text-xs text-muted">خطة تناسب هدفك</span></Link>
                 <Link href="/search?type=sports_facility" className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-orange-300/50 hover:bg-orange-300/10"><span className="mb-6 flex size-11 items-center justify-center rounded-xl bg-orange-400/15 text-2xl">⚽</span><span className="block font-extrabold">ملاعب ومنشآت</span><span className="mt-1 block text-xs text-muted">احجز لعبتك الجاية</span></Link>
                 <Link href="/pink" className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-pink-300/50 hover:bg-pink-300/10"><span className="mb-6 flex size-11 items-center justify-center rounded-xl bg-pink-400/15 text-2xl">💗</span><span className="block font-extrabold">مساحات للنساء</span><span className="mt-1 block text-xs text-muted">خيارات تناسبك</span></Link>
               </div>
@@ -84,7 +84,7 @@ export default async function Home() {
             <div className="absolute -left-2 top-10 hidden -translate-x-1/4 rounded-2xl border border-white/10 bg-surface/95 px-4 py-3 shadow-xl backdrop-blur sm:block"><p className="text-xs text-muted">قرار أذكى</p><p className="mt-1 text-sm font-extrabold">قارن. اختار. انطلق.</p></div>
           </div>
         </div>
-        {show.tiles && <div className="mx-auto mt-10 max-w-7xl border-t border-white/10 pt-6 sm:mt-14"><div className="mb-4 flex items-center justify-between"><p className="font-extrabold">تصفّح حسب اهتمامك</p><Link href="/sections" className="text-sm text-cyan-200 hover:text-white">كل الأقسام ←</Link></div><div className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">{TYPE_TILES.map((t) => <Link key={t.href} href={t.href} className="flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-surface/70 px-4 py-2.5 text-sm transition hover:border-cyan-300/40 hover:bg-cyan-300/10"><span aria-hidden className="text-lg">{t.icon}</span><span className="font-bold">{t.label}</span></Link>)}</div></div>}
+        {show.tiles && <div className="mx-auto mt-10 max-w-7xl border-t border-white/10 pt-6 sm:mt-14"><div className="mb-4 flex items-center justify-between"><p className="font-extrabold">تصفّح حسب اهتمامك</p><Link href="/sections" className="text-sm text-[#d4ff00] hover:text-white">كل الأقسام ←</Link></div><div className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">{TYPE_TILES.map((t) => <Link key={t.href} href={t.href} className="flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-surface/70 px-4 py-2.5 text-sm transition hover:border-cyan-300/40 hover:bg-[#d4ff00]/10"><span aria-hidden className="text-lg">{t.icon}</span><span className="font-bold">{t.label}</span></Link>)}</div></div>}
       </section>
       {show.banner && banner && (
         <a href={`/a/${banner.id}`} rel="sponsored noopener" className="relative mb-10 block overflow-hidden rounded-2xl bg-surface ring-1 ring-white/10">
