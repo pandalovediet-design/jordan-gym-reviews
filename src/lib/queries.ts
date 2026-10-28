@@ -71,7 +71,8 @@ export async function searchOrgs(opts: { q?: string; type?: string; city?: strin
     .select(LISTING_COLS, { count: "exact" })
     .order("is_featured", { ascending: false })
     .order("featured_rank", { ascending: false })
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: true });
   query = opts.near ? query.range(0, 499) : query.range((opts.page - 1) * PAGE_SIZE, opts.page * PAGE_SIZE - 1);
   const q = cleanQuery(opts.q ?? "");
   if (q) query = query.or(`name_ar.ilike.%${q}%,name_en.ilike.%${q}%,area.ilike.%${q}%`);
