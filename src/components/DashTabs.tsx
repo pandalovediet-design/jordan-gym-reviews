@@ -10,6 +10,7 @@ export function DashTabs({ id, showMembers, newInquiries = 0 }: { id: string; sh
     { href: `/dashboard/${id}`, label: "✏️ تعديل صفحتي" },
     { href: `/dashboard/${id}/inquiries`, label: "الاستفسارات", count: newInquiries },
     { href: `/dashboard/${id}/stats`, label: "الإحصائيات" },
+    { href: `/dashboard/${id}/growth`, label: "🚀 أدوات النمو" },
     ...(showMembers ? [{ href: `/dashboard/${id}/members`, label: "الأعضاء والاشتراكات" }, { href: `/dashboard/${id}/attendance`, label: "سجل الحضور" }] : []),
     { href: `/dashboard/${id}/domain`, label: "الدومين" },
   ];
