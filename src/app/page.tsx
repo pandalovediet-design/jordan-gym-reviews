@@ -2,6 +2,7 @@ import Link from "next/link";
 import { FlashStrip } from "@/components/FlashStrip";
 import { OrgCard } from "@/components/OrgCard";
 import { TrailCard } from "@/components/TrailCard";
+import { GymJoMotion } from "@/components/GymJoMotion";
 import { adImageUrl, listLiveAds } from "@/lib/ads";
 import { listActiveOffers, listCities, listHomeSections, listLiveFlash, listPartners, listTrails } from "@/lib/queries";
 import { getSiteSettings } from "@/lib/site-settings";
@@ -43,7 +44,7 @@ export default async function Home() {
     <div className="mx-auto max-w-7xl px-4 sm:px-6">
       <section className="relative isolate -mx-4 overflow-hidden rounded-b-[2rem] bg-[#f3f8ee] px-4 pb-8 pt-7 text-[#18372a] sm:rounded-b-[2.5rem] sm:px-8 sm:pb-10 sm:pt-10">
         <div className="mx-auto grid max-w-7xl items-center gap-6 lg:grid-cols-[1fr_.85fr] lg:gap-10">
-          <div className="text-right">
+          <div data-gymjo-reveal className="text-right">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-extrabold text-[#1d6b45] shadow-sm sm:text-sm"><span aria-hidden>🐼</span> دليلك الرياضي في الأردن</div>
             <h1 className="max-w-3xl text-3xl font-black leading-[1.35] tracking-tight sm:text-4xl lg:text-5xl">
               {cfg.heroTitle}<br /><span className="text-[#21834f]">{cfg.heroAccent}</span>
@@ -64,15 +65,16 @@ export default async function Home() {
             </form>
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[#617568] sm:text-sm"><span>✓ قارن قبل ما تشترك</span><span>✓ معلومات محلية</span><span>✓ تواصل مباشر</span></div>
           </div>
-          <div className="rounded-[1.75rem] bg-white p-4 shadow-lg shadow-[#1c5737]/8 ring-1 ring-[#dce9dd] sm:p-5">
-            <div className="mb-4 flex items-center justify-between gap-3">
+          <div data-gymjo-reveal className="relative isolate overflow-hidden rounded-[1.75rem] bg-white p-4 shadow-lg shadow-[#1c5737]/8 ring-1 ring-[#dce9dd] sm:p-5">
+            <GymJoMotion />
+            <div className="relative z-10 mb-4 flex items-center justify-between gap-3">
               <div><p className="text-xs font-semibold text-[#819187]">ابدأ من هون</p><p className="mt-1 text-lg font-black">شو بتدور عليه اليوم؟</p></div>
               <span className="flex size-11 items-center justify-center rounded-2xl bg-[#e8f4e8] text-2xl">🏃</span>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="relative z-10 grid grid-cols-2 gap-3">
               {TYPE_TILES.slice(0, 6).map((t) => <Link key={t.href} href={t.href} className="group flex items-center gap-3 rounded-2xl border border-[#e5eee4] bg-[#fbfcfa] p-3 transition hover:border-[#91c9a1] hover:bg-[#f0f8ee]"><span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#e8f4e8] text-xl">{t.icon}</span><span className="text-sm font-extrabold">{t.label}</span><span aria-hidden className="mr-auto text-[#819187] transition group-hover:-translate-x-1">←</span></Link>)}
             </div>
-            <Link href="/sections" className="mt-3 flex items-center justify-between rounded-xl bg-[#f0f8ee] px-4 py-3 text-sm font-extrabold text-[#21834f] transition hover:bg-[#e4f2e1]"><span>كل التصنيفات الرياضية</span><span aria-hidden>←</span></Link>
+            <Link href="/sections" className="relative z-10 mt-3 flex items-center justify-between rounded-xl bg-[#f0f8ee] px-4 py-3 text-sm font-extrabold text-[#21834f] transition hover:bg-[#e4f2e1]"><span>كل التصنيفات الرياضية</span><span aria-hidden>←</span></Link>
           </div>
         </div>
         {show.tiles && <div className="mx-auto mt-7 max-w-7xl border-t border-[#dce9dd] pt-5"><div className="mb-3 flex items-center justify-between"><p className="font-extrabold">تصفّح بسرعة</p><Link href="/sections" className="text-sm font-bold text-[#21834f]">كل الأقسام ←</Link></div><div className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">{TYPE_TILES.map((t) => <Link key={t.href} href={t.href} className="flex shrink-0 items-center gap-2 rounded-full border border-[#dce9dd] bg-white px-4 py-2.5 text-sm transition hover:border-[#91c9a1] hover:bg-[#f0f8ee]"><span aria-hidden className="text-lg">{t.icon}</span><span className="font-bold">{t.label}</span></Link>)}</div></div>}
