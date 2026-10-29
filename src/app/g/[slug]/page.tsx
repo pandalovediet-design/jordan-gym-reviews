@@ -256,7 +256,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} fetchPriority="high" decoding="async" className="aspect-[16/9] w-full object-cover sm:aspect-[2.6/1]" />
         </figure>
       )}
-      <div className={`relative z-10 mx-2 -mt-12 rounded-3xl border border-white/10 bg-surface p-5 shadow-2xl shadow-black/20 sm:mx-6 sm:-mt-16 sm:p-7 ${glow ? `glow glow-${glow}` : ""}`}>
+      <div className={`relative z-10 mx-2 ${media[0] ? "-mt-12" : "mt-0"} rounded-3xl border border-white/10 bg-surface p-5 shadow-2xl shadow-black/20 sm:mx-6 sm:-mt-16 sm:p-7 ${glow ? `glow glow-${glow}` : ""}`}>
       {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
       <p className="text-sm text-muted">{category ?? ORG_TYPE_LABEL[org.type]}{isVerified(org) && <span className="text-accent"> · ✓ موثّق</span>}{multi && <span> · {views.length} فروع</span>}</p>
       {coachProfile && (coachProfile.education || coachProfile.experience_years != null) && (
@@ -297,6 +297,12 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </nav>
       )}
 
+      {!multi && <OrgSectionNav items={[
+        ...(media.length > 1 ? [{ href: "#photos", label: "الصور" }] : []),
+        ...(offers.length > 0 ? [{ href: "#offers", label: "العروض" }] : []),
+        ...(services.length > 0 ? [{ href: "#prices", label: "الأسعار والخدمات" }] : []),
+        ...(hours.length > 0 ? [{ href: "#hours", label: "الدوام" }] : []),
+      ]} />}
       <div className="mt-5 flex flex-wrap gap-2 sm:gap-3 [&>a]:min-h-11 [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center [&>a]:text-center">
         {wa && org.free_trial_note && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${trialMsg}`} className="rounded-xl bg-accent/15 px-5 py-2.5 font-bold text-accent ring-1 ring-accent/50">🎟 {org.free_trial_note}</TrackedLink>}
         <a href={shareHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">شارك على واتساب</a>
@@ -315,12 +321,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           </div>
         </div>
       </details>
-      {!multi && <OrgSectionNav items={[
-        ...(media.length > 1 ? [{ href: "#photos", label: "الصور" }] : []),
-        ...(offers.length > 0 ? [{ href: "#offers", label: "العروض" }] : []),
-        ...(services.length > 0 ? [{ href: "#prices", label: "الأسعار والخدمات" }] : []),
-        ...(hours.length > 0 ? [{ href: "#hours", label: "الدوام" }] : []),
-      ]} />}
+
       {reviewVideos.length > 0 && (
         <section className="mt-6 rounded-2xl bg-accent/10 p-4 ring-1 ring-accent/30">
           <h2 className="mb-1 text-lg font-bold">🎬 مراجعة عبد الكريم</h2>
