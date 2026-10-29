@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { HeaderAuth } from "@/components/HeaderAuth";
-import { InstallButton } from "@/components/InstallButton";
+import { InstallButton } from "@/components/InstallButton";\nimport { ThemeToggle } from "@/components/ThemeToggle";
 import { SiteTabs, type NavLink } from "@/components/SiteTabs";
 import { NAV_CATALOG } from "@/lib/site-settings";
 
