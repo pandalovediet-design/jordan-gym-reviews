@@ -46,11 +46,11 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
     return `/search?${u}`;
   };
   const activeFilters = mode === "products" ? 0 : [type, city, area, category, women, maxPrice, trial, mosque, quiet, kidsArea, kids, transport, access].filter(Boolean).length + (near ? 1 : 0);
-  const field = "min-h-11 w-full rounded-xl border border-[#dce9dd] bg-white px-3 py-2.5 text-[#18372a] placeholder:text-[#819187] outline-none transition focus-visible:ring-2 focus-visible:ring-[#21834f] focus-visible:ring-offset-1";
+  const field = "min-h-11 w-full rounded-xl border border-[#dce9dd] bg-white px-3 py-2.5 text-[#18372a] placeholder:text-[#819187] outline-none transition focus-visible:ring-2 focus-visible:ring-[#21834f] focus-visible:ring-offset-1 dark:border-[#405366] dark:bg-[#212d3b] dark:text-[#e5edf5] dark:placeholder:text-[#9aaaba]";
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
-      <div className="mb-7 rounded-3xl border border-[#dce9dd] bg-[radial-gradient(ellipse_at_10%_0%,rgba(101,183,122,.2),transparent_45%),linear-gradient(135deg,#f3f8ee,#ffffff)] p-4 shadow-sm shadow-[#1c5737]/5 sm:p-7"><div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="mb-2 text-xs font-extrabold tracking-wider text-[#21834f]">دليل GymJo الرياضي</p><h1 className="text-2xl font-black sm:text-3xl">{q ? `نتائج البحث عن «${q}»` : mode === "products" ? "السوق الرياضي" : "دليل الأنشطة الرياضية"}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">قارن الأماكن والخدمات حسب المدينة والسعر والمرافق، واختار الأنسب لهدفك.</p></div><Link href="/sections" className="rounded-full border border-[#dce9dd] bg-white px-4 py-2 text-sm font-bold transition hover:border-[#91c9a1] hover:bg-[#f0f8ee]">تصفّح الأقسام ←</Link></div><form className="mb-0">
+      <div className="mb-7 rounded-3xl border border-[#dce9dd] bg-[radial-gradient(ellipse_at_10%_0%,rgba(101,183,122,.2),transparent_45%),linear-gradient(135deg,#f3f8ee,#ffffff)] p-4 shadow-sm dark:border-[#344454] dark:bg-[#1b2733] shadow-[#1c5737]/5 sm:p-7"><div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="mb-2 text-xs font-extrabold tracking-wider text-[#21834f]">دليل GymJo الرياضي</p><h1 className="text-2xl font-black sm:text-3xl">{q ? `نتائج البحث عن «${q}»` : mode === "products" ? "السوق الرياضي" : "دليل الأنشطة الرياضية"}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">قارن الأماكن والخدمات حسب المدينة والسعر والمرافق، واختار الأنسب لهدفك.</p></div><Link href="/sections" className="rounded-full border border-[#dce9dd] bg-white px-4 py-2 text-sm font-bold transition hover:border-[#91c9a1] hover:bg-[#f0f8ee] dark:border-[#405366] dark:bg-[#212d3b] dark:text-[#e5edf5] dark:hover:bg-[#294638]">تصفّح الأقسام ←</Link></div><form className="mb-0">
         {near && mode === "orgs" && <><input type="hidden" name="lat" value={near.lat} /><input type="hidden" name="lng" value={near.lng} /></>}
         <div className="flex gap-2">
           <input name="q" aria-label="كلمات البحث" defaultValue={q} placeholder="ابحث..." className={`${field} min-w-0 flex-1`} />
@@ -61,7 +61,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
             <option value="orgs">الأنشطة والأماكن</option><option value="products">المنتجات الرياضية</option>
           </select>
         </label>
-        {mode === "orgs" && <details open={activeFilters > 0} className="mt-3 rounded-2xl bg-white/80 ring-1 ring-[#dce9dd]">
+        {mode === "orgs" && <details open={activeFilters > 0} className="mt-3 rounded-2xl bg-white/80 ring-1 ring-[#dce9dd] dark:bg-[#202c38] dark:ring-[#344454]">
           <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 px-4 py-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">
             <span>⚙️ فلترة النتائج</span>
             {activeFilters > 0 && <span className="rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground">{activeFilters}</span>}
