@@ -224,7 +224,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
     <>
       {v.women_access === "women_only" && <div className="mb-3 rounded-xl bg-pink-500 px-4 py-2 text-center font-bold text-white">💗 {WOMEN_LABEL.women_only} — خاص بالنساء</div>}
       {v.women_access === "women_hours" && (
-        <div className="mb-3 rounded-xl bg-pink-500/15 px-4 py-2 text-sm text-pink-200 ring-1 ring-pink-400/40">💗 {WOMEN_LABEL.women_hours}{v.women_hours_note ? `: ${v.women_hours_note}` : ""}</div>
+        <div className="mb-3 rounded-xl bg-pink-50 px-4 py-2 text-sm text-pink-800 ring-1 ring-pink-200">💗 {WOMEN_LABEL.women_hours}{v.women_hours_note ? `: ${v.women_hours_note}` : ""}</div>
       )}
     </>
   );
@@ -234,8 +234,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
     return (
       <>
         {n && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${n}?text=${msg(multi ? ` (${v.name})` : "")}`} className={`${actionClass} bg-accent font-bold text-accent-foreground`}>واتساب</TrackedLink>}
-        {v.phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${v.phone}`} className={`${actionClass} bg-surface ring-1 ring-white/10`}>اتصال</TrackedLink>}
-        {v.mapsHref && <a href={v.mapsHref} target="_blank" rel="noopener noreferrer" className={`${actionClass} bg-surface ring-1 ring-white/10`}>الموقع على الخريطة</a>}
+        {v.phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${v.phone}`} className={`${actionClass} bg-white ring-1 ring-[#e0e9df]`}>اتصال</TrackedLink>}
+        {v.mapsHref && <a href={v.mapsHref} target="_blank" rel="noopener noreferrer" className={`${actionClass} bg-white ring-1 ring-[#e0e9df]`}>الموقع على الخريطة</a>}
       </>
     );
   };
@@ -270,17 +270,17 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       )}
       {(org.has_mosque || org.no_music || org.has_kids_area || org.kids_friendly || org.kids_transport) && (
         <p className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-          {org.has_kids_area && <span className="rounded-full bg-amber-500/15 px-3 py-1 font-bold text-amber-300 ring-1 ring-amber-400/30">🧒 Kids Area</span>}
-          {org.kids_friendly && <span className="rounded-full bg-amber-500/15 px-3 py-1 font-bold text-amber-300 ring-1 ring-amber-400/30">👶 مهيّأ للأطفال (5–12)</span>}
-          {org.kids_transport && <span className="rounded-full bg-amber-500/15 px-3 py-1 font-bold text-amber-300 ring-1 ring-amber-400/30">🚌 مواصلات للأطفال{org.transport_note ? `: ${org.transport_note}` : ""}</span>}
-          {org.has_mosque && <span className="rounded-full bg-emerald-500/15 px-3 py-1 font-bold text-emerald-300 ring-1 ring-emerald-400/30">🕌 فيه مصلى</span>}
-          {org.no_music && <span className="rounded-full bg-sky-500/15 px-3 py-1 font-bold text-sky-300 ring-1 ring-sky-400/30">🔇 بدون موسيقى</span>}
+          {org.has_kids_area && <span className="rounded-full bg-amber-50 px-3 py-1 font-bold text-amber-800 ring-1 ring-amber-200">🧒 Kids Area</span>}
+          {org.kids_friendly && <span className="rounded-full bg-amber-50 px-3 py-1 font-bold text-amber-800 ring-1 ring-amber-200">👶 مهيّأ للأطفال (5–12)</span>}
+          {org.kids_transport && <span className="rounded-full bg-amber-50 px-3 py-1 font-bold text-amber-800 ring-1 ring-amber-200">🚌 مواصلات للأطفال{org.transport_note ? `: ${org.transport_note}` : ""}</span>}
+          {org.has_mosque && <span className="rounded-full bg-emerald-50 px-3 py-1 font-bold text-emerald-800 ring-1 ring-emerald-200">🕌 فيه مصلى</span>}
+          {org.no_music && <span className="rounded-full bg-sky-50 px-3 py-1 font-bold text-sky-800 ring-1 ring-sky-200">🔇 بدون موسيقى</span>}
           <span className="text-xs text-muted">حسب صاحب النشاط</span>
         </p>
       )}
       {(org.accessibility ?? []).length > 0 && (
-        <div className="mt-3 rounded-2xl bg-violet-500/10 p-4 text-sm ring-1 ring-violet-400/30">
-          <p className="font-bold text-violet-200">♿ تهيئة لذوي الاحتياجات الخاصة <span className="text-xs font-normal text-muted">(حسب صاحب النشاط)</span></p>
+        <div className="mt-3 rounded-2xl bg-violet-50 p-4 text-sm ring-1 ring-violet-200">
+          <p className="font-bold text-violet-800">♿ تهيئة لذوي الاحتياجات الخاصة <span className="text-xs font-normal text-muted">(حسب صاحب النشاط)</span></p>
           <ul className="mt-2 list-disc space-y-1 pr-5">{(org.accessibility ?? []).map((k: string) => <li key={k}>{accessLabel(k)}</li>)}</ul>
         </div>
       )}
@@ -288,16 +288,16 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       </div>
       {multi && (
         <nav className="mt-3 flex flex-wrap gap-2 text-sm" aria-label="فروع النشاط">
-          {views.map((v) => <a key={v.id} href={`#b-${v.id}`} className="inline-flex min-h-11 items-center rounded-full bg-surface px-4 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none">{v.name} — {v.city}{v.women_access === "women_only" && " 💗"}</a>)}
+          {views.map((v) => <a key={v.id} href={`#b-${v.id}`} className="inline-flex min-h-11 items-center rounded-full bg-white px-4 ring-1 ring-[#e0e9df] transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none">{v.name} — {v.city}{v.women_access === "women_only" && " 💗"}</a>)}
         </nav>
       )}
 
       <div className="mt-5 flex flex-wrap gap-2 sm:gap-3 [&>a]:min-h-11 [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center [&>a]:text-center">
         {!multi && contactButtons(views[0])}
         {wa && org.free_trial_note && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${trialMsg}`} className="rounded-xl bg-accent/15 px-5 py-2.5 font-bold text-accent ring-1 ring-accent/50">🎟 {org.free_trial_note}</TrackedLink>}
-        <a href={shareHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">شارك على واتساب</a>
-        <a href={`/g/${org.slug}/card`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">🖼 كرت للمنشور</a>
-        <a href={`/g/${org.slug}/card?s=1`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">📱 كرت للستوري</a>
+        <a href={shareHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-white px-5 py-2.5 ring-1 ring-[#e0e9df]">شارك على واتساب</a>
+        <a href={`/g/${org.slug}/card`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-white px-5 py-2.5 ring-1 ring-[#e0e9df]">🖼 كرت للمنشور</a>
+        <a href={`/g/${org.slug}/card?s=1`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-white px-5 py-2.5 ring-1 ring-[#e0e9df]">📱 كرت للستوري</a>
       </div>
       <details className="mt-3 w-fit rounded-xl bg-white ring-1 ring-[#e0e9df] [&[open]]:p-4">
         <summary className="min-h-11 cursor-pointer list-none rounded-xl px-5 py-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent [&::-webkit-details-marker]:hidden">📲 QR للمشاركة</summary>
@@ -315,7 +315,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         const jumps = [offers.length > 0 && ["#offers", "العروض"], services.length > 0 && ["#prices", "الأسعار"], hours.length > 0 && ["#hours", "الدوام"], media.length > 1 && ["#photos", "الصور"]].filter(Boolean) as [string, string][];
         return jumps.length > 2 && (
           <nav aria-label="أقسام الصفحة" className="sticky top-0 z-20 -mx-4 mt-4 flex gap-2 overflow-x-auto border-y border-[#e0e9df] bg-background/95 px-4 py-3 text-sm shadow-lg shadow-black/10 backdrop-blur [scrollbar-width:none] sm:-mx-6 sm:px-6">
-            {jumps.map(([h, l]) => <a key={h} href={h} className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-surface px-4 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none">{l}</a>)}
+            {jumps.map(([h, l]) => <a key={h} href={h} className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-white px-4 ring-1 ring-[#e0e9df] transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none">{l}</a>)}
           </nav>
         );
       })()}
@@ -382,7 +382,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
                   <ul className="flex flex-wrap gap-2">{slots.filter((x) => x.slot_date === day).map((x) => {
                     const label = `${hhmm(x.starts_at)}–${hhmm(x.ends_at)}`;
                     return x.status === "booked"
-                      ? <li key={x.id} className="rounded-xl bg-red-400/15 px-3 py-1.5 text-sm text-red-200 line-through" dir="ltr">{label} · محجوز</li>
+                      ? <li key={x.id} className="rounded-xl bg-red-50 px-3 py-1.5 text-sm text-red-700 line-through" dir="ltr">{label} · محجوز</li>
                       : <li key={x.id}>{wa
                         ? <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${encodeURIComponent(`مرحبا، بدي أحجز ${org.name_ar} يوم ${dayLabelAr(day)} الساعة ${label}`)}`} className="block rounded-xl bg-accent/15 px-3 py-1.5 text-sm font-bold text-accent ring-1 ring-accent/40" >{label} · متاح</TrackedLink>
                         : <span className="block rounded-xl bg-accent/15 px-3 py-1.5 text-sm font-bold text-accent" dir="ltr">{label} · متاح</span>}</li>;
