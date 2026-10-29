@@ -37,9 +37,8 @@ export function OrgCard({ org }: {
           )}
         </div>
         <div className={org.profile_image ? "p-5 pt-10 sm:p-6 sm:pt-10" : "p-5 sm:p-6"}>
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
-            <span>{org.category_name ?? ORG_TYPE_LABEL[org.type]}</span>
-            <span className="flex flex-wrap items-center gap-1.5">
+          <div className="mb-3 flex flex-wrap items-center justify-end gap-2 text-xs text-muted">
+            <span className="flex flex-wrap items-center justify-end gap-1.5">
               {org.women_access === "women_hours" && <span className="rounded-full bg-pink-500/15 px-2.5 py-1 font-bold text-pink-200 ring-1 ring-pink-400/30">{WOMEN_LABEL.women_hours}</span>}
               {org.is_featured && <span className="rounded-full bg-accent px-2.5 py-1 font-bold text-accent-foreground">مميّز</span>}
               {org.glow_color && <span className="rounded-full bg-black/30 px-2.5 py-1 font-bold text-foreground">{GLOW_LABEL[org.glow_color]}</span>}
