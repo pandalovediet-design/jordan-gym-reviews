@@ -11,6 +11,7 @@ export function ThemeToggle() {
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const enabled = saved ? saved === "dark" : prefersDark;
     document.documentElement.classList.toggle("dark", enabled);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", enabled ? "#17212b" : "#f7f9f6");
     setDark(enabled);
     setReady(true);
   }, []);
@@ -18,6 +19,7 @@ export function ThemeToggle() {
   function toggle() {
     const next = !dark;
     document.documentElement.classList.toggle("dark", next);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", next ? "#17212b" : "#f7f9f6");
     window.localStorage.setItem("gymjo-theme", next ? "dark" : "light");
     setDark(next);
   }
