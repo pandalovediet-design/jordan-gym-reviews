@@ -11,7 +11,7 @@ export const viewport: Viewport = { themeColor: "#d4ff00" };
 
 export const metadata: Metadata = {
   applicationName: "GymJo",
-  appleWebApp: { capable: true, title: "Jordan Gym", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "GymJo", statusBarStyle: "black-translucent" },
   icons: {
     icon: [{ url: "/brand-mark.svg", type: "image/svg+xml" }],
     shortcut: "/brand-mark.svg",
