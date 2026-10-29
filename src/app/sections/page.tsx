@@ -55,7 +55,7 @@ const MORE = [
 
 export default function Sections() {
   const known = new Set<string>(NAV_CATALOG.map((item) => item.href));
-  const groups = GROUPS.map((group) => ({ ...group, links: group.links.filter((item) => known.has(item.href) || ["/directory", "/join"].includes(item.href)) }));
+  const groups = GROUPS.map((group) => ({ ...group, links: group.links.filter((item) => known.has(item.href) || new Set<string>(["/directory", "/join"]).has(item.href)) }));
   const extras = MORE.filter((item) => !known.has(item.href));
 
   return (
