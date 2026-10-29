@@ -74,3 +74,50 @@ body { background: var(--background); color: var(--foreground); font-family: "Ca
   .printing-one [data-print-active] * { color: #000 !important; }
   .printing-one .no-print { display: none !important; }
 }
+
+/* Telegram-inspired dark mode: deep blue surfaces, soft borders, readable text. */
+html.dark {
+  color-scheme: dark;
+  --background: #17212b;
+  --surface: #212d3b;
+  --foreground: #f1f5f9;
+  --muted: #a3b4c6;
+  --accent: #4fbd78;
+  --accent-foreground: #10251a;
+  --brand-blue: #4fbd78;
+  --brand-cyan: #83d6a0;
+  --brand-border: #344454;
+  --brand-lime: #4fbd78;
+  --brand-lime-soft: #83d6a0;
+}
+html.dark body { background: var(--background); color: var(--foreground); }
+html.dark ::selection { background: rgb(79 189 120 / 30%); color: #fff; }
+html.dark .bg-white,
+html.dark .bg-white\/95,
+html.dark .bg-white\/90,
+html.dark .bg-white\/80 { background-color: var(--surface) !important; }
+html.dark .text-\\[\\#18372a\\],
+html.dark .text-\\[\\#205c37\\],
+html.dark .text-\\[\\#536d5b\\],
+html.dark .text-\\[\\#5b7c65\\] { color: var(--foreground) !important; }
+html.dark .border-\\[\\#e0e9df\\],
+html.dark .border-\\[\\#e2ebe2\\],
+html.dark .border-\\[\\#e5eee4\\],
+html.dark .border-\\[\\#dce9dd\\] { border-color: #344454 !important; }
+html.dark .ring-\\[\\#e0e9df\\],
+html.dark .ring-\\[\\#dce9dd\\] { --tw-ring-color: #344454 !important; }
+html.dark header { background-color: rgb(23 33 43 / 94%) !important; border-color: #344454 !important; }
+html.dark footer { background-color: #1b2733 !important; border-color: #344454 !important; }
+html.dark input:not([type="checkbox"]):not([type="radio"]),
+html.dark select,
+html.dark textarea { background-color: #17212b !important; color: #f1f5f9 !important; border-color: #405366 !important; }
+html.dark input::placeholder,
+html.dark textarea::placeholder { color: #9aabbd !important; }
+html.dark option { background: #212d3b; color: #f1f5f9; }
+html.dark .shadow-lg,
+html.dark .shadow-sm { --tw-shadow-color: rgb(0 0 0 / .2); }
+html.dark .bg-\\[\\#fbfdf9\\],
+html.dark .bg-\\[\\#f3f8ee\\],
+html.dark .bg-\\[\\#f0f8ee\\],
+html.dark .bg-\\[\\#f0f8ee\\] { background-color: #243746 !important; }
+html.dark .text-\\[\\#21834f\\] { color: #83d6a0 !important; }
