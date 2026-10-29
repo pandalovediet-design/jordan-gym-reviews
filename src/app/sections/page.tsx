@@ -9,7 +9,13 @@ export const metadata: Metadata = {
 };
 
 const MORE = [
-  { href: "/directory", label: "📍 دليل النوادي حسب المدينة", description: "تصفّح الأنشطة الرياضية حسب موقعك." },
+  { href: "/directory", label: "📍 الدليل حسب المدينة", description: "تصفّح كل الأنشطة الرياضية حسب النوع والمدينة." },
+  { href: "/search?type=gym", label: "🏋️ النوادي الرياضية", description: "قارن النوادي والأسعار والمرافق قبل الاشتراك." },
+  { href: "/search?type=independent_coach", label: "🧑‍🏫 المدربون الشخصيون", description: "اعثر على مدرب يناسب هدفك وموقعك." },
+  { href: "/search?type=sports_facility", label: "⚽ الملاعب والمنشآت", description: "اكتشف الملاعب والمنشآت الرياضية القريبة." },
+  { href: "/search?type=nutritionist", label: "🥗 أخصائيو التغذية", description: "ابحث عن مختصين لمساعدتك في أهدافك الغذائية." },
+  { href: "/search?type=store", label: "🛍️ المتاجر الرياضية", description: "تصفّح متاجر المعدات والمنتجات الرياضية." },
+  { href: "/search?type=sports_health", label: "🩺 العلاج والطب الرياضي", description: "اعثر على خدمات الرعاية والتأهيل الرياضي." },
   { href: "/guides", label: "📚 الأدلة والنصائح", description: "معلومات تساعدك تختار وتبدأ." },
   { href: "/join", label: "➕ سجّل نشاطك", description: "أضف ناديك أو نشاطك إلى الدليل." },
   { href: "/sponsors", label: "🤝 للرعاة والشركاء", description: "اكتشف فرص الظهور والشراكة." },
@@ -37,7 +43,7 @@ const GROUPS = [
   {
     title: "اكتشف الأنشطة",
     description: "ابدأ بالعثور على المكان الرياضي المناسب لك.",
-    hrefs: ["/search", "/directory", "/pink", "/now", "/awards"],
+    hrefs: ["/directory", "/search?type=gym", "/search?type=independent_coach", "/search?type=sports_facility", "/search?type=nutritionist", "/search?type=store", "/search?type=sports_health", "/pink"],
   },
   {
     title: "تمرّن واهتم بصحتك",
