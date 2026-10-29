@@ -73,14 +73,13 @@ export default async function Home() {
               <span className="flex size-11 items-center justify-center rounded-2xl bg-[#e8f4e8] text-2xl">🏃</span>
             </div>
             <div className="relative z-10 grid grid-cols-2 gap-3">
-              {TYPE_TILES.slice(0, 6).map((t) => <Link key={t.href} href={t.href} className="group flex items-center gap-3 rounded-2xl border border-[#e5eee4] bg-[#fbfcfa] p-3 transition hover:border-[#91c9a1] hover:bg-[#f0f8ee]"><span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#e8f4e8] text-xl">{t.icon}</span><span className="text-sm font-extrabold">{t.label}</span><span aria-hidden className="mr-auto text-[#819187] transition group-hover:-translate-x-1">←</span></Link>)}
+              {TYPE_TILES.slice(0, 4).map((t) => <Link key={t.href} href={t.href} className="group flex items-center gap-3 rounded-2xl border border-[#e5eee4] bg-[#fbfcfa] p-3 transition hover:border-[#91c9a1] hover:bg-[#f0f8ee]"><span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#e8f4e8] text-xl">{t.icon}</span><span className="text-sm font-extrabold">{t.label}</span><span aria-hidden className="mr-auto text-[#819187] transition group-hover:-translate-x-1">←</span></Link>)}
             </div>
             <Link href="/sections" className="relative z-10 mt-3 flex items-center justify-between rounded-xl bg-[#f0f8ee] px-4 py-3 text-sm font-extrabold text-[#21834f] transition hover:bg-[#e4f2e1]"><span>كل التصنيفات الرياضية</span><span aria-hidden>←</span></Link>
           </div>
         </div>
         {show.tiles && <div className="mx-auto mt-7 max-w-7xl border-t border-[#dce9dd] pt-5"><div className="mb-3 flex items-center justify-between"><p className="font-extrabold">تصفّح بسرعة</p><Link href="/sections" className="text-sm font-bold text-[#21834f]">كل الأقسام ←</Link></div><div className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">{TYPE_TILES.map((t) => <Link key={t.href} href={t.href} className="flex shrink-0 items-center gap-2 rounded-full border border-[#dce9dd] bg-white px-4 py-2.5 text-sm transition hover:border-[#91c9a1] hover:bg-[#f0f8ee]"><span aria-hidden className="text-lg">{t.icon}</span><span className="font-bold">{t.label}</span></Link>)}</div></div>}
       </section>
-      <FeatureDirectory />
       {show.banner && banner && (
         <a href={`/a/${banner.id}`} rel="sponsored noopener" className="relative mb-10 block overflow-hidden rounded-2xl bg-surface ring-1 ring-white/10">
           {banner.image_path && (
@@ -162,6 +161,7 @@ export default async function Home() {
           )}
         </>
       )}
+      <FeatureDirectory />
       {show.trails && trails.length > 0 && (
         <section className="mb-12">
           <div className="mb-4 flex items-baseline justify-between"><h2 className="text-xl font-bold">🥾 مسارات المشي والهايكنق</h2><Link href="/trails" className="text-sm text-accent underline">كل المسارات</Link></div>
