@@ -369,7 +369,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </section>
       )}
 
-      {media.length > 1 && <section id="photos" className="scroll-mt-20"><Gallery start={1} items={media.map((m) => ({ src: publicMediaUrl(m.storage_path), alt: m.alt_text ?? org.name_ar, caption: m.alt_text }))} /></section>}
+      {media.length > 1 && <section id="photos" className="scroll-mt-48"><Gallery start={1} items={media.map((m) => ({ src: publicMediaUrl(m.storage_path), alt: m.alt_text ?? org.name_ar, caption: m.alt_text }))} /></section>}
 
       {org.video_url && (() => {
         const yt = org.video_url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
@@ -411,13 +411,13 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
 
       {!multi ? (
         <>
-          {offers.length > 0 && <div id="offers" className="scroll-mt-20"><Section title="العروض"><Offers items={offers} /></Section></div>}
+          {offers.length > 0 && <div id="offers" className="scroll-mt-48"><Section title="العروض"><Offers items={offers} /></Section></div>}
           <div className="mt-8 grid gap-6 lg:grid-cols-[2fr_1fr]">
-            {services.length > 0 && <section id="prices" className="scroll-mt-20"><h2 className="mb-3 text-xl font-bold">الأسعار والخدمات</h2><Services items={services} /></section>}
-            {hours.length > 0 && <section id="hours" className="scroll-mt-20"><h2 className="mb-3 text-xl font-bold">ساعات الدوام</h2><Hours items={hours} /></section>}
+            {services.length > 0 && <section id="prices" className="scroll-mt-48"><h2 className="mb-3 text-xl font-bold">الأسعار والخدمات</h2><Services items={services} /></section>}
+            {hours.length > 0 && <section id="hours" className="scroll-mt-48"><h2 className="mb-3 text-xl font-bold">ساعات الدوام</h2><Hours items={hours} /></section>}
           </div>
           {org.type === "sports_facility" && slots.length > 0 && (
-            <div id="slots" className="scroll-mt-24"><Section title="المواعيد المتاحة">
+            <div id="slots" className="scroll-mt-48"><Section title="المواعيد المتاحة">
               <div className="space-y-4">{[...new Set(slots.map((x) => x.slot_date))].map((day) => (
                 <div key={day}><h3 className="mb-2 font-bold text-accent">{day === ammanDate(0) ? "اليوم" : dayLabelAr(day)}</h3>
                   <ul className="flex flex-wrap gap-2">{slots.filter((x) => x.slot_date === day).map((x) => {
@@ -431,10 +431,10 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
               <p className="mt-3 text-xs text-muted">اضغط على الوقت المتاح لتحجز عبر واتساب. الحجز بيتأكد من صاحب الملعب.</p>
             </Section></div>
           )}
-          {classes.length > 0 && <div id="classes" className="scroll-mt-24"><Section title="جدول الحصص"><Classes items={classes} /></Section></div>}
-          {showTrainers && allCards.length > 0 && <div id="trainers" className="scroll-mt-24"><Section title="المدربون"><Trainers items={allCards} /></Section></div>}
-          {nutriCards.length > 0 && <div id="nutrition" className="scroll-mt-24"><Section title="🥗 أخصائيو التغذية الشركاء"><Trainers items={nutriCards} /></Section></div>}
-          {org.type === "store" && <div id="products" className="scroll-mt-24"><Section title="المنتجات"><Products items={products} /></Section></div>}
+          {classes.length > 0 && <div id="classes" className="scroll-mt-48"><Section title="جدول الحصص"><Classes items={classes} /></Section></div>}
+          {showTrainers && allCards.length > 0 && <div id="trainers" className="scroll-mt-48"><Section title="المدربون"><Trainers items={allCards} /></Section></div>}
+          {nutriCards.length > 0 && <div id="nutrition" className="scroll-mt-48"><Section title="🥗 أخصائيو التغذية الشركاء"><Trainers items={nutriCards} /></Section></div>}
+          {org.type === "store" && <div id="products" className="scroll-mt-48"><Section title="المنتجات"><Products items={products} /></Section></div>}
         </>
       ) : (
         <>
