@@ -120,25 +120,25 @@ function Trainers({ items }: { items: TrainerCard[] }) {
   if (!items.length) return null;
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{items.map((t) => (
-      <article key={t.key} className={`${card} flex flex-col overflow-hidden !p-0`}>
-        <div className="relative aspect-[4/3] w-full bg-background/40">
+      <article key={t.key} className="group flex flex-col overflow-hidden rounded-3xl bg-surface ring-1 ring-white/10 transition duration-200 hover:-translate-y-1 hover:ring-accent/50 hover:shadow-xl hover:shadow-black/15">
+        <div className="relative aspect-[5/4] w-full overflow-hidden bg-background/40">
           {t.photo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={publicMediaUrl(t.photo)} alt={t.name} loading="lazy" decoding="async" className="size-full object-cover" />
-          ) : <div className="flex size-full items-center justify-center text-5xl">🏋️</div>}
+            <img src={publicMediaUrl(t.photo)} alt={t.name} loading="lazy" decoding="async" className="size-full object-cover transition duration-500 group-hover:scale-105" />
+          ) : <div className="flex size-full items-center justify-center bg-[radial-gradient(ellipse_at_75%_20%,rgba(212,255,0,.22),transparent_48%),linear-gradient(135deg,#151a0b,#283313)] text-5xl">🏋️</div>}
           {t.head && <span className="absolute start-3 top-3 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">⭐ المدرب الرئيسي</span>}
           {t.licensed && <span className="absolute start-3 top-3 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">✓ مرخّص</span>}
         </div>
-        <div className="flex flex-1 flex-col gap-2 p-4">
+        <div className="flex flex-1 flex-col gap-2.5 p-5">
           {t.role && <span className="w-fit rounded-full bg-accent/15 px-3 py-0.5 text-xs font-bold text-accent">{t.role}</span>}
-          <h3 className="text-lg font-bold">{t.name}</h3>
+          <h3 className="text-xl font-black tracking-tight">{t.name}</h3>
           {t.years != null && <p className="text-sm text-muted">🏅 {t.years} سنة خبرة</p>}
           {(t.education || t.place) && <p className="text-sm text-muted">🎓 {[t.education, t.place].filter(Boolean).join(" — ")}</p>}
           {splitTags(t.specialties).length > 0 && (
             <div className="flex flex-wrap gap-1.5">{splitTags(t.specialties).map((x) => <span key={x} className="rounded-full bg-background/50 px-2.5 py-0.5 text-xs ring-1 ring-white/10">{x}</span>)}</div>)}
           {t.bio && <p className="line-clamp-4 whitespace-pre-line text-sm leading-6">{t.bio}</p>}
           {t.wa && waNumber(t.wa) && <a href={`https://wa.me/${waNumber(t.wa)}?text=${encodeURIComponent("مرحبا، شفت ملفك على GymJo وبدي أحجز استشارة")}`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-accent/15 px-4 py-2 text-center text-sm font-bold text-accent ring-1 ring-accent/40">احجز استشارة واتساب</a>}
-          {t.href && <Link href={t.href} className="mt-auto rounded-xl bg-accent px-4 py-2 text-center text-sm font-bold text-accent-foreground">عرض الملف الشخصي</Link>}
+          {t.href && <Link href={t.href} className="mt-auto inline-flex min-h-11 items-center justify-center rounded-xl bg-accent px-4 py-2.5 text-center text-sm font-black text-accent-foreground transition hover:brightness-105">عرض الملف الشخصي</Link>}
         </div>
       </article>))}</div>
   );
