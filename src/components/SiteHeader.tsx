@@ -32,7 +32,7 @@ export async function SiteHeader() {
 
 export function SiteFooter() {
   return (
-    <footer className="print:hidden mt-16 border-t border-white/10 bg-black/[0.025]">
+    <footer className="print:hidden mt-16 border-t border-[#e0e9df] bg-white">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
         <div className="flex flex-col items-center gap-4 text-center sm:gap-5">
           <Link href="/" className="rounded-lg text-sm font-extrabold tracking-tight text-foreground transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">
@@ -48,8 +48,8 @@ export function SiteFooter() {
             <Link href="/terms" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">الشروط</Link>
             <Link href="/privacy" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">الخصوصية</Link>
           </nav>
-          <div className="h-px w-full max-w-3xl bg-white/10" />
-          <p className="text-xs text-muted">© {new Date().getFullYear()} Jordan Gym Reviews. جميع الحقوق محفوظة.</p>
+          <div className="h-px w-full max-w-3xl bg-[#e0e9df]" />
+          <p className="text-xs text-muted">© {new Date().getFullYear()} GymJo. جميع الحقوق محفوظة.</p>
         </div>
       </div>
     </footer>
