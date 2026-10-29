@@ -113,7 +113,7 @@ function Trainers({ items }: { items: TrainerCard[] }) {
           {splitTags(t.specialties).length > 0 && (
             <div className="flex flex-wrap gap-1.5">{splitTags(t.specialties).map((x) => <span key={x} className="rounded-full bg-background/50 px-2.5 py-0.5 text-xs ring-1 ring-white/10">{x}</span>)}</div>)}
           {t.bio && <p className="line-clamp-4 whitespace-pre-line text-sm leading-6">{t.bio}</p>}
-          {t.wa && waNumber(t.wa) && <a href={`https://wa.me/${waNumber(t.wa)}?text=${encodeURIComponent("مرحبا، شفت ملفك على Jordan Gym Reviews وبدي أحجز استشارة")}`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-accent/15 px-4 py-2 text-center text-sm font-bold text-accent ring-1 ring-accent/40">احجز استشارة واتساب</a>}
+          {t.wa && waNumber(t.wa) && <a href={`https://wa.me/${waNumber(t.wa)}?text=${encodeURIComponent("مرحبا، شفت ملفك على GymJo وبدي أحجز استشارة")}`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-accent/15 px-4 py-2 text-center text-sm font-bold text-accent ring-1 ring-accent/40">احجز استشارة واتساب</a>}
           {t.href && <Link href={t.href} className="mt-auto rounded-xl bg-accent px-4 py-2 text-center text-sm font-bold text-accent-foreground">عرض الملف الشخصي</Link>}
         </div>
       </article>))}</div>
@@ -167,8 +167,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   ];
   const multi = views.length > 1;
   const wa = waNumber(org.whatsapp);
-  const msg = (extra = "") => encodeURIComponent(`مرحبا، شفت ${org.name_ar}${extra} على Jordan Gym Reviews وبدي أستفسر.`);
-  const trialMsg = encodeURIComponent(`مرحبا، شفت ${org.name_ar} على Jordan Gym Reviews وبدي أحجز يوم تجريبي.`);
+  const msg = (extra = "") => encodeURIComponent(`مرحبا، شفت ${org.name_ar}${extra} على GymJo وبدي أستفسر.`);
+  const trialMsg = encodeURIComponent(`مرحبا، شفت ${org.name_ar} على GymJo وبدي أحجز يوم تجريبي.`);
   const shareHref = `https://wa.me/?text=${encodeURIComponent(`${org.name_ar} — ${baseUrl()}/g/${org.slug}`)}`;
   const orgVideos = await listVideos({ orgId: org.id, limit: 12 });
   const reviewVideos = orgVideos.filter((x) => x.kind === "review");
