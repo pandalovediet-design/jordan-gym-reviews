@@ -22,6 +22,7 @@ export async function SiteHeader() {
           <span className="truncate">Jordan <span className="text-accent">Gym</span> Reviews</span>
         </Link>
         <div className="flex shrink-0 items-center gap-1.5 text-sm sm:gap-2">
+          <ThemeToggle />
           <HeaderAuth />
           <InstallButton />
         </div>
