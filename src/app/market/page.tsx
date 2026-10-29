@@ -22,23 +22,36 @@ export default async function Market({ searchParams }: PageProps<"/market">) {
     .eq("status", "active").gt("expires_at", new Date().toISOString())
     .order("created_at", { ascending: false }).limit(60);
   if (kind) query = query.eq("kind", kind);
-  if (q) query = query.ilike("title_ar", `%${q}%`);
+  if (q) query = query.or(`title_ar.ilike.%${q}%,description_ar.ilike.%${q}%`);
   const { data } = await query;
   const list = data ?? [];
+  const hrefFor = (k: string) => {
+    const params = new URLSearchParams();
+    if (k) params.set("kind", k);
+    if (q) params.set("q", q);
+    const queryString = params.toString();
+    return queryString ? `/market?${queryString}` : "/market";
+  };
   const tab = (k: string, l: string) => (
-    <Link href={k ? `/market?kind=${k}` : "/market"} className={`rounded-full px-4 py-1.5 text-sm ring-1 ring-white/10 ${kind === k ? "bg-accent font-bold text-accent-foreground" : "bg-surface"}`}>{l}</Link>
+    <Link href={hrefFor(k)} aria-current={kind === k ? "page" : undefined} className={`rounded-full px-4 py-1.5 text-sm ring-1 ring-white/10 transition-colors ${kind === k ? "bg-accent font-bold text-accent-foreground" : "bg-surface hover:ring-accent"}`}>{l}</Link>
   );
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <h1 className="text-3xl font-extrabold">🔄 سوق المعدات</h1>
       <p className="mt-2 text-muted">أندية ومتاجر بتبيع أو بتبدّل أجهزة. التواصل والاتفاق على السعر والتسليم مباشرة بين الطرفين، والمنصة بس بتعرض الإعلان. راجع الجهاز قبل ما تدفع.</p>
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        {tab("", "الكل")}{tab("sale", "للبيع")}{tab("swap", "للتبديل")}
-        <form action="/market" className="ms-auto flex gap-2">
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="flex flex-wrap gap-2" aria-label="تصفية نوع الإعلان">
+          {tab("", "الكل")}{tab("sale", "للبيع")}{tab("swap", "للتبديل")}
+        </div>
+        <form action="/market" className="flex w-full gap-2 sm:ms-auto sm:w-auto">
           {kind && <input type="hidden" name="kind" value={kind} />}
-          <input name="q" defaultValue={q} placeholder="دوّر (مثال: تردميل)" className="rounded-xl bg-surface px-3 py-1.5 text-sm ring-1 ring-white/10 outline-none focus:ring-accent" />
+          <label className="sr-only" htmlFor="market-search">ابحث عن معدات</label>
+          <input id="market-search" name="q" defaultValue={q} maxLength={40} placeholder="دوّر بالاسم أو الوصف (مثال: تردميل)" className="min-w-0 flex-1 rounded-xl bg-surface px-3 py-2 text-sm ring-1 ring-white/10 outline-none focus:ring-accent sm:w-64 sm:flex-none" />
+          <button type="submit" className="rounded-xl bg-accent px-4 py-2 text-sm font-bold text-accent-foreground">بحث</button>
+          {q && <Link href={hrefFor(kind).replace(/([?&])q=[^&]*&?/, "$1").replace(/[?&]$/, "") || "/market"} className="self-center text-sm text-muted underline">مسح</Link>}
         </form>
       </div>
+      {q && <p className="mt-3 text-sm text-muted">نتائج البحث عن «{q}»: {list.length} إعلان{list.length === 1 ? "" : "ات"}</p>}
       <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {list.map((l) => {
           const o = l.organizations;
@@ -65,7 +78,7 @@ export default async function Market({ searchParams }: PageProps<"/market">) {
             </li>
           );
         })}
-        {list.length === 0 && <li className="col-span-full rounded-2xl bg-surface p-6 text-center text-muted ring-1 ring-white/10">ما في إعلانات حالياً. عندك نادي أو متجر؟ ضيف جهازك من لوحة التحكم.</li>}
+        {list.length === 0 && <li className="col-span-full rounded-2xl bg-surface p-6 text-center text-muted">{q ? <>ما لقينا إعلانات تطابق «{q}». جرّب كلمة ثانية أو <Link href={hrefFor(kind).replace(/([?&])q=[^&]*&?/, "$1").replace(/[?&]$/, "") || "/market"} className="text-accent underline">امسح البحث</Link>.</> : "ما في إعلانات حالياً. عندك نادي أو متجر؟ ضيف جهازك من لوحة التحكم."}</li>}
       </ul>
     </div>
   );

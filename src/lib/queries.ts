@@ -60,7 +60,10 @@ async function withCovers<T extends { id: string }>(db: ReturnType<typeof create
   return rows.map((o) => {
     const h = hours.filter((x) => x.organization_id === o.id);
     // null = the place hasn't set its hours, so the card shows nothing rather than guessing.
-    return { ...o, cover: covers.find((c) => c.organization_id === o.id) ?? null, open_now: h.length ? isOpenAt(h, weekday, minutes) : null };
+    const photos = covers.filter((c) => c.organization_id === o.id);
+    const profile_image = photos.find((c) => c.sort_order < 0) ?? null;
+    const cover = photos.find((c) => c.sort_order >= 0 && c.is_cover) ?? photos.find((c) => c.sort_order < 0) ?? photos.find((c) => c.sort_order >= 0) ?? null;
+    return { ...o, cover, profile_image, open_now: h.length ? isOpenAt(h, weekday, minutes) : null };
   });
 }
 
@@ -201,15 +204,20 @@ export async function getOrgBySlug(slug: string) {
   const coachProfile = (org.type === "independent_coach" || org.type === "nutritionist")
     ? (await db.from("coach_profiles").select("*").eq("organization_id", org.id).maybeSingle()).data
     : null;
+  const allMedia = media.data ?? [];
+  const profileImage = allMedia.find((m) => m.sort_order < 0) ?? null;
+  const cover = allMedia.find((m) => m.sort_order >= 0 && m.is_cover) ?? allMedia.find((m) => m.sort_order < 0) ?? allMedia.find((m) => m.sort_order >= 0) ?? null;
   return {
     org,
+    profileImage,
+    cover,
     coaches: (coaches.data ?? []) as Database["public"]["Functions"]["get_gym_partners"]["Returns"],
     coachGyms: (coachGyms.data ?? []) as Database["public"]["Functions"]["get_coach_gyms"]["Returns"],
     coachProfile,
     slots,
     hours: hours.data ?? [],
     services: services.data ?? [],
-    media: media.data ?? [],
+    media: allMedia.filter((m) => m.sort_order >= 0),
     offers: offers.data ?? [],
     products: products.data ?? [],
     classes: classes.data ?? [],

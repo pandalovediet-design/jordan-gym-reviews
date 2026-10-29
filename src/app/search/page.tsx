@@ -46,11 +46,11 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
     return `/search?${u}`;
   };
   const activeFilters = mode === "products" ? 0 : [type, city, area, category, women, maxPrice, trial, mosque, quiet, kidsArea, kids, transport, access].filter(Boolean).length + (near ? 1 : 0);
-  const field = "min-h-11 w-full rounded-xl bg-surface px-3 py-2.5 ring-1 ring-white/10 outline-none transition focus-visible:ring-2 focus-visible:ring-cyan-300";
+  const field = "min-h-11 w-full rounded-xl border border-[#dce9dd] bg-white px-3 py-2.5 text-[#18372a] placeholder:text-[#819187] outline-none transition focus-visible:ring-2 focus-visible:ring-[#21834f] focus-visible:ring-offset-1 dark:border-[#405366] dark:bg-[#212d3b] dark:text-[#e5edf5] dark:placeholder:text-[#9aaaba]";
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
-      <div className="mb-7 rounded-3xl border border-white/10 bg-[radial-gradient(ellipse_at_10%_0%,rgba(54,120,246,.16),transparent_45%),linear-gradient(135deg,rgba(255,255,255,.035),transparent)] p-4 sm:p-7"><div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="mb-2 text-xs font-bold tracking-wider text-cyan-200">اكتشف خياراتك</p><h1 className="text-2xl font-black sm:text-3xl">{q ? `نتائج البحث عن «${q}»` : mode === "products" ? "السوق الرياضي" : "دليل الأنشطة الرياضية"}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">قارن الأماكن والخدمات حسب المدينة والسعر والمرافق، واختار الأنسب لهدفك.</p></div><Link href="/sections" className="rounded-full border border-white/10 bg-surface px-4 py-2 text-sm font-bold transition hover:border-cyan-300/40">تصفّح الأقسام ←</Link></div><form className="mb-0">
+      <div className="mb-7 rounded-3xl border border-[#dce9dd] bg-[radial-gradient(ellipse_at_10%_0%,rgba(101,183,122,.2),transparent_45%),linear-gradient(135deg,#f3f8ee,#ffffff)] p-4 shadow-sm dark:border-[#344454] dark:bg-[#1b2733] shadow-[#1c5737]/5 sm:p-7"><div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="mb-2 text-xs font-extrabold tracking-wider text-[#21834f]">دليل GymJo الرياضي</p><h1 className="text-2xl font-black sm:text-3xl">{q ? `نتائج البحث عن «${q}»` : mode === "products" ? "السوق الرياضي" : "دليل الأنشطة الرياضية"}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">قارن الأماكن والخدمات حسب المدينة والسعر والمرافق، واختار الأنسب لهدفك.</p></div><Link href="/sections" className="rounded-full border border-[#dce9dd] bg-white px-4 py-2 text-sm font-bold transition hover:border-[#91c9a1] hover:bg-[#f0f8ee] dark:border-[#405366] dark:bg-[#212d3b] dark:text-[#e5edf5] dark:hover:bg-[#294638]">تصفّح الأقسام ←</Link></div><form className="mb-0">
         {near && mode === "orgs" && <><input type="hidden" name="lat" value={near.lat} /><input type="hidden" name="lng" value={near.lng} /></>}
         <div className="flex gap-2">
           <input name="q" aria-label="كلمات البحث" defaultValue={q} placeholder="ابحث..." className={`${field} min-w-0 flex-1`} />
@@ -61,12 +61,12 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
             <option value="orgs">الأنشطة والأماكن</option><option value="products">المنتجات الرياضية</option>
           </select>
         </label>
-        {mode === "orgs" && <details open={activeFilters > 0} className="mt-3 rounded-2xl bg-surface/60 ring-1 ring-white/10">
+        {mode === "orgs" && <details open={activeFilters > 0} className="mt-3 rounded-2xl bg-white/80 ring-1 ring-[#dce9dd] dark:bg-[#202c38] dark:ring-[#344454]">
           <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 px-4 py-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">
-            <span>⚙️ الفلاتر</span>
+            <span>⚙️ فلترة النتائج</span>
             {activeFilters > 0 && <span className="rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground">{activeFilters}</span>}
           </summary>
-          {activeFilters > 0 && <div className="px-4 pb-3"><Link href={q ? `/search?q=${encodeURIComponent(q)}` : "/search"} className="rounded-lg py-1 text-xs text-muted underline underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300">مسح الفلاتر</Link></div>}
+          {activeFilters > 0 && <div className="px-4 pb-3"><Link href={q ? `/search?q=${encodeURIComponent(q)}` : "/search"} className="rounded-lg py-1 text-xs font-bold text-[#21834f] underline underline-offset-4 hover:text-[#17683d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21834f]">مسح الفلاتر</Link></div>}
           <div className="grid gap-2 p-3 pt-0 sm:grid-cols-3 lg:grid-cols-4">
             <select name="type" aria-label="نوع النشاط" defaultValue={type} className={field}>
               <option value="">كل الأنواع</option>
@@ -90,15 +90,15 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
             <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="kids" value="1" defaultChecked={kids} /> 👶 مهيّأ للأطفال (5–12)</label>
             <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="transport" value="1" defaultChecked={transport} /> 🚌 مواصلات للأطفال</label>
             <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="access" value="1" defaultChecked={access} /> ♿ مهيّأ لذوي الاحتياجات</label>
-            <button className="rounded-xl bg-accent px-6 py-2.5 font-bold text-accent-foreground">تطبيق</button>
+            <button className="min-h-11 rounded-xl bg-[#21834f] px-6 py-2.5 font-bold text-white transition hover:bg-[#17683d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21834f] focus-visible:ring-offset-2">تطبيق</button>
           </div>
         </details>}
       </form></div>
 
       {mode === "orgs" && <div className="mb-4 flex flex-wrap items-center gap-3"><NearMeButton active={!!near} />{near && <span className="text-sm text-muted">مرتبة من الأقرب للأبعد (الأنشطة اللي حدّدت موقعها فقط)</span>}</div>}
 
-      {error && <p className="rounded-2xl bg-surface p-6 text-center">تعذّر تحميل النتائج حالياً، جرّب مرة ثانية بعد قليل.</p>}
-      {!error && total === 0 && <div className="rounded-3xl border border-dashed border-white/15 bg-surface/50 px-6 py-14 text-center"><span className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-blue-400/10 text-3xl">⌕</span><h2 className="text-xl font-extrabold">ما لقينا نتائج مطابقة</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">جرّب تغيّر كلمة البحث أو توسّع خيارات المدينة والسعر، ويمكن تلاقي المكان المناسب.</p><Link href="/search" className="mt-5 inline-flex rounded-xl bg-accent px-5 py-3 font-bold text-accent-foreground">عرض كل الأنشطة</Link></div>}
+      {error && <p className="rounded-2xl border border-[#dce9dd] bg-white p-6 text-center text-[#18372a]">تعذّر تحميل النتائج حالياً، جرّب مرة ثانية بعد قليل.</p>}
+      {!error && total === 0 && <div className="rounded-3xl border border-dashed border-[#b9d9bd] bg-[#fbfdf9] px-6 py-14 text-center text-[#18372a]"><span className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-[#e8f4e8] text-3xl text-[#21834f]">⌕</span><h2 className="text-xl font-extrabold">ما لقينا نتائج مطابقة</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">جرّب تغيّر كلمة البحث أو توسّع خيارات المدينة والسعر، ويمكن تلاقي المكان المناسب.</p><Link href="/search" className="mt-5 inline-flex rounded-xl bg-[#21834f] px-5 py-3 font-bold text-white transition hover:bg-[#17683d]">عرض كل الأنشطة</Link></div>}
       {!error && <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><p className="text-lg font-extrabold">{total} <span className="text-sm font-normal text-muted">نتيجة مطابقة</span></p><p className="text-xs text-muted">الصفحة {page}{pages > 1 ? ` من ${pages}` : ""}</p></div>}
 
       {orgs && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{orgs.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>}
@@ -110,7 +110,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
 
       {pages > 1 && (
         <nav className="mt-8 flex items-center justify-center gap-3 text-sm">
-          {page > 1 && <Link href={href(page - 1)} className="rounded-lg bg-surface px-4 py-2">السابق</Link>}
+          {page > 1 && <Link href={href(page - 1)} className="rounded-lg border border-[#dce9dd] bg-white px-4 py-2 text-[#205c37] transition hover:bg-[#f0f8ee]">السابق</Link>}
           <span className="text-muted">{page} / {pages}</span>
           {page < pages && <Link href={href(page + 1)} className="rounded-lg bg-surface px-4 py-2">التالي</Link>}
         </nav>

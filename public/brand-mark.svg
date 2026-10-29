@@ -1,9 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
-<title id="title">Jordan Gym Reviews</title>
-<rect width="128" height="128" rx="30" fill="#10130f"/>
-<path d="M22 80 43 35h19L41 80H22Z" fill="#D4FF00"/>
-<path d="M46 98 67 53h19L65 98H46Z" fill="#A8CC18"/>
-<path d="M67 79h37l-9 19H58l9-19Z" fill="#F4F7EF"/>
-<circle cx="91" cy="30" r="9" fill="#D4FF00"/>
-<path d="M18 108h32" stroke="#D4FF00" stroke-width="5" stroke-linecap="round"/>
+<title id="title">GymJo Panda</title>
+<rect width="128" height="128" rx="32" fill="#21834f"/>
+<circle cx="36" cy="32" r="19" fill="#18372a"/>
+<circle cx="92" cy="32" r="19" fill="#18372a"/>
+<ellipse cx="64" cy="66" rx="43" ry="39" fill="#ffffff"/>
+<ellipse cx="46" cy="60" rx="11" ry="15" transform="rotate(24 46 60)" fill="#18372a"/>
+<ellipse cx="82" cy="60" rx="11" ry="15" transform="rotate(-24 82 60)" fill="#18372a"/>
+<circle cx="48" cy="60" r="3.5" fill="#ffffff"/>
+<circle cx="80" cy="60" r="3.5" fill="#ffffff"/>
+<ellipse cx="64" cy="76" rx="8" ry="5.5" fill="#18372a"/>
+<path d="M54 84 Q64 94 74 84" fill="none" stroke="#18372a" stroke-width="4" stroke-linecap="round"/>
+<path d="M23 105 Q64 120 105 105" fill="none" stroke="#b9e4c2" stroke-width="5" stroke-linecap="round"/>
 </svg>

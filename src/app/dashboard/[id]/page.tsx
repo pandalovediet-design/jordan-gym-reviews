@@ -11,7 +11,8 @@ import { AVAILABILITY_LABEL, BILLING_LABEL, DELIVERY_LABEL, ammanDate, dayLabelA
 import { PriceTag } from "@/components/PriceTag";
 import { CityAreaPicker } from "@/components/CityAreaPicker";
 import { completenessFor, missingForPublish, suggestionsFor } from "@/lib/completeness";
-import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setHeadTrainer, addFacilitySlots, setSlotStatus, deleteSlot, clearSlotsDay, saveCoachProfile, requestJoinGym, respondCoachLink, setProductAvailability, addMenuItem, deleteMenuItem, setMenuAvailability, setMenuImage, setMainImage, setTheme } from "../actions";
+import { addOffer, addProduct, deleteMedia, deleteOffer, deleteProduct, setProductImage, uploadMedia, addService, deleteService, saveHours, submitForReview, updateProfile, addClass, deleteClass, addBranch, updateBranch, deleteBranch, setBranchActive, addTrainer, deleteTrainer, setHeadTrainer, addFacilitySlots, setSlotStatus, deleteSlot, clearSlotsDay, saveCoachProfile, requestJoinGym, respondCoachLink, setProductAvailability, addMenuItem, deleteMenuItem, setMenuAvailability, setMenuImage, setTheme } from "../actions";
+import { setProfileImage, setCoverImage } from "../image-actions";
 
 export const metadata: Metadata = { title: "تعديل النشاط", robots: { index: false } };
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -115,11 +116,11 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
         <div className="mb-5 flex flex-wrap items-center gap-4">
           {mainImage
             // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={publicMediaUrl(mainImage.storage_path)} alt="" className="size-24 rounded-xl object-cover ring-1 ring-white/10" />
+            ? <img src={publicMediaUrl(mainImage.storage_path)} alt="" className="size-24 rounded-full object-cover ring-1 ring-[#dce9dd]" />
             : <div className="grid size-24 place-items-center rounded-xl bg-white/5 text-xs text-muted">بدون صورة</div>}
-          <div className="min-w-52 flex-1"><p className="mb-1 text-sm font-semibold">الصورة الرئيسية</p>
-            <p className="mb-2 text-xs text-muted">هاي اللي بتظهر على بطاقة نشاطك بالصفحة الرئيسية والبحث.</p>
-            <ActionForm action={setMainImage.bind(null, id)} submit={mainImage ? "تغيير الصورة" : "رفع الصورة"}>
+          <div className="min-w-52 flex-1"><p className="mb-1 text-sm font-semibold">الصورة الشخصية للنادي</p>
+            <p className="mb-2 text-xs text-muted">بتظهر دائرية بجانب اسم النادي وعلى بطاقات الدليل.</p>
+            <ActionForm action={setProfileImage.bind(null, id)} submit={mainImage ? "تغيير الصورة الشخصية" : "رفع الصورة الشخصية"}>
               <ImageInput name="file" accept="image/jpeg,image/png,image/webp" required className="text-sm" />
             </ActionForm></div>
         </div>
@@ -436,12 +437,15 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
           ))}
         </div>
       </Panel>
-      <Panel title="🖼️ معرض الصور">
-        <div className="mb-4 grid grid-cols-3 gap-3">{galleryMedia.map((m) => (
-          <div key={m.id} className="space-y-1">
+      <Panel title="🖼️ صور النادي">
+        <p className="mb-3 text-sm text-muted">ارفع صور المكان، ثم اختر صورة واحدة لتكون الكفر العريض أعلى صفحة النادي.</p>
+        <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3">{galleryMedia.map((m) => (
+          <div key={m.id} className="space-y-2 rounded-xl border border-[#e0e9df] p-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={publicMediaUrl(m.storage_path)} alt={m.alt_text ?? ""} className="aspect-[4/3] w-full rounded-lg object-cover" />
-            <form action={deleteMedia.bind(null, id, m.id)}><button className="text-xs text-red-300 underline">حذف</button></form></div>))}
+            {m.is_cover && <span className="inline-block rounded-full bg-[#21834f]/10 px-2 py-1 text-xs font-bold text-[#21834f]">الكفر الحالي ✓</span>}
+            {!m.is_cover && <form action={setCoverImage.bind(null, id, m.id)}><button className="w-full rounded-lg border border-[#21834f]/40 px-2 py-2 text-xs font-bold text-[#21834f]">تعيين كفر</button></form>}
+            <form action={deleteMedia.bind(null, id, m.id)}><button className="text-xs text-red-600 underline">حذف</button></form></div>))}
           {galleryMedia.length === 0 && <p className="col-span-3 text-sm text-muted">ما رفعت صور بعد.</p>}</div>
         <ActionForm action={uploadMedia.bind(null, id)} submit="رفع">
           <ImageInput name="file" accept="image/jpeg,image/png,image/webp" required className="text-sm" />

@@ -33,12 +33,12 @@ export async function generateMetadata({ params }: PageProps<"/g/[slug]">): Prom
       locale: "ar_JO",
       title: d.org.name_ar,
       description: d.org.description_ar?.slice(0, 160) ?? `${ORG_TYPE_LABEL[d.org.type]} في ${d.org.city}`,
-      images: [d.media[0] ? publicMediaUrl(d.media[0].storage_path) : "/og-default.png"],
+      images: [d.cover ? publicMediaUrl(d.cover.storage_path) : "/og-default.png"],
     },
   };
 }
 
-const card = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
+const card = "rounded-2xl bg-surface p-5 ring-1 ring-[#e0e9df] shadow-sm";
 
 type Data = NonNullable<Awaited<ReturnType<typeof getOrgBySlug>>>;
 type BV = {
@@ -112,7 +112,7 @@ function Trainers({ items }: { items: TrainerCard[] }) {
           {splitTags(t.specialties).length > 0 && (
             <div className="flex flex-wrap gap-1.5">{splitTags(t.specialties).map((x) => <span key={x} className="rounded-full bg-background/50 px-2.5 py-0.5 text-xs ring-1 ring-white/10">{x}</span>)}</div>)}
           {t.bio && <p className="line-clamp-4 whitespace-pre-line text-sm leading-6">{t.bio}</p>}
-          {t.wa && waNumber(t.wa) && <a href={`https://wa.me/${waNumber(t.wa)}?text=${encodeURIComponent("مرحبا، شفت ملفك على Jordan Gym Reviews وبدي أحجز استشارة")}`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-accent/15 px-4 py-2 text-center text-sm font-bold text-accent ring-1 ring-accent/40">احجز استشارة واتساب</a>}
+          {t.wa && waNumber(t.wa) && <a href={`https://wa.me/${waNumber(t.wa)}?text=${encodeURIComponent("مرحبا، شفت ملفك على GymJo وبدي أحجز استشارة")}`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-accent/15 px-4 py-2 text-center text-sm font-bold text-accent ring-1 ring-accent/40">احجز استشارة واتساب</a>}
           {t.href && <Link href={t.href} className="mt-auto rounded-xl bg-accent px-4 py-2 text-center text-sm font-bold text-accent-foreground">عرض الملف الشخصي</Link>}
         </div>
       </article>))}</div>
@@ -153,7 +153,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   const { slug } = await params;
   const d = await load(decodeURIComponent(slug));
   if (!d) notFound();
-  const { org, hours, services, media, offers, products, classes, branches, trainers, glow, menu, coaches, coachGyms, coachProfile, slots } = d;
+  const { org, hours, services, media, profileImage, cover, offers, products, classes, branches, trainers, glow, menu, coaches, coachGyms, coachProfile, slots } = d;
   const mainRow = branches.find((b) => b.is_main);
   const orgMaps = org.maps_url ?? (org.latitude != null && org.longitude != null ? `https://www.google.com/maps?q=${org.latitude},${org.longitude}` : null);
   const views: BV[] = [
@@ -166,8 +166,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   ];
   const multi = views.length > 1;
   const wa = waNumber(org.whatsapp);
-  const msg = (extra = "") => encodeURIComponent(`مرحبا، شفت ${org.name_ar}${extra} على Jordan Gym Reviews وبدي أستفسر.`);
-  const trialMsg = encodeURIComponent(`مرحبا، شفت ${org.name_ar} على Jordan Gym Reviews وبدي أحجز يوم تجريبي.`);
+  const msg = (extra = "") => encodeURIComponent(`مرحبا، شفت ${org.name_ar}${extra} على GymJo وبدي أستفسر.`);
+  const trialMsg = encodeURIComponent(`مرحبا، شفت ${org.name_ar} على GymJo وبدي أحجز يوم تجريبي.`);
   const shareHref = `https://wa.me/?text=${encodeURIComponent(`${org.name_ar} — ${baseUrl()}/g/${org.slug}`)}`;
   const orgVideos = await listVideos({ orgId: org.id, limit: 12 });
   const reviewVideos = orgVideos.filter((x) => x.kind === "review");
@@ -224,7 +224,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
     <>
       {v.women_access === "women_only" && <div className="mb-3 rounded-xl bg-pink-500 px-4 py-2 text-center font-bold text-white">💗 {WOMEN_LABEL.women_only} — خاص بالنساء</div>}
       {v.women_access === "women_hours" && (
-        <div className="mb-3 rounded-xl bg-pink-500/15 px-4 py-2 text-sm text-pink-200 ring-1 ring-pink-400/40">💗 {WOMEN_LABEL.women_hours}{v.women_hours_note ? `: ${v.women_hours_note}` : ""}</div>
+        <div className="mb-3 rounded-xl bg-pink-50 px-4 py-2 text-sm text-pink-800 ring-1 ring-pink-200">💗 {WOMEN_LABEL.women_hours}{v.women_hours_note ? `: ${v.women_hours_note}` : ""}</div>
       )}
     </>
   );
@@ -234,8 +234,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
     return (
       <>
         {n && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${n}?text=${msg(multi ? ` (${v.name})` : "")}`} className={`${actionClass} bg-accent font-bold text-accent-foreground`}>واتساب</TrackedLink>}
-        {v.phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${v.phone}`} className={`${actionClass} bg-surface ring-1 ring-white/10`}>اتصال</TrackedLink>}
-        {v.mapsHref && <a href={v.mapsHref} target="_blank" rel="noopener noreferrer" className={`${actionClass} bg-surface ring-1 ring-white/10`}>الموقع على الخريطة</a>}
+        {v.phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${v.phone}`} className={`${actionClass} bg-white ring-1 ring-[#e0e9df]`}>اتصال</TrackedLink>}
+        {v.mapsHref && <a href={v.mapsHref} target="_blank" rel="noopener noreferrer" className={`${actionClass} bg-white ring-1 ring-[#e0e9df]`}>الموقع على الخريطة</a>}
       </>
     );
   };
@@ -243,16 +243,23 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
 
   return (
     <div className={`min-h-[70vh] ${themeClass(org.theme)}`}>
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
+    <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:py-8">
       <PageView orgId={org.id} />
+      <nav aria-label="مسار التصفح" className="mb-4 flex flex-wrap items-center gap-2 text-sm text-muted">
+        <Link href="/" className="rounded-lg px-2 py-1 transition hover:text-accent">الرئيسية</Link>
+        <span aria-hidden="true">/</span>
+        <Link href="/search" className="rounded-lg px-2 py-1 font-bold text-accent transition hover:underline">رجوع للدليل</Link>
+        <span aria-hidden="true">/</span>
+        <span className="max-w-[55vw] truncate" aria-current="page">{org.name_ar}</span>
+      </nav>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs).replace(/</g, "\\u003c") }} />
       {!multi && womenBanner(views[0])}
       <div className={glow ? `glow glow-${glow} rounded-2xl bg-surface p-5` : ""}>
-      {media[0] && (
-        <figure className="mb-6 overflow-hidden rounded-3xl border border-white/10 bg-surface shadow-2xl shadow-black/20">
+      {cover && (
+        <figure className="mb-6 overflow-hidden rounded-3xl border border-[#e0e9df] bg-white shadow-lg shadow-[#1c5737]/10">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} fetchPriority="high" decoding="async" className="aspect-[4/3] w-full object-cover sm:aspect-[21/9]" />
+          <img src={publicMediaUrl(cover.storage_path)} alt={cover.alt_text ?? `كفر ${org.name_ar}`} fetchPriority="high" decoding="async" className="aspect-[4/3] w-full object-cover sm:aspect-[21/9]" />
         </figure>
       )}
       {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
@@ -262,25 +269,31 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {coachProfile?.certificates && <p className="mt-1 text-sm text-muted">📜 {coachProfile.certificates}</p>}
       {coachGyms.length > 0 && (
         <p className="mt-1 text-sm">{org.type === "nutritionist" ? "يتعاون مع: " : "يتدرب في: "}{coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
-      <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">{org.name_ar}</h1>
+      <div className="mt-3 flex items-center gap-4">
+        {profileImage && <span className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-full border-4 border-white bg-white shadow-md ring-1 ring-[#dce9dd] sm:size-24">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={publicMediaUrl(profileImage.storage_path)} alt={`الصورة الشخصية لـ ${org.name_ar}`} loading="eager" decoding="async" className="size-full object-cover" />
+        </span>}
+        <h1 className="mt-2 min-w-0 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">{org.name_ar}</h1>
+      </div>
       {org.is_claimed === false && (
-        <p className="mt-2 rounded-xl bg-white/5 p-3 text-sm text-muted ring-1 ring-white/10">
+        <p className="mt-3 rounded-2xl bg-[#f0f8ee] p-4 text-sm text-[#536d5b] ring-1 ring-[#dce9dd]">
           بيانات أولية من مصادر عامة، وصاحب النادي لسا ما استلم صفحته. <Link href={`/claim/${org.slug}`} className="font-bold text-accent underline">هذا ناديي؟ استلم صفحتك مجاناً</Link>
         </p>
       )}
       {(org.has_mosque || org.no_music || org.has_kids_area || org.kids_friendly || org.kids_transport) && (
         <p className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-          {org.has_kids_area && <span className="rounded-full bg-amber-500/15 px-3 py-1 font-bold text-amber-300 ring-1 ring-amber-400/30">🧒 Kids Area</span>}
-          {org.kids_friendly && <span className="rounded-full bg-amber-500/15 px-3 py-1 font-bold text-amber-300 ring-1 ring-amber-400/30">👶 مهيّأ للأطفال (5–12)</span>}
-          {org.kids_transport && <span className="rounded-full bg-amber-500/15 px-3 py-1 font-bold text-amber-300 ring-1 ring-amber-400/30">🚌 مواصلات للأطفال{org.transport_note ? `: ${org.transport_note}` : ""}</span>}
-          {org.has_mosque && <span className="rounded-full bg-emerald-500/15 px-3 py-1 font-bold text-emerald-300 ring-1 ring-emerald-400/30">🕌 فيه مصلى</span>}
-          {org.no_music && <span className="rounded-full bg-sky-500/15 px-3 py-1 font-bold text-sky-300 ring-1 ring-sky-400/30">🔇 بدون موسيقى</span>}
+          {org.has_kids_area && <span className="rounded-full bg-amber-50 px-3 py-1 font-bold text-amber-800 ring-1 ring-amber-200">🧒 Kids Area</span>}
+          {org.kids_friendly && <span className="rounded-full bg-amber-50 px-3 py-1 font-bold text-amber-800 ring-1 ring-amber-200">👶 مهيّأ للأطفال (5–12)</span>}
+          {org.kids_transport && <span className="rounded-full bg-amber-50 px-3 py-1 font-bold text-amber-800 ring-1 ring-amber-200">🚌 مواصلات للأطفال{org.transport_note ? `: ${org.transport_note}` : ""}</span>}
+          {org.has_mosque && <span className="rounded-full bg-emerald-50 px-3 py-1 font-bold text-emerald-800 ring-1 ring-emerald-200">🕌 فيه مصلى</span>}
+          {org.no_music && <span className="rounded-full bg-sky-50 px-3 py-1 font-bold text-sky-800 ring-1 ring-sky-200">🔇 بدون موسيقى</span>}
           <span className="text-xs text-muted">حسب صاحب النشاط</span>
         </p>
       )}
       {(org.accessibility ?? []).length > 0 && (
-        <div className="mt-3 rounded-2xl bg-violet-500/10 p-4 text-sm ring-1 ring-violet-400/30">
-          <p className="font-bold text-violet-200">♿ تهيئة لذوي الاحتياجات الخاصة <span className="text-xs font-normal text-muted">(حسب صاحب النشاط)</span></p>
+        <div className="mt-3 rounded-2xl bg-violet-50 p-4 text-sm ring-1 ring-violet-200">
+          <p className="font-bold text-violet-800">♿ تهيئة لذوي الاحتياجات الخاصة <span className="text-xs font-normal text-muted">(حسب صاحب النشاط)</span></p>
           <ul className="mt-2 list-disc space-y-1 pr-5">{(org.accessibility ?? []).map((k: string) => <li key={k}>{accessLabel(k)}</li>)}</ul>
         </div>
       )}
@@ -288,18 +301,18 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       </div>
       {multi && (
         <nav className="mt-3 flex flex-wrap gap-2 text-sm" aria-label="فروع النشاط">
-          {views.map((v) => <a key={v.id} href={`#b-${v.id}`} className="inline-flex min-h-11 items-center rounded-full bg-surface px-4 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none">{v.name} — {v.city}{v.women_access === "women_only" && " 💗"}</a>)}
+          {views.map((v) => <a key={v.id} href={`#b-${v.id}`} className="inline-flex min-h-11 items-center rounded-full bg-white px-4 ring-1 ring-[#e0e9df] transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none">{v.name} — {v.city}{v.women_access === "women_only" && " 💗"}</a>)}
         </nav>
       )}
 
       <div className="mt-5 flex flex-wrap gap-2 sm:gap-3 [&>a]:min-h-11 [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center [&>a]:text-center">
         {!multi && contactButtons(views[0])}
         {wa && org.free_trial_note && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${trialMsg}`} className="rounded-xl bg-accent/15 px-5 py-2.5 font-bold text-accent ring-1 ring-accent/50">🎟 {org.free_trial_note}</TrackedLink>}
-        <a href={shareHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">شارك على واتساب</a>
-        <a href={`/g/${org.slug}/card`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">🖼 كرت للمنشور</a>
-        <a href={`/g/${org.slug}/card?s=1`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">📱 كرت للستوري</a>
+        <a href={shareHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-white px-5 py-2.5 ring-1 ring-[#e0e9df]">شارك على واتساب</a>
+        <a href={`/g/${org.slug}/card`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-white px-5 py-2.5 ring-1 ring-[#e0e9df]">🖼 كرت للمنشور</a>
+        <a href={`/g/${org.slug}/card?s=1`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-white px-5 py-2.5 ring-1 ring-[#e0e9df]">📱 كرت للستوري</a>
       </div>
-      <details className="mt-3 w-fit rounded-xl bg-surface ring-1 ring-white/10 [&[open]]:p-4">
+      <details className="mt-3 w-fit rounded-xl bg-white ring-1 ring-[#e0e9df] [&[open]]:p-4">
         <summary className="min-h-11 cursor-pointer list-none rounded-xl px-5 py-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent [&::-webkit-details-marker]:hidden">📲 QR للمشاركة</summary>
         <div className="mt-3 flex flex-col items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -314,8 +327,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {!multi && (() => {
         const jumps = [offers.length > 0 && ["#offers", "العروض"], services.length > 0 && ["#prices", "الأسعار"], hours.length > 0 && ["#hours", "الدوام"], media.length > 1 && ["#photos", "الصور"]].filter(Boolean) as [string, string][];
         return jumps.length > 2 && (
-          <nav aria-label="أقسام الصفحة" className="sticky top-0 z-20 -mx-4 mt-4 flex gap-2 overflow-x-auto border-y border-white/10 bg-background/95 px-4 py-3 text-sm shadow-lg shadow-black/10 backdrop-blur [scrollbar-width:none] sm:-mx-6 sm:px-6">
-            {jumps.map(([h, l]) => <a key={h} href={h} className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-surface px-4 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none">{l}</a>)}
+          <nav aria-label="أقسام الصفحة" className="sticky top-0 z-20 -mx-4 mt-4 flex gap-2 overflow-x-auto border-y border-[#e0e9df] bg-background/95 px-4 py-3 text-sm shadow-lg shadow-black/10 backdrop-blur [scrollbar-width:none] sm:-mx-6 sm:px-6">
+            {jumps.map(([h, l]) => <a key={h} href={h} className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-white px-4 ring-1 ring-[#e0e9df] transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none">{l}</a>)}
           </nav>
         );
       })()}
@@ -327,7 +340,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </section>
       )}
 
-      {media.length > 1 && <section id="photos" className="scroll-mt-20"><Gallery start={1} items={media.map((m) => ({ src: publicMediaUrl(m.storage_path), alt: m.alt_text ?? org.name_ar, caption: m.alt_text }))} /></section>}
+      {media.length > 0 && <section id="photos" className="scroll-mt-20"><Gallery start={0} items={media.map((m) => ({ src: publicMediaUrl(m.storage_path), alt: m.alt_text ?? org.name_ar, caption: m.alt_text }))} /></section>}
 
       {org.video_url && (() => {
         const yt = org.video_url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
@@ -382,7 +395,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
                   <ul className="flex flex-wrap gap-2">{slots.filter((x) => x.slot_date === day).map((x) => {
                     const label = `${hhmm(x.starts_at)}–${hhmm(x.ends_at)}`;
                     return x.status === "booked"
-                      ? <li key={x.id} className="rounded-xl bg-red-400/15 px-3 py-1.5 text-sm text-red-200 line-through" dir="ltr">{label} · محجوز</li>
+                      ? <li key={x.id} className="rounded-xl bg-red-50 px-3 py-1.5 text-sm text-red-700 line-through" dir="ltr">{label} · محجوز</li>
                       : <li key={x.id}>{wa
                         ? <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${encodeURIComponent(`مرحبا، بدي أحجز ${org.name_ar} يوم ${dayLabelAr(day)} الساعة ${label}`)}`} className="block rounded-xl bg-accent/15 px-3 py-1.5 text-sm font-bold text-accent ring-1 ring-accent/40" >{label} · متاح</TrackedLink>
                         : <span className="block rounded-xl bg-accent/15 px-3 py-1.5 text-sm font-bold text-accent" dir="ltr">{label} · متاح</span>}</li>;
@@ -398,7 +411,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       ) : (
         <>
           {(shared(offers).length > 0 || shared(services).length > 0 || shared(classes).length > 0 || shared(products).length > 0) && (
-            <div className="mt-8 rounded-2xl border border-white/10 p-5">
+            <div className="mt-8 rounded-3xl border border-[#e0e9df] bg-white p-5 shadow-sm">
               <h2 className="text-xl font-bold">لكل الفروع</h2>
               {shared(offers).length > 0 && <Section title="العروض"><Offers items={shared(offers)} /></Section>}
               {shared(services).length > 0 && <Section title="الأسعار والخدمات"><Services items={shared(services)} /></Section>}
@@ -411,7 +424,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           {views.map((v) => {
             const o = own(offers, v.id), sv = own(services, v.id), cl = own(classes, v.id), pr = own(products, v.id), tr = own(trainers, v.id);
             return (
-              <section key={v.id} id={`b-${v.id}`} className="mt-10 scroll-mt-6 rounded-2xl bg-surface/50 p-5 ring-1 ring-white/10">
+              <section key={v.id} id={`b-${v.id}`} className="mt-10 scroll-mt-6 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#e0e9df]">
                 {womenBanner(v)}
                 <h2 className="text-2xl font-extrabold">{v.name}</h2>
                 <p className="mt-1 text-muted">{[v.address, v.area, v.city].filter(Boolean).join("، ")}</p>

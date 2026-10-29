@@ -10,7 +10,7 @@ export function DirectoryView({ type, city, items, total, cities }: {
 }) {
   const title = city ? `${ORG_TYPE_PLURAL[type]} في ${city}` : `${ORG_TYPE_PLURAL[type]} في الأردن`;
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8 sm:py-10">
+    <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10">
       <nav aria-label="مسار التنقل" className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
         <Link href="/" className="rounded-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">الرئيسية</Link>
         <span aria-hidden="true">/</span>
@@ -18,7 +18,7 @@ export function DirectoryView({ type, city, items, total, cities }: {
         {city && <><span aria-hidden="true">/</span><span aria-current="page" className="text-foreground">{city}</span></>}
       </nav>
 
-      <header className="rounded-2xl border border-white/10 bg-surface/70 p-5 sm:p-6">
+      <header className="rounded-3xl border border-[#e0e9df] bg-gradient-to-br from-white to-[#f0f8ee] p-5 shadow-sm sm:p-7">
         <h1 className="text-2xl font-extrabold sm:text-3xl">{title}</h1>
         <p className="mt-2 text-sm leading-6 text-muted">تصفّح الأنشطة وقارن الأسعار والدوام والموقع وطرق التواصل المباشر.</p>
         <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1.5 text-sm font-semibold text-accent" aria-live="polite">
@@ -50,7 +50,7 @@ export function DirectoryView({ type, city, items, total, cities }: {
           {items.map((o) => <OrgCard key={o.id} org={o} />)}
         </section>
       ) : (
-        <section className="mt-6 rounded-2xl border border-dashed border-white/15 px-5 py-10 text-center" aria-live="polite">
+        <section className="mt-6 rounded-3xl border border-dashed border-[#c9ddca] bg-white px-5 py-12 text-center" aria-live="polite">
           <p className="text-lg font-bold">ما لقينا نتائج في هذا القسم حاليًا</p>
           <p className="mt-2 text-sm text-muted">جرّب مدينة ثانية أو ارجع للدليل الكامل لاستكشاف الخيارات المتاحة.</p>
           <Link href={`/directory/${type}`} className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-accent px-5 py-2 text-sm font-bold text-accent-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">عرض الدليل الكامل</Link>
