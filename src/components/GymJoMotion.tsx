@@ -81,7 +81,6 @@ export function GymJoMotion() {
             duration: 0.65,
             delay: index * 0.09,
             ease: "power2.out",
-            scrollTrigger: undefined,
             clearProps: "transform"
           });
         });
