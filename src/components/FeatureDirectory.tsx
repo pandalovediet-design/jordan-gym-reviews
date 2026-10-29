@@ -19,21 +19,21 @@ const GROUPS = [
   },
 ];
 
-const DETAILS: Record<string, string> = {
-  "/pink": "أماكن رياضية مخصصة للنساء",
-  "/now": "اكتشف الخيارات المتاحة هسا",
-  "/awards": "تابع نادي الشهر واكتشف المميز",
-  "/trails": "مسارات للمشي والهايكنق",
-  "/exercises": "أفكار وتمارين رياضية",
-  "/log": "احتفظ بسجل تمارينك",
-  "/no-gym": "تمارين وحركة من غير جيم",
-  "/no-deprivation": "أفكار أكل متوازن من غير حرمان",
-  "/rooh-w-jasad": "مساحة للصحة والتوازن",
-  "/deals": "عروض وأكواد خصم",
-  "/reels": "محتوى رياضي سريع",
-  "/market": "معدات رياضية للبيع والتبادل",
-  "/tools": "حاسبات وأدوات مفيدة",
-  "/favorites": "ارجع للأماكن اللي حفظتها",
+const DETAILS: Record<string, { icon: string; title: string; description: string }> = {
+  "/pink": { icon: "💗", title: "أماكن نسائية", description: "أماكن رياضية مخصصة للنساء" },
+  "/now": { icon: "⏱️", title: "هسا", description: "اكتشف الخيارات المتاحة هسا" },
+  "/awards": { icon: "🏆", title: "نادي الشهر", description: "تابع نادي الشهر واكتشف المميز" },
+  "/trails": { icon: "🥾", title: "المسارات", description: "مسارات للمشي والهايكنق" },
+  "/exercises": { icon: "🏋️", title: "التمارين", description: "أفكار وتمارين رياضية" },
+  "/log": { icon: "🔥", title: "سجل تمريني", description: "احتفظ بسجل تمارينك" },
+  "/no-gym": { icon: "🏠", title: "من غير جيم", description: "تمارين وحركة من غير جيم" },
+  "/no-deprivation": { icon: "🥗", title: "من غير حرمان", description: "أفكار أكل متوازن من غير حرمان" },
+  "/rooh-w-jasad": { icon: "🌿", title: "روح وجسد", description: "مساحة للصحة والتوازن" },
+  "/deals": { icon: "🎟️", title: "أكواد خصم", description: "عروض وأكواد خصم" },
+  "/reels": { icon: "🎬", title: "ريلز", description: "محتوى رياضي سريع" },
+  "/market": { icon: "🔄", title: "سوق المعدات", description: "معدات رياضية للبيع والتبادل" },
+  "/tools": { icon: "🧮", title: "الحاسبة", description: "حاسبات وأدوات مفيدة" },
+  "/favorites": { icon: "❤️", title: "المفضلة", description: "ارجع للأماكن اللي حفظتها" },
 };
 
 export function FeatureDirectory() {
@@ -63,10 +63,10 @@ export function FeatureDirectory() {
                 if (!item) return null;
                 return (
                   <Link key={href} href={href} className="group flex min-h-[66px] items-center gap-3 rounded-2xl border border-[#e7eee5] bg-background px-3 py-3 transition duration-200 hover:-translate-y-0.5 hover:border-[#9acda4] hover:bg-[#f5faf2] dark:border-[#344454] dark:hover:border-[#4fbd78] dark:hover:bg-[#243a30]">
-                    <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#e8f4e8] text-xl">{item.label.split(" ")[0]}</span>
+                    <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#e8f4e8] text-xl">{DETAILS[href].icon}</span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-extrabold text-foreground">{item.label.replace(/^\S+\s*/, "")}</span>
-                      <span className="mt-0.5 block text-xs leading-5 text-muted">{DETAILS[href]}</span>
+                      <span className="block text-sm font-extrabold text-foreground">{DETAILS[href].title}</span>
+                      <span className="mt-0.5 block text-xs leading-5 text-muted">{DETAILS[href].description}</span>
                     </span>
                     <span aria-hidden className="text-sm text-[#21834f] transition-transform group-hover:-translate-x-1">←</span>
                   </Link>
