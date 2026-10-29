@@ -31,7 +31,7 @@ export function ThemeToggle() {
       aria-label={ready ? (dark ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن") : "تغيير المظهر"}
       aria-pressed={dark}
       title={dark ? "الوضع الفاتح" : "الوضع الداكن"}
-      className="inline-flex min-h-10 min-w-10 items-center justify-center gap-2 rounded-full border border-[#dce9dd] bg-white px-3 text-base text-foreground shadow-sm transition hover:border-accent hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      className={`inline-flex min-h-10 min-w-10 items-center justify-center gap-2 rounded-full border px-3 text-base shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${dark ? "border-[#405366] bg-[#212d3b] text-[#f1f5f9] hover:border-[#4fbd78] hover:bg-[#294638]" : "border-[#dce9dd] bg-white text-foreground hover:border-accent hover:bg-background"}`}
     >
       <span aria-hidden="true">{dark ? "☀️" : "🌙"}</span>
       <span className="hidden text-xs font-bold sm:inline">{dark ? "فاتح" : "داكن"}</span>
