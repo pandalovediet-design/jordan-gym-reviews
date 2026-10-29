@@ -46,7 +46,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
     return `/search?${u}`;
   };
   const activeFilters = mode === "products" ? 0 : [type, city, area, category, women, maxPrice, trial, mosque, quiet, kidsArea, kids, transport, access].filter(Boolean).length + (near ? 1 : 0);
-  const field = "min-h-11 w-full rounded-xl bg-surface px-3 py-2.5 ring-1 ring-white/10 outline-none transition focus-visible:ring-2 focus-visible:ring-cyan-300";
+  const field = "min-h-11 w-full rounded-xl border border-[#dce9dd] bg-white px-3 py-2.5 text-[#18372a] placeholder:text-[#819187] outline-none transition focus-visible:ring-2 focus-visible:ring-[#21834f] focus-visible:ring-offset-1";
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
@@ -90,7 +90,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
             <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="kids" value="1" defaultChecked={kids} /> 👶 مهيّأ للأطفال (5–12)</label>
             <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="transport" value="1" defaultChecked={transport} /> 🚌 مواصلات للأطفال</label>
             <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="access" value="1" defaultChecked={access} /> ♿ مهيّأ لذوي الاحتياجات</label>
-            <button className="rounded-xl bg-accent px-6 py-2.5 font-bold text-accent-foreground">تطبيق</button>
+            <button className="min-h-11 rounded-xl bg-[#21834f] px-6 py-2.5 font-bold text-white transition hover:bg-[#17683d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21834f] focus-visible:ring-offset-2">تطبيق</button>
           </div>
         </details>}
       </form></div>
