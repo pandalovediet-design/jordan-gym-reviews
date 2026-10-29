@@ -22,7 +22,7 @@ export function GymJoMotion() {
     } catch {
       return;
     }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 
@@ -63,28 +63,45 @@ export function GymJoMotion() {
       camera.updateProjectionMatrix();
       renderer.render(scene, camera);
     };
-    const observer = new ResizeObserver(resize);
-    observer.observe(canvas);
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(canvas);
     resize();
 
+    let revealObserver: IntersectionObserver | undefined;
     const context = gsap.context(() => {
-      if (!reducedMotion) {
-        gsap.fromTo(heroGroup.scale, { x: 0.78, y: 0.78, z: 0.78 }, { x: 1, y: 1, z: 1, duration: 1.1, ease: "back.out(1.7)" });
-        gsap.to(torus.rotation, { x: Math.PI * 2, y: Math.PI * 2, duration: 18, ease: "none", repeat: -1 });
-        gsap.to(orb.position, { y: "+=0.25", duration: 2.2, ease: "sine.inOut", yoyo: true, repeat: -1 });
-        gsap.to(smallOrb.position, { y: "-=0.2", duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: -1 });
-        gsap.to(ring.rotation, { z: "+=0.55", duration: 8, ease: "sine.inOut", yoyo: true, repeat: -1 });
-        gsap.utils.toArray<HTMLElement>("[data-gymjo-reveal]").forEach((element, index) => {
-          gsap.fromTo(element, { autoAlpha: 0, y: 18 }, {
-            autoAlpha: 1,
-            y: 0,
-            duration: 0.65,
-            delay: index * 0.09,
-            ease: "power2.out",
-            clearProps: "transform"
-          });
+      if (reducedMotion) return;
+
+      gsap.fromTo(heroGroup.scale, { x: 0.78, y: 0.78, z: 0.78 }, { x: 1, y: 1, z: 1, duration: 1.1, ease: "back.out(1.7)" });
+      gsap.to(torus.rotation, { x: Math.PI * 2, y: Math.PI * 2, duration: 18, ease: "none", repeat: -1 });
+      gsap.to(orb.position, { y: "+=0.25", duration: 2.2, ease: "sine.inOut", yoyo: true, repeat: -1 });
+      gsap.to(smallOrb.position, { y: "-=0.2", duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: -1 });
+      gsap.to(ring.rotation, { z: "+=0.55", duration: 8, ease: "sine.inOut", yoyo: true, repeat: -1 });
+
+      const revealTargets = Array.from(document.querySelectorAll<HTMLElement>(
+        "[data-gymjo-reveal], main article, main > div > section:not(:first-child)"
+      ));
+      const seen = new WeakSet<Element>();
+      revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting || seen.has(entry.target)) return;
+          seen.add(entry.target);
+          const element = entry.target as HTMLElement;
+          const isHero = element.hasAttribute("data-gymjo-reveal");
+          gsap.fromTo(element,
+            { autoAlpha: 0, y: isHero ? 18 : 22 },
+            {
+              autoAlpha: 1,
+              y: 0,
+              duration: isHero ? 0.65 : 0.55,
+              ease: "power2.out",
+              clearProps: "transform,opacity,visibility",
+              onComplete: () => revealObserver?.unobserve(element)
+            }
+          );
         });
-      }
+      }, { threshold: 0.08, rootMargin: "0px 0px -35px 0px" });
+
+      revealTargets.forEach((element) => revealObserver?.observe(element));
     }, canvas);
 
     let frame = 0;
@@ -96,7 +113,8 @@ export function GymJoMotion() {
 
     return () => {
       cancelAnimationFrame(frame);
-      observer.disconnect();
+      resizeObserver.disconnect();
+      revealObserver?.disconnect();
       context.revert();
       torus.geometry.dispose();
       orb.geometry.dispose();
