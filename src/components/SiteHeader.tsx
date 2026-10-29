@@ -3,12 +3,17 @@ import { HeaderAuth } from "@/components/HeaderAuth";
 import { InstallButton } from "@/components/InstallButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SiteTabs, type NavLink } from "@/components/SiteTabs";
-import { NAV_CATALOG } from "@/lib/site-settings";
+
+const DIRECTORY_TABS: NavLink[] = [
+  { href: "/search", label: "🔎 ابحث عن نشاط" },
+  { href: "/directory", label: "📍 الدليل حسب المدينة" },
+  { href: "/pink", label: "💗 أماكن نسائية", cls: "text-pink-300" },
+  { href: "/trails", label: "🥾 مسارات" },
+  { href: "/join", label: "➕ سجّل نشاطك" },
+  { href: "/sections", label: "كل الأقسام" },
+];
 
 export async function SiteHeader() {
-  // Keep every main service directly visible in the navigation; /sections remains the full directory.
-  const tabs: NavLink[] = [...NAV_CATALOG.map((n) => ({ ...n })), { href: "/sections", label: "☰ كل الأقسام" }];
-
   return (
     <header className="sticky top-0 z-40 border-b border-[#e2ebe2] bg-white/95 shadow-lg shadow-black/5 backdrop-blur-xl print:hidden">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-3 py-3 sm:px-5 sm:py-3.5">
@@ -27,7 +32,7 @@ export async function SiteHeader() {
           <InstallButton />
         </div>
       </div>
-      <SiteTabs links={tabs} />
+      <SiteTabs links={DIRECTORY_TABS} />
     </header>
   );
 }
@@ -44,7 +49,7 @@ export function SiteFooter() {
           <nav aria-label="روابط تذييل الموقع" className="flex max-w-3xl flex-wrap justify-center gap-x-4 gap-y-3 text-sm">
             <Link href="/directory" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">الدليل</Link>
             <Link href="/guides" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">أدلة</Link>
-            <Link href="/pink" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">Pink Zone</Link>
+            <Link href="/pink" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">أماكن نسائية</Link>
             <Link href="/join" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">سجّل نشاطك</Link>
             <Link href="/sponsors" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">للرعاة</Link>
             <Link href="/terms" className="rounded-md text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">الشروط</Link>
