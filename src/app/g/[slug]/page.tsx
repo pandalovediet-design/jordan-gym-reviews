@@ -126,8 +126,12 @@ function Trainers({ items }: { items: TrainerCard[] }) {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={publicMediaUrl(t.photo)} alt={t.name} loading="lazy" decoding="async" className="size-full object-cover transition duration-500 group-hover:scale-105" />
           ) : <div className="flex size-full items-center justify-center bg-[radial-gradient(ellipse_at_75%_20%,rgba(212,255,0,.22),transparent_48%),linear-gradient(135deg,#151a0b,#283313)] text-5xl">🏋️</div>}
-          {t.head && <span className="absolute start-3 top-3 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">⭐ المدرب الرئيسي</span>}
-          {t.licensed && <span className="absolute start-3 top-3 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">✓ مرخّص</span>}
+          {(t.head || t.licensed) && (
+            <div className="absolute start-3 top-3 flex flex-col items-start gap-2">
+              {t.head && <span className="rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">⭐ المدرب الرئيسي</span>}
+              {t.licensed && <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-sm">✓ مرخّص</span>}
+            </div>
+          )}
         </div>
         <div className="flex flex-1 flex-col gap-2.5 p-5">
           {t.role && <span className="w-fit rounded-full bg-accent/15 px-3 py-0.5 text-xs font-bold text-accent">{t.role}</span>}
