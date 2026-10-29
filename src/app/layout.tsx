@@ -1,4 +1,5 @@
 import { baseUrl } from "@/lib/base-url";
+import Script from "next/script";
 import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/cairo";
 import "./globals.css";
@@ -26,6 +27,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ar" dir="rtl" className="h-full antialiased">
+      <Script id="gymjo-theme-init" strategy="beforeInteractive">{"try { const saved = localStorage.getItem('gymjo-theme'); const dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches; if (dark) { document.documentElement.classList.add('dark'); document.querySelector('meta[name=\"theme-color\"]')?.setAttribute('content', '#17212b'); } } catch (_) {}"}</Script>
       <body className="min-h-full flex flex-col">
         <JsonLd data={{ "@context": "https://schema.org", "@graph": [
           { "@type": "Organization", "@id": `${baseUrl()}/#org`, name: "GymJo", url: baseUrl(), logo: `${baseUrl()}/brand-mark.svg`, areaServed: { "@type": "Country", name: "Jordan" }, knowsLanguage: "ar" },
