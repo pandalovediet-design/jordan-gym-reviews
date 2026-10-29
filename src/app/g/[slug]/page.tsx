@@ -16,6 +16,7 @@ import { BILLING_LABEL, DELIVERY_LABEL, GLOW_LABEL, ORG_TYPE_LABEL, WEEKDAYS, WO
 import type { Tables } from "@/lib/database.types";
 import { themeClass } from "@/lib/themes";
 import { Gallery } from "@/components/Gallery";
+import { OrgSectionNav } from "@/components/OrgSectionNav";
 
 export const revalidate = 120;
 const load = cache(getOrgBySlug);
@@ -243,18 +244,19 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
 
   return (
     <div className={`min-h-[70vh] ${themeClass(org.theme)}`}>
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
+    <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:py-8">
       <PageView orgId={org.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs).replace(/</g, "\\u003c") }} />
       {!multi && womenBanner(views[0])}
-      <div className={glow ? `glow glow-${glow} rounded-2xl bg-surface p-5` : ""}>
+      <div className="relative mb-7">
       {media[0] && (
-        <figure className="mb-6 overflow-hidden rounded-3xl border border-white/10 bg-surface shadow-2xl shadow-black/20">
+        <figure className="mb-0 overflow-hidden rounded-[1.75rem] border border-white/10 bg-surface shadow-2xl shadow-black/20">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} fetchPriority="high" decoding="async" className="aspect-[4/3] w-full object-cover sm:aspect-[21/9]" />
+          <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} fetchPriority="high" decoding="async" className="aspect-[16/9] w-full object-cover sm:aspect-[2.6/1]" />
         </figure>
       )}
+      <div className={`relative z-10 mx-2 -mt-12 rounded-3xl border border-white/10 bg-surface p-5 shadow-2xl shadow-black/20 sm:mx-6 sm:-mt-16 sm:p-7 ${glow ? `glow glow-${glow}` : ""}`}>
       {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
       <p className="text-sm text-muted">{category ?? ORG_TYPE_LABEL[org.type]}{isVerified(org) && <span className="text-accent"> · ✓ موثّق</span>}{multi && <span> · {views.length} فروع</span>}</p>
       {coachProfile && (coachProfile.education || coachProfile.experience_years != null) && (
@@ -286,6 +288,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       )}
       {!multi && <p className="mt-1 text-muted">{[org.address, org.area, org.city].filter(Boolean).join("، ")}</p>}
       </div>
+      </div>
       {multi && (
         <nav className="mt-3 flex flex-wrap gap-2 text-sm" aria-label="فروع النشاط">
           {views.map((v) => <a key={v.id} href={`#b-${v.id}`} className="inline-flex min-h-11 items-center rounded-full bg-surface px-4 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none">{v.name} — {v.city}{v.women_access === "women_only" && " 💗"}</a>)}
@@ -311,14 +314,12 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           </div>
         </div>
       </details>
-      {!multi && (() => {
-        const jumps = [offers.length > 0 && ["#offers", "العروض"], services.length > 0 && ["#prices", "الأسعار"], hours.length > 0 && ["#hours", "الدوام"], media.length > 1 && ["#photos", "الصور"]].filter(Boolean) as [string, string][];
-        return jumps.length > 2 && (
-          <nav aria-label="أقسام الصفحة" className="sticky top-0 z-20 -mx-4 mt-4 flex gap-2 overflow-x-auto border-y border-white/10 bg-background/95 px-4 py-3 text-sm shadow-lg shadow-black/10 backdrop-blur [scrollbar-width:none] sm:-mx-6 sm:px-6">
-            {jumps.map(([h, l]) => <a key={h} href={h} className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-surface px-4 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none">{l}</a>)}
-          </nav>
-        );
-      })()}
+      {!multi && <OrgSectionNav items={[
+        ...(media.length > 1 ? [{ href: "#photos", label: "الصور" }] : []),
+        ...(offers.length > 0 ? [{ href: "#offers", label: "العروض" }] : []),
+        ...(services.length > 0 ? [{ href: "#prices", label: "الأسعار والخدمات" }] : []),
+        ...(hours.length > 0 ? [{ href: "#hours", label: "الدوام" }] : []),
+      ]} />}
       {reviewVideos.length > 0 && (
         <section className="mt-6 rounded-2xl bg-accent/10 p-4 ring-1 ring-accent/30">
           <h2 className="mb-1 text-lg font-bold">🎬 مراجعة عبد الكريم</h2>
