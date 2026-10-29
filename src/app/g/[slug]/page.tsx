@@ -69,9 +69,13 @@ function Services({ items }: { items: Tables<"organization_services">[] }) {
 function Hours({ items }: { items: Tables<"organization_hours">[] }) {
   if (!items.length) return <p className="text-sm text-muted">الدوام غير محدد.</p>;
   return (
-    <ul className={`${card} space-y-1 text-sm`}>{items.map((h) => (
-      <li key={h.id} className="flex justify-between"><span>{WEEKDAYS[h.weekday]}</span>
-        <span className="text-muted">{h.is_closed ? "مغلق" : `${hhmm(h.opens_at)} – ${hhmm(h.closes_at)}`}</span></li>))}</ul>
+    <ul className="overflow-hidden rounded-2xl bg-surface p-2 ring-1 ring-white/10">{items.map((h) => (
+      <li key={h.id} className="flex items-center justify-between gap-3 rounded-xl px-3 py-3 text-sm even:bg-white/[0.025]">
+        <span className="font-semibold">{WEEKDAYS[h.weekday]}</span>
+        {h.is_closed
+          ? <span className="rounded-full bg-red-500/10 px-3 py-1 text-xs font-bold text-red-300">مغلق</span>
+          : <span className="rounded-full bg-accent/10 px-3 py-1 font-semibold text-accent" dir="ltr">{hhmm(h.opens_at)} – {hhmm(h.closes_at)}</span>}
+      </li>))}</ul>
   );
 }
 function Offers({ items }: { items: Tables<"offers">[] }) {
