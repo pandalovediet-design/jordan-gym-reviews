@@ -50,10 +50,19 @@ type BV = {
 function Services({ items }: { items: Tables<"organization_services">[] }) {
   if (!items.length) return null;
   return (
-    <ul className="space-y-2">{items.map((s) => (
-      <li key={s.id} className={`${card} flex items-start justify-between gap-4`}>
-        <div><p className="font-semibold">{s.name_ar}</p>{s.description_ar && <p className="text-sm text-muted">{s.description_ar}</p>}</div>
-        <p className="shrink-0 text-accent">{jod(s.price_jod)}{s.billing_period && <span className="text-xs text-muted"> {BILLING_LABEL[s.billing_period]}</span>}</p>
+    <ul className="grid gap-3 sm:grid-cols-2">{items.map((s) => (
+      <li key={s.id} className="group relative overflow-hidden rounded-2xl bg-surface p-5 ring-1 ring-white/10 transition duration-200 hover:-translate-y-0.5 hover:ring-accent/60">
+        <div className="absolute inset-y-0 start-0 w-1 bg-accent/70" />
+        <div className="flex h-full items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-bold leading-6">{s.name_ar}</p>
+            {s.description_ar && <p className="mt-1.5 text-sm leading-6 text-muted">{s.description_ar}</p>}
+          </div>
+          <div className="shrink-0 rounded-xl bg-accent/10 px-3 py-2 text-end ring-1 ring-accent/20">
+            <p className="font-black text-accent">{jod(s.price_jod)}</p>
+            {s.billing_period && <p className="mt-0.5 text-[11px] text-muted">{BILLING_LABEL[s.billing_period]}</p>}
+          </div>
+        </div>
       </li>))}</ul>
   );
 }
@@ -69,9 +78,20 @@ function Offers({ items }: { items: Tables<"offers">[] }) {
   if (!items.length) return null;
   return (
     <div className="grid gap-3 sm:grid-cols-2">{items.map((o) => (
-      <div key={o.id} className={card}><h3 className="font-bold text-accent">{o.kind === "course" ? "🎓 " : ""}{o.title_ar}</h3>
-        {o.description_ar && <p className="text-sm">{o.description_ar}</p>}
-        <p className="mt-1 text-xs text-muted">{o.offer_price_jod != null && `${jod(o.offer_price_jod)} · `}{o.discount_percent != null && `خصم ${o.discount_percent}% · `}حتى {dateAr(o.ends_at)}</p></div>))}</div>
+      <article key={o.id} className="relative overflow-hidden rounded-2xl bg-[linear-gradient(125deg,rgba(212,255,0,.13),transparent_65%)] bg-surface p-5 ring-1 ring-accent/25">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <span className="mb-2 inline-flex rounded-full bg-accent/15 px-3 py-1 text-[11px] font-bold text-accent">{o.kind === "course" ? "دورة تدريبية" : "عرض خاص"}</span>
+            <h3 className="text-lg font-black leading-7">{o.title_ar}</h3>
+          </div>
+          {o.discount_percent != null && <span className="shrink-0 rounded-xl bg-accent px-3 py-2 text-sm font-black text-accent-foreground">خصم {o.discount_percent}%</span>}
+        </div>
+        {o.description_ar && <p className="mt-2 text-sm leading-6 text-muted">{o.description_ar}</p>}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-3">
+          {o.offer_price_jod != null ? <p className="text-lg font-black text-accent">{jod(o.offer_price_jod)}</p> : <span />}
+          <p className="text-xs text-muted">ساري حتى {dateAr(o.ends_at)}</p>
+        </div>
+      </article>))}</div>
   );
 }
 function Classes({ items }: { items: Tables<"org_classes">[] }) {
