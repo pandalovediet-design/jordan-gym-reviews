@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: PageProps<"/g/[slug]">): Prom
       locale: "ar_JO",
       title: d.org.name_ar,
       description: d.org.description_ar?.slice(0, 160) ?? `${ORG_TYPE_LABEL[d.org.type]} في ${d.org.city}`,
-      images: [d.media[0] ? publicMediaUrl(d.media[0].storage_path) : "/og-default.png"],
+      images: [d.cover ? publicMediaUrl(d.cover.storage_path) : "/og-default.png"],
     },
   };
 }
@@ -153,7 +153,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   const { slug } = await params;
   const d = await load(decodeURIComponent(slug));
   if (!d) notFound();
-  const { org, hours, services, media, offers, products, classes, branches, trainers, glow, menu, coaches, coachGyms, coachProfile, slots } = d;
+  const { org, hours, services, media, profileImage, cover, offers, products, classes, branches, trainers, glow, menu, coaches, coachGyms, coachProfile, slots } = d;
   const mainRow = branches.find((b) => b.is_main);
   const orgMaps = org.maps_url ?? (org.latitude != null && org.longitude != null ? `https://www.google.com/maps?q=${org.latitude},${org.longitude}` : null);
   const views: BV[] = [
@@ -249,10 +249,10 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs).replace(/</g, "\\u003c") }} />
       {!multi && womenBanner(views[0])}
       <div className={glow ? `glow glow-${glow} rounded-2xl bg-surface p-5` : ""}>
-      {media[0] && (
+      {cover && (
         <figure className="mb-6 overflow-hidden rounded-3xl border border-[#e0e9df] bg-white shadow-lg shadow-[#1c5737]/10">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} fetchPriority="high" decoding="async" className="aspect-[4/3] w-full object-cover sm:aspect-[21/9]" />
+          <img src={publicMediaUrl(cover.storage_path)} alt={cover.alt_text ?? `كفر ${org.name_ar}`} fetchPriority="high" decoding="async" className="aspect-[4/3] w-full object-cover sm:aspect-[21/9]" />
         </figure>
       )}
       {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
@@ -262,7 +262,13 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {coachProfile?.certificates && <p className="mt-1 text-sm text-muted">📜 {coachProfile.certificates}</p>}
       {coachGyms.length > 0 && (
         <p className="mt-1 text-sm">{org.type === "nutritionist" ? "يتعاون مع: " : "يتدرب في: "}{coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
-      <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">{org.name_ar}</h1>
+      <div className="mt-3 flex items-center gap-4">
+        {profileImage && <span className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-full border-4 border-white bg-white shadow-md ring-1 ring-[#dce9dd] sm:size-24">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={publicMediaUrl(profileImage.storage_path)} alt={`الصورة الشخصية لـ ${org.name_ar}`} loading="eager" decoding="async" className="size-full object-cover" />
+        </span>}
+        <h1 className="mt-2 min-w-0 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">{org.name_ar}</h1>
+      </div>
       {org.is_claimed === false && (
         <p className="mt-3 rounded-2xl bg-[#f0f8ee] p-4 text-sm text-[#536d5b] ring-1 ring-[#dce9dd]">
           بيانات أولية من مصادر عامة، وصاحب النادي لسا ما استلم صفحته. <Link href={`/claim/${org.slug}`} className="font-bold text-accent underline">هذا ناديي؟ استلم صفحتك مجاناً</Link>
