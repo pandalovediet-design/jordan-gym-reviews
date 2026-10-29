@@ -121,3 +121,43 @@ html.dark [class~="bg-[#f3f8ee]"],
 html.dark [class~="bg-[#f0f8ee]"],
 html.dark [class~="bg-[#f0f8ee]"] { background-color: #243746 !important; }
 html.dark [class~="text-[#21834f]"] { color: #83d6a0 !important; }
+
+
+/* Keep the homepage hero, search panels and filter surfaces consistent in dark mode. */
+html.dark main section[class*="bg-[#f3f8ee]"],
+html.dark main section[class*="bg-[#f0f8ee]"],
+html.dark main div[class*="bg-[#f6f9f4]"],
+html.dark main div[class*="bg-[#fbfcfa]"],
+html.dark main div[class*="bg-[#fbfdf9]"],
+html.dark main div[class*="bg-[#f6f9f4]"],
+html.dark main div[class*="bg-[radial-gradient"] {
+  background-color: #212d3b !important;
+  background-image: none !important;
+}
+html.dark main [class*="bg-[#e8f4e8]"],
+html.dark main [class*="bg-[#e4f2e1]"],
+html.dark main [class*="bg-[#f0f8ee]"] {
+  background-color: #294638 !important;
+}
+html.dark main [class*="text-[#617568]"],
+html.dark main [class*="text-[#819187]"],
+html.dark main [class*="text-[#536d5b]"],
+html.dark main [class*="text-[#5b7c65]"] {
+  color: #a3b4c6 !important;
+}
+html.dark main [class*="text-[#18372a]"],
+html.dark main [class*="text-[#205c37]"] {
+  color: #f1f5f9 !important;
+}
+html.dark main [class*="border-[#dce9dd]"],
+html.dark main [class*="border-[#e5eee4]"],
+html.dark main [class*="border-[#e3ebe2]"] {
+  border-color: #344454 !important;
+}
+html.dark main a[class*="bg-white"],
+html.dark main button[class*="bg-white"] {
+  background-color: #212d3b !important;
+  color: #f1f5f9 !important;
+}
+html.dark main .text-white,
+html.dark header .text-white { color: #fff !important; }
