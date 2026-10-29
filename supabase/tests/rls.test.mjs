@@ -215,68 +215,44 @@ test("child rows cannot be moved to another organization", async () => {
   });
 });
 
-test("reviews: one per user, not for own org, identity cannot be forged, rating summary", async () => {
-  await asBob(async () => {
-    const r = await db.query(
+test("reviews are disabled: authenticated users cannot create or edit reviews", async () => {
+  await asBob(() =>
+    rejects(() => db.query(
       `insert into public.reviews (organization_id, user_id, rating, body)
-       values ($1, $2, 4, 'جيد') returning id, user_id, author_name, status`,
-      [ctx.gym, ALICE], // tries to impersonate alice
-    );
-    ctx.review = r.rows[0].id;
-    assert.equal(r.rows[0].user_id, BOB);
-    assert.equal(r.rows[0].author_name, "Bob");
-    await rejects(() =>
-      db.query(`insert into public.reviews (organization_id, user_id, rating) values ($1, $2, 5)`, [ctx.gym, BOB]),
-    );
-    await db.query(`update public.reviews set status = 'hidden', rating = 5 where id = $1`, [ctx.review]);
-    const u = await db.query(`select status, rating from public.reviews where id = $1`, [ctx.review]);
-    assert.equal(u.rows[0].status, "published");
-    assert.equal(u.rows[0].rating, 5);
-  });
+       values ($1, $2, 4, 'جيد')`,
+      [ctx.gym, ALICE],
+    )),
+  );
   await asAlice(() =>
-    rejects(
-      () => db.query(`insert into public.reviews (organization_id, user_id, rating) values ($1, $2, 5)`, [ctx.gym, ALICE]),
-      /own organization/,
-    ),
+    rejects(() => db.query(
+      `insert into public.reviews (organization_id, user_id, rating) values ($1, $2, 5)`,
+      [ctx.gym, ALICE],
+    )),
   );
   await asAnon(async () => {
     const r = await db.query(`select review_count, average_rating from public.organization_ratings where organization_id = $1`, [ctx.gym]);
-    assert.equal(r.rows[0].review_count, 1);
-    assert.equal(Number(r.rows[0].average_rating), 5);
+    assert.equal(r.rows.length, 0);
   });
 });
 
-test("review responses: only the organization can answer its own reviews", async () => {
-  await asBob(() =>
-    rejects(() =>
-      db.query(
-        `insert into public.review_responses (review_id, organization_id, body, created_by) values ($1, $2, 'شكراً', $3)`,
-        [ctx.review, ctx.gym, BOB],
-      ),
-    ),
-  );
+test("review responses cannot be created while public reviews are disabled", async () => {
   await asAlice(() =>
-    db.query(
-      `insert into public.review_responses (review_id, organization_id, body, created_by) values ($1, $2, 'شكراً لك', $3)`,
-      [ctx.review, ctx.gym, ALICE],
-    ),
-  );
-  await asAlice(() =>
-    rejects(() =>
-      db.query(
-        `insert into public.review_responses (review_id, organization_id, body, created_by) values ($1, $2, 'x', $3)`,
-        [ctx.review, ctx.store, ALICE], // mismatched organization
-      ),
-    ),
+    rejects(() => db.query(
+      `insert into public.review_responses (review_id, organization_id, body, created_by)
+       values (gen_random_uuid(), $1, 'شكراً', $2)`,
+      [ctx.gym, ALICE],
+    )),
   );
 });
 
-test("review reports: reporter is the caller and duplicates are rejected", async () => {
-  await asAlice(async () => {
-    await db.query(`insert into public.review_reports (review_id, reporter_id, reason) values ($1, $2, 'fake')`, [ctx.review, ALICE]);
-    await rejects(() => db.query(`insert into public.review_reports (review_id, reporter_id, reason) values ($1, $2, 'fake')`, [ctx.review, ALICE]));
-    await rejects(() => db.query(`insert into public.review_reports (review_id, reporter_id, reason) values ($1, $2, 'spam')`, [ctx.review, BOB]));
-  });
+test("review reports are disabled alongside public review writes", async () => {
+  await asAlice(() =>
+    rejects(() => db.query(
+      `insert into public.review_reports (review_id, reporter_id, reason)
+       values (gen_random_uuid(), $1, 'fake')`,
+      [ALICE],
+    )),
+  );
 });
 
 test("inquiries are server-only, de-duplicated, and private to the organization", async () => {
