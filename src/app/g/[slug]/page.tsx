@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: PageProps<"/g/[slug]">): Prom
   };
 }
 
-const card = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
+const card = "rounded-2xl bg-surface p-5 ring-1 ring-[#e0e9df] shadow-sm";
 
 type Data = NonNullable<Awaited<ReturnType<typeof getOrgBySlug>>>;
 type BV = {
@@ -243,14 +243,14 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
 
   return (
     <div className={`min-h-[70vh] ${themeClass(org.theme)}`}>
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
+    <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:py-8">
       <PageView orgId={org.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs).replace(/</g, "\\u003c") }} />
       {!multi && womenBanner(views[0])}
       <div className={glow ? `glow glow-${glow} rounded-2xl bg-surface p-5` : ""}>
       {media[0] && (
-        <figure className="mb-6 overflow-hidden rounded-3xl border border-white/10 bg-surface shadow-2xl shadow-black/20">
+        <figure className="mb-6 overflow-hidden rounded-3xl border border-[#e0e9df] bg-white shadow-lg shadow-[#1c5737]/10">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} fetchPriority="high" decoding="async" className="aspect-[4/3] w-full object-cover sm:aspect-[21/9]" />
         </figure>
@@ -264,7 +264,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         <p className="mt-1 text-sm">{org.type === "nutritionist" ? "يتعاون مع: " : "يتدرب في: "}{coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
       <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">{org.name_ar}</h1>
       {org.is_claimed === false && (
-        <p className="mt-2 rounded-xl bg-white/5 p-3 text-sm text-muted ring-1 ring-white/10">
+        <p className="mt-3 rounded-2xl bg-[#f0f8ee] p-4 text-sm text-[#536d5b] ring-1 ring-[#dce9dd]">
           بيانات أولية من مصادر عامة، وصاحب النادي لسا ما استلم صفحته. <Link href={`/claim/${org.slug}`} className="font-bold text-accent underline">هذا ناديي؟ استلم صفحتك مجاناً</Link>
         </p>
       )}
@@ -299,7 +299,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         <a href={`/g/${org.slug}/card`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">🖼 كرت للمنشور</a>
         <a href={`/g/${org.slug}/card?s=1`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">📱 كرت للستوري</a>
       </div>
-      <details className="mt-3 w-fit rounded-xl bg-surface ring-1 ring-white/10 [&[open]]:p-4">
+      <details className="mt-3 w-fit rounded-xl bg-white ring-1 ring-[#e0e9df] [&[open]]:p-4">
         <summary className="min-h-11 cursor-pointer list-none rounded-xl px-5 py-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent [&::-webkit-details-marker]:hidden">📲 QR للمشاركة</summary>
         <div className="mt-3 flex flex-col items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -314,7 +314,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {!multi && (() => {
         const jumps = [offers.length > 0 && ["#offers", "العروض"], services.length > 0 && ["#prices", "الأسعار"], hours.length > 0 && ["#hours", "الدوام"], media.length > 1 && ["#photos", "الصور"]].filter(Boolean) as [string, string][];
         return jumps.length > 2 && (
-          <nav aria-label="أقسام الصفحة" className="sticky top-0 z-20 -mx-4 mt-4 flex gap-2 overflow-x-auto border-y border-white/10 bg-background/95 px-4 py-3 text-sm shadow-lg shadow-black/10 backdrop-blur [scrollbar-width:none] sm:-mx-6 sm:px-6">
+          <nav aria-label="أقسام الصفحة" className="sticky top-0 z-20 -mx-4 mt-4 flex gap-2 overflow-x-auto border-y border-[#e0e9df] bg-background/95 px-4 py-3 text-sm shadow-lg shadow-black/10 backdrop-blur [scrollbar-width:none] sm:-mx-6 sm:px-6">
             {jumps.map(([h, l]) => <a key={h} href={h} className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-surface px-4 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none">{l}</a>)}
           </nav>
         );
@@ -398,7 +398,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       ) : (
         <>
           {(shared(offers).length > 0 || shared(services).length > 0 || shared(classes).length > 0 || shared(products).length > 0) && (
-            <div className="mt-8 rounded-2xl border border-white/10 p-5">
+            <div className="mt-8 rounded-3xl border border-[#e0e9df] bg-white p-5 shadow-sm">
               <h2 className="text-xl font-bold">لكل الفروع</h2>
               {shared(offers).length > 0 && <Section title="العروض"><Offers items={shared(offers)} /></Section>}
               {shared(services).length > 0 && <Section title="الأسعار والخدمات"><Services items={shared(services)} /></Section>}
@@ -411,7 +411,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           {views.map((v) => {
             const o = own(offers, v.id), sv = own(services, v.id), cl = own(classes, v.id), pr = own(products, v.id), tr = own(trainers, v.id);
             return (
-              <section key={v.id} id={`b-${v.id}`} className="mt-10 scroll-mt-6 rounded-2xl bg-surface/50 p-5 ring-1 ring-white/10">
+              <section key={v.id} id={`b-${v.id}`} className="mt-10 scroll-mt-6 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#e0e9df]">
                 {womenBanner(v)}
                 <h2 className="text-2xl font-extrabold">{v.name}</h2>
                 <p className="mt-1 text-muted">{[v.address, v.area, v.city].filter(Boolean).join("، ")}</p>
