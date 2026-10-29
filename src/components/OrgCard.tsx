@@ -10,7 +10,7 @@ export function OrgCard({ org }: {
 }) {
   const facilities = facilityBadges(org);
   return (
-    <article className={`relative rounded-3xl ${org.glow_color ? `glow glow-${org.glow_color}` : ""}`}>
+    <article className={`relative rounded-3xl transition-transform duration-300 motion-reduce:transform-none ${org.glow_color ? `glow glow-${org.glow_color}` : ""}`}>
       <Link
         href={`/g/${org.slug}`}
         className={`group block h-full overflow-hidden rounded-3xl bg-surface shadow-lg shadow-black/10 ring-1 ring-[#e0e9df] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#1c5737]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none motion-reduce:transition-none ${org.women_access === "women_only" ? "ring-pink-400/60" : "ring-[#e0e9df] hover:ring-[#91c9a1]"}`}
@@ -19,7 +19,7 @@ export function OrgCard({ org }: {
         <div className="relative">
           {org.cover ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={publicMediaUrl(org.cover.storage_path)} alt={org.cover.alt_text?.trim() || org.name_ar} loading="lazy" decoding="async" className="aspect-[16/10] w-full object-cover transition duration-500 group-hover:scale-[1.04] motion-reduce:transform-none motion-reduce:transition-none" />
+            <img src={publicMediaUrl(org.cover.storage_path)} alt={org.cover.alt_text?.trim() || org.name_ar} loading="lazy" decoding="async" className="aspect-[16/10] w-full object-cover transition duration-700 group-hover:scale-[1.06] motion-reduce:transform-none motion-reduce:transition-none" />
           ) : (
             <div className="relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_25%_15%,rgba(101,183,122,.3),transparent_45%),linear-gradient(135deg,#dff0df,#edf5eb)] text-sm text-[#5b7c65]"><span className="text-5xl opacity-70" aria-hidden="true">✦</span><span className="absolute bottom-3 right-4 rounded-full border border-white/10 bg-black/50 px-3 py-1.5 text-xs text-white">اكتشف المكان</span></div>
           )}
