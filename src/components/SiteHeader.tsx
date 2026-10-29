@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { HeaderAuth } from "@/components/HeaderAuth";
 import { InstallButton } from "@/components/InstallButton";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { SiteTabs, type NavLink } from "@/components/SiteTabs";
 import { NAV_CATALOG } from "@/lib/site-settings";
 
@@ -21,6 +22,7 @@ export async function SiteHeader() {
           <span className="truncate"><span className="text-[#21834f]">GymJo</span></span>
         </Link>
         <div className="flex shrink-0 items-center gap-1.5 text-sm sm:gap-2">
+          <ThemeToggle />
           <HeaderAuth />
           <InstallButton />
         </div>
