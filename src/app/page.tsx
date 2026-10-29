@@ -56,12 +56,12 @@ export default async function Home() {
                 <span aria-hidden className="text-xl text-[#21834f]">⌕</span>
                 <input name="q" aria-label="بحث" placeholder="ابحث عن نادي، ملاعب، مدرب..." className="min-w-0 flex-1 bg-transparent py-4 text-[#18372a] outline-none placeholder:text-[#819187] focus:ring-0" />
               </label>
-              <div className="grid grid-cols-[1fr_auto] gap-2">
-                <select name="city" aria-label="المدينة" defaultValue="" className="min-w-0 rounded-xl bg-[#f6f9f4] px-3 py-3 text-sm text-[#18372a] ring-1 ring-[#e3ebe2] focus:ring-[#21834f]">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto]">
+                <select name="city" aria-label="المدينة" defaultValue="" className="min-h-12 min-w-0 rounded-xl bg-[#f6f9f4] px-3 py-3 text-sm text-[#18372a] ring-1 ring-[#e3ebe2] focus:ring-[#21834f]">
                   <option value="">كل المدن</option>
                   {cities.map((c) => <option key={c.city} value={c.city}>{c.city}</option>)}
                 </select>
-                <button className="rounded-xl bg-[#21834f] px-5 py-3 font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#17683d]">اكتشف الآن <span aria-hidden>←</span></button>
+                <button className="min-h-12 rounded-xl bg-[#21834f] px-5 py-3 font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#17683d]">اكتشف الآن <span aria-hidden>←</span></button>
               </div>
             </form>
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[#617568] sm:text-sm"><span>✓ قارن قبل ما تشترك</span><span>✓ معلومات محلية</span><span>✓ تواصل مباشر</span></div>
