@@ -250,12 +250,18 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs).replace(/</g, "\\u003c") }} />
       {!multi && womenBanner(views[0])}
       <div className="relative mb-7">
-      {media[0] && (
-        <figure className="mb-0 overflow-hidden rounded-[1.75rem] border border-white/10 bg-surface shadow-2xl shadow-black/20">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+      <figure className="mb-0 overflow-hidden rounded-[1.75rem] border border-white/10 bg-surface shadow-2xl shadow-black/20">
+        {media[0] ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} fetchPriority="high" decoding="async" className="aspect-[16/9] w-full object-cover sm:aspect-[2.6/1]" />
-        </figure>
-      )}
+        ) : (
+          <div className="relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_80%_15%,rgba(212,255,0,.28),transparent_48%),linear-gradient(125deg,#10140a,#26320b_55%,#10140a)] sm:aspect-[2.6/1]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand-mark.svg" alt="" aria-hidden="true" className="size-28 rounded-3xl opacity-90 shadow-2xl sm:size-36" />
+            <span className="absolute bottom-4 start-5 text-sm font-black tracking-[.2em] text-white/70 sm:bottom-6 sm:start-8 sm:text-base">GYMJO</span>
+          </div>
+        )}
+      </figure>
       <div className={`relative z-10 mx-2 ${media[0] ? "-mt-12" : "mt-0"} rounded-3xl border border-white/10 bg-surface p-5 shadow-2xl shadow-black/20 sm:mx-6 sm:-mt-16 sm:p-7 ${glow ? `glow glow-${glow}` : ""}`}>
       {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
       <p className="text-sm text-muted">{category ?? ORG_TYPE_LABEL[org.type]}{isVerified(org) && <span className="text-accent"> · ✓ موثّق</span>}{multi && <span> · {views.length} فروع</span>}</p>
