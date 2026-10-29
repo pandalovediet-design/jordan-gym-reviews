@@ -29,7 +29,7 @@ export function OrgSectionNav({ items }: { items: Item[] }) {
   if (items.length < 2) return null;
 
   return (
-    <nav aria-label="أقسام النشاط" className="sticky top-0 z-30 -mx-4 mt-5 flex gap-2 overflow-x-auto border-y border-white/10 bg-background/95 px-4 py-3 text-sm shadow-lg shadow-black/10 backdrop-blur [scrollbar-width:none] sm:-mx-6 sm:px-6">
+    <nav aria-label="أقسام النشاط" className="sticky top-[7.5rem] z-30 md:top-40 -mx-4 mt-5 flex gap-2 overflow-x-auto border-y border-white/10 bg-background/95 px-4 py-3 text-sm shadow-lg shadow-black/10 backdrop-blur [scrollbar-width:none] sm:-mx-6 sm:px-6">
       {items.map((item) => (
         <a
           key={item.href}
