@@ -116,7 +116,7 @@ export default async function EditOrg({ params }: PageProps<"/dashboard/[id]">) 
         <div className="mb-5 flex flex-wrap items-center gap-4">
           {mainImage
             // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={publicMediaUrl(mainImage.storage_path)} alt="" className="size-24 rounded-xl object-cover ring-1 ring-white/10" />
+            ? <img src={publicMediaUrl(mainImage.storage_path)} alt="" className="size-24 rounded-full object-cover ring-1 ring-[#dce9dd]" />
             : <div className="grid size-24 place-items-center rounded-xl bg-white/5 text-xs text-muted">بدون صورة</div>}
           <div className="min-w-52 flex-1"><p className="mb-1 text-sm font-semibold">الصورة الشخصية للنادي</p>
             <p className="mb-2 text-xs text-muted">بتظهر دائرية بجانب اسم النادي وعلى بطاقات الدليل.</p>
