@@ -302,6 +302,11 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         ...(offers.length > 0 ? [{ href: "#offers", label: "العروض" }] : []),
         ...(services.length > 0 ? [{ href: "#prices", label: "الأسعار والخدمات" }] : []),
         ...(hours.length > 0 ? [{ href: "#hours", label: "الدوام" }] : []),
+        ...(org.type === "sports_facility" && slots.length > 0 ? [{ href: "#slots", label: "المواعيد" }] : []),
+        ...(classes.length > 0 ? [{ href: "#classes", label: "الحصص" }] : []),
+        ...(showTrainers && allCards.length > 0 ? [{ href: "#trainers", label: "المدربون" }] : []),
+        ...(nutriCards.length > 0 ? [{ href: "#nutrition", label: "التغذية" }] : []),
+        ...(org.type === "store" && products.length > 0 ? [{ href: "#products", label: "المنتجات" }] : []),
       ]} />}
       <div className="mt-5 flex flex-wrap gap-2 sm:gap-3 [&>a]:min-h-11 [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center [&>a]:text-center">
         {wa && org.free_trial_note && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${trialMsg}`} className="rounded-xl bg-accent/15 px-5 py-2.5 font-bold text-accent ring-1 ring-accent/50">🎟 {org.free_trial_note}</TrackedLink>}
@@ -378,7 +383,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
             {hours.length > 0 && <section id="hours" className="scroll-mt-20"><h2 className="mb-3 text-xl font-bold">ساعات الدوام</h2><Hours items={hours} /></section>}
           </div>
           {org.type === "sports_facility" && slots.length > 0 && (
-            <Section title="المواعيد المتاحة">
+            <div id="slots" className="scroll-mt-24"><Section title="المواعيد المتاحة">
               <div className="space-y-4">{[...new Set(slots.map((x) => x.slot_date))].map((day) => (
                 <div key={day}><h3 className="mb-2 font-bold text-accent">{day === ammanDate(0) ? "اليوم" : dayLabelAr(day)}</h3>
                   <ul className="flex flex-wrap gap-2">{slots.filter((x) => x.slot_date === day).map((x) => {
@@ -390,12 +395,12 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
                         : <span className="block rounded-xl bg-accent/15 px-3 py-1.5 text-sm font-bold text-accent" dir="ltr">{label} · متاح</span>}</li>;
                   })}</ul></div>))}</div>
               <p className="mt-3 text-xs text-muted">اضغط على الوقت المتاح لتحجز عبر واتساب. الحجز بيتأكد من صاحب الملعب.</p>
-            </Section>
+            </Section></div>
           )}
-          {classes.length > 0 && <Section title="جدول الحصص"><Classes items={classes} /></Section>}
-          {showTrainers && allCards.length > 0 && <Section title="المدربون"><Trainers items={allCards} /></Section>}
-          {nutriCards.length > 0 && <Section title="🥗 أخصائيو التغذية الشركاء"><Trainers items={nutriCards} /></Section>}
-          {org.type === "store" && <Section title="المنتجات"><Products items={products} /></Section>}
+          {classes.length > 0 && <div id="classes" className="scroll-mt-24"><Section title="جدول الحصص"><Classes items={classes} /></Section></div>}
+          {showTrainers && allCards.length > 0 && <div id="trainers" className="scroll-mt-24"><Section title="المدربون"><Trainers items={allCards} /></Section></div>}
+          {nutriCards.length > 0 && <div id="nutrition" className="scroll-mt-24"><Section title="🥗 أخصائيو التغذية الشركاء"><Trainers items={nutriCards} /></Section></div>}
+          {org.type === "store" && <div id="products" className="scroll-mt-24"><Section title="المنتجات"><Products items={products} /></Section></div>}
         </>
       ) : (
         <>
