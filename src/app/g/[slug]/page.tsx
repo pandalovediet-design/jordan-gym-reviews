@@ -333,7 +333,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </section>
       )}
 
-      {media.length > 1 && <section id="photos" className="scroll-mt-20"><Gallery start={1} items={media.map((m) => ({ src: publicMediaUrl(m.storage_path), alt: m.alt_text ?? org.name_ar, caption: m.alt_text }))} /></section>}
+      {media.length > 0 && <section id="photos" className="scroll-mt-20"><Gallery start={0} items={media.map((m) => ({ src: publicMediaUrl(m.storage_path), alt: m.alt_text ?? org.name_ar, caption: m.alt_text }))} /></section>}
 
       {org.video_url && (() => {
         const yt = org.video_url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
