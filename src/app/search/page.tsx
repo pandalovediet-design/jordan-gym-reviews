@@ -97,8 +97,8 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
 
       {mode === "orgs" && <div className="mb-4 flex flex-wrap items-center gap-3"><NearMeButton active={!!near} />{near && <span className="text-sm text-muted">مرتبة من الأقرب للأبعد (الأنشطة اللي حدّدت موقعها فقط)</span>}</div>}
 
-      {error && <p className="rounded-2xl bg-surface p-6 text-center">تعذّر تحميل النتائج حالياً، جرّب مرة ثانية بعد قليل.</p>}
-      {!error && total === 0 && <div className="rounded-3xl border border-dashed border-white/15 bg-surface/50 px-6 py-14 text-center"><span className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-blue-400/10 text-3xl">⌕</span><h2 className="text-xl font-extrabold">ما لقينا نتائج مطابقة</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">جرّب تغيّر كلمة البحث أو توسّع خيارات المدينة والسعر، ويمكن تلاقي المكان المناسب.</p><Link href="/search" className="mt-5 inline-flex rounded-xl bg-accent px-5 py-3 font-bold text-accent-foreground">عرض كل الأنشطة</Link></div>}
+      {error && <p className="rounded-2xl border border-[#dce9dd] bg-white p-6 text-center text-[#18372a]">تعذّر تحميل النتائج حالياً، جرّب مرة ثانية بعد قليل.</p>}
+      {!error && total === 0 && <div className="rounded-3xl border border-dashed border-[#b9d9bd] bg-[#fbfdf9] px-6 py-14 text-center text-[#18372a]"><span className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-[#e8f4e8] text-3xl text-[#21834f]">⌕</span><h2 className="text-xl font-extrabold">ما لقينا نتائج مطابقة</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">جرّب تغيّر كلمة البحث أو توسّع خيارات المدينة والسعر، ويمكن تلاقي المكان المناسب.</p><Link href="/search" className="mt-5 inline-flex rounded-xl bg-[#21834f] px-5 py-3 font-bold text-white transition hover:bg-[#17683d]">عرض كل الأنشطة</Link></div>}
       {!error && <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><p className="text-lg font-extrabold">{total} <span className="text-sm font-normal text-muted">نتيجة مطابقة</span></p><p className="text-xs text-muted">الصفحة {page}{pages > 1 ? ` من ${pages}` : ""}</p></div>}
 
       {orgs && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{orgs.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>}
@@ -110,7 +110,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
 
       {pages > 1 && (
         <nav className="mt-8 flex items-center justify-center gap-3 text-sm">
-          {page > 1 && <Link href={href(page - 1)} className="rounded-lg bg-surface px-4 py-2">السابق</Link>}
+          {page > 1 && <Link href={href(page - 1)} className="rounded-lg border border-[#dce9dd] bg-white px-4 py-2 text-[#205c37] transition hover:bg-[#f0f8ee]">السابق</Link>}
           <span className="text-muted">{page} / {pages}</span>
           {page < pages && <Link href={href(page + 1)} className="rounded-lg bg-surface px-4 py-2">التالي</Link>}
         </nav>
