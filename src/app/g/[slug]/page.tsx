@@ -245,6 +245,13 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
     <div className={`min-h-[70vh] ${themeClass(org.theme)}`}>
     <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:py-8">
       <PageView orgId={org.id} />
+      <nav aria-label="مسار التصفح" className="mb-4 flex flex-wrap items-center gap-2 text-sm text-muted">
+        <Link href="/" className="rounded-lg px-2 py-1 transition hover:text-accent">الرئيسية</Link>
+        <span aria-hidden="true">/</span>
+        <Link href="/search" className="rounded-lg px-2 py-1 font-bold text-accent transition hover:underline">رجوع للدليل</Link>
+        <span aria-hidden="true">/</span>
+        <span className="max-w-[55vw] truncate" aria-current="page">{org.name_ar}</span>
+      </nav>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs).replace(/</g, "\\u003c") }} />
       {!multi && womenBanner(views[0])}
