@@ -96,16 +96,16 @@ html.dark .bg-white,
 html.dark .bg-white\/95,
 html.dark .bg-white\/90,
 html.dark .bg-white\/80 { background-color: var(--surface) !important; }
-html.dark .text-\\[\\#18372a\\],
-html.dark .text-\\[\\#205c37\\],
-html.dark .text-\\[\\#536d5b\\],
-html.dark .text-\\[\\#5b7c65\\] { color: var(--foreground) !important; }
-html.dark .border-\\[\\#e0e9df\\],
-html.dark .border-\\[\\#e2ebe2\\],
-html.dark .border-\\[\\#e5eee4\\],
-html.dark .border-\\[\\#dce9dd\\] { border-color: #344454 !important; }
-html.dark .ring-\\[\\#e0e9df\\],
-html.dark .ring-\\[\\#dce9dd\\] { --tw-ring-color: #344454 !important; }
+html.dark [class~="text-[#18372a]"],
+html.dark [class~="text-[#205c37]"],
+html.dark [class~="text-[#536d5b]"],
+html.dark [class~="text-[#5b7c65]"] { color: var(--foreground) !important; }
+html.dark [class~="border-[#e0e9df]"],
+html.dark [class~="border-[#e2ebe2]"],
+html.dark [class~="border-[#e5eee4]"],
+html.dark [class~="border-[#dce9dd]"] { border-color: #344454 !important; }
+html.dark [class~="ring-[#e0e9df]"],
+html.dark [class~="ring-[#dce9dd]"] { --tw-ring-color: #344454 !important; }
 html.dark header { background-color: rgb(23 33 43 / 94%) !important; border-color: #344454 !important; }
 html.dark footer { background-color: #1b2733 !important; border-color: #344454 !important; }
 html.dark input:not([type="checkbox"]):not([type="radio"]),
@@ -116,8 +116,8 @@ html.dark textarea::placeholder { color: #9aabbd !important; }
 html.dark option { background: #212d3b; color: #f1f5f9; }
 html.dark .shadow-lg,
 html.dark .shadow-sm { --tw-shadow-color: rgb(0 0 0 / .2); }
-html.dark .bg-\\[\\#fbfdf9\\],
-html.dark .bg-\\[\\#f3f8ee\\],
-html.dark .bg-\\[\\#f0f8ee\\],
-html.dark .bg-\\[\\#f0f8ee\\] { background-color: #243746 !important; }
-html.dark .text-\\[\\#21834f\\] { color: #83d6a0 !important; }
+html.dark [class~="bg-[#fbfdf9]"],
+html.dark [class~="bg-[#f3f8ee]"],
+html.dark [class~="bg-[#f0f8ee]"],
+html.dark [class~="bg-[#f0f8ee]"] { background-color: #243746 !important; }
+html.dark [class~="text-[#21834f]"] { color: #83d6a0 !important; }
