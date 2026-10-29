@@ -23,11 +23,11 @@ export function SiteTabs({ links }: { links: NavLink[] }) {
             aria-current={active ? "page" : undefined}
             className={[
               "min-h-11 shrink-0 snap-start whitespace-nowrap rounded-full px-4 py-2.5 font-medium",
-              "inline-flex items-center justify-center ring-1 transition-colors duration-200 motion-reduce:transition-none",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              "inline-flex items-center justify-center border transition-colors duration-200 motion-reduce:transition-none",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21834f] focus-visible:ring-offset-2 focus-visible:ring-offset-white",
               active
-                ? "bg-accent font-bold text-accent-foreground ring-accent shadow-sm shadow-black/10"
-                : "bg-surface text-muted ring-white/10 hover:text-foreground hover:ring-accent active:scale-[0.98] motion-reduce:active:scale-100",
+                ? "border-[#21834f] bg-[#21834f] font-bold text-white shadow-sm shadow-[#1c5737]/15"
+                : "border-[#e1eae0] bg-[#f6f9f4] text-[#52675a] hover:border-[#a9d0ad] hover:bg-[#edf6eb] hover:text-[#17683d] active:scale-[0.98] motion-reduce:active:scale-100",
               l.cls ?? "",
             ].join(" ")}
           >
