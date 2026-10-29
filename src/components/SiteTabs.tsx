@@ -11,7 +11,7 @@ export function SiteTabs({ links }: { links: NavLink[] }) {
 
   return (
     <nav
-      aria-label="أقسام الموقع"
+      aria-label="أقسام الموقع، اسحب أفقيًا على الهاتف لاستعراض المزيد"
       className="mx-auto flex max-w-7xl snap-x snap-mandatory gap-2 overflow-x-auto px-3 pb-3 text-sm [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden sm:px-4 md:flex-wrap md:overflow-visible md:snap-none"
     >
       {links.map((l) => {
