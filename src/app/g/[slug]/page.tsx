@@ -265,6 +265,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {coachGyms.length > 0 && (
         <p className="mt-1 text-sm">{org.type === "nutritionist" ? "يتعاون مع: " : "يتدرب في: "}{coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
       <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">{org.name_ar}</h1>
+      {org.description_ar && <p className="mt-3 max-w-4xl whitespace-pre-line text-sm leading-7 text-muted sm:text-base">{org.description_ar}</p>}
+      {!multi && <div className="mt-4 flex flex-wrap gap-2">{contactButtons(views[0])}</div>}
       {org.is_claimed === false && (
         <p className="mt-2 rounded-xl bg-white/5 p-3 text-sm text-muted ring-1 ring-white/10">
           بيانات أولية من مصادر عامة، وصاحب النادي لسا ما استلم صفحته. <Link href={`/claim/${org.slug}`} className="font-bold text-accent underline">هذا ناديي؟ استلم صفحتك مجاناً</Link>
@@ -296,7 +298,6 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       )}
 
       <div className="mt-5 flex flex-wrap gap-2 sm:gap-3 [&>a]:min-h-11 [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center [&>a]:text-center">
-        {!multi && contactButtons(views[0])}
         {wa && org.free_trial_note && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${trialMsg}`} className="rounded-xl bg-accent/15 px-5 py-2.5 font-bold text-accent ring-1 ring-accent/50">🎟 {org.free_trial_note}</TrackedLink>}
         <a href={shareHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">شارك على واتساب</a>
         <a href={`/g/${org.slug}/card`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">🖼 كرت للمنشور</a>
@@ -354,7 +355,6 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </div>
       )}
 
-      {org.description_ar && <p className="mt-6 whitespace-pre-line leading-8">{org.description_ar}</p>}
 
       {org.type === "healthy_food" && (
         <>
