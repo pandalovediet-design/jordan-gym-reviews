@@ -6,6 +6,7 @@ import { GymJoMotion } from "@/components/GymJoMotion";
 import { adImageUrl, listLiveAds } from "@/lib/ads";
 import { listActiveOffers, listCities, listHomeSections, listLiveFlash, listPartners, listTrails } from "@/lib/queries";
 import { getSiteSettings } from "@/lib/site-settings";
+import { FeatureDirectory } from "@/components/FeatureDirectory";
 
 const TYPE_TILES = [
   { href: "/search?type=gym", icon: "🏋️", label: "نوادي" },
@@ -79,6 +80,7 @@ export default async function Home() {
         </div>
         {show.tiles && <div className="mx-auto mt-7 max-w-7xl border-t border-[#dce9dd] pt-5"><div className="mb-3 flex items-center justify-between"><p className="font-extrabold">تصفّح بسرعة</p><Link href="/sections" className="text-sm font-bold text-[#21834f]">كل الأقسام ←</Link></div><div className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">{TYPE_TILES.map((t) => <Link key={t.href} href={t.href} className="flex shrink-0 items-center gap-2 rounded-full border border-[#dce9dd] bg-white px-4 py-2.5 text-sm transition hover:border-[#91c9a1] hover:bg-[#f0f8ee]"><span aria-hidden className="text-lg">{t.icon}</span><span className="font-bold">{t.label}</span></Link>)}</div></div>}
       </section>
+      <FeatureDirectory />
       {show.banner && banner && (
         <a href={`/a/${banner.id}`} rel="sponsored noopener" className="relative mb-10 block overflow-hidden rounded-2xl bg-surface ring-1 ring-white/10">
           {banner.image_path && (
