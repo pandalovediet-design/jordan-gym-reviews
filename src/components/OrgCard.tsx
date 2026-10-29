@@ -17,12 +17,18 @@ export function OrgCard({ org }: {
       >
         {org.women_access === "women_only" && <div className="bg-pink-600 px-4 py-1.5 text-center text-xs font-bold tracking-wide text-white">💗 {WOMEN_LABEL.women_only}</div>}
         <div className="relative">
+          <div className="relative isolate overflow-hidden rounded-t-3xl">
           {org.cover ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={publicMediaUrl(org.cover.storage_path)} alt={org.cover.alt_text?.trim() || org.name_ar} loading="lazy" decoding="async" className="aspect-[16/10] w-full object-cover transition duration-700 group-hover:scale-[1.06] motion-reduce:transform-none motion-reduce:transition-none" />
           ) : (
             <div className="relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_25%_15%,rgba(101,183,122,.3),transparent_45%),linear-gradient(135deg,#dff0df,#edf5eb)] text-sm text-[#5b7c65]"><span className="text-5xl opacity-70" aria-hidden="true">✦</span><span className="absolute bottom-3 right-4 rounded-full border border-white/10 bg-black/50 px-3 py-1.5 text-xs text-white">اكتشف المكان</span></div>
           )}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-[#10251a]/90 via-[#10251a]/35 to-transparent px-4 pb-4 pt-12">
+              <span className="max-w-[75%] rounded-full border border-white/30 bg-white/95 px-3 py-1.5 text-xs font-extrabold text-[#205c37] shadow-sm backdrop-blur-sm">{org.category_name ?? ORG_TYPE_LABEL[org.type]}</span>
+              {org.is_featured && <span className="rounded-full bg-[#d8f36a] px-3 py-1.5 text-xs font-extrabold text-[#24452b] shadow-sm">اختيار مميّز</span>}
+            </div>
+          </div>
           {org.profile_image && (
             <span className="absolute -bottom-7 right-5 grid size-16 place-items-center overflow-hidden rounded-full border-4 border-white bg-white shadow-lg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
