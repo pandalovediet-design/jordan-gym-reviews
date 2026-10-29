@@ -161,3 +161,30 @@ html.dark main button[class*="bg-white"] {
 }
 html.dark main .text-white,
 html.dark header .text-white { color: #fff !important; }
+
+/* Directory and section cards: shared contrast rules for both themes. */
+html.dark main [class*="border-[#e1ebe0]"],
+html.dark main [class*="border-[#e7eee5]"],
+html.dark main [class*="border-[#e7eee5]"],
+html.dark main [class*="border-[#cfe4d1]"],
+html.dark main [class*="border-[#cfe2cd]"],
+html.dark main [class*="border-[#9acda4]"] {
+  border-color: #344454 !important;
+}
+html.dark main [class*="bg-[#f5faf2]"],
+html.dark main [class*="bg-[#e8f4e8]"] {
+  background-color: #294638 !important;
+}
+html.dark main [class*="text-[#617568]"],
+html.dark main [class*="text-[#6c7d72]"] {
+  color: #a3b4c6 !important;
+}
+html.dark main a[class*="bg-[#f3f8ee]"],
+html.dark main a[class*="bg-[#e8f4e8]"] {
+  background-color: #294638 !important;
+  color: #83d6a0 !important;
+}
+html.dark main [class*="shadow-sm"],
+html.dark main [class*="shadow-md"] {
+  --tw-shadow-color: rgb(0 0 0 / .24);
+}
