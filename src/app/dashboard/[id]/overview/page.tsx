@@ -75,11 +75,12 @@ export default async function Overview({ params }: PageProps<"/dashboard/[id]/ov
         <h2 className="mb-3 text-lg font-bold">اختصارات سريعة</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {[
-            { href: `/dashboard/${id}`, icon: "✏️", title: "تعديل صفحة النشاط", detail: "الصور والأسعار والخدمات" },
-            { href: `/dashboard/${id}/inquiries`, icon: "💬", title: "الرسائل والاستفسارات", detail: "تابع تواصل الزوار" },
-            { href: `/dashboard/${id}/stats`, icon: "📊", title: "أداء النشاط", detail: "المشاهدات والتواصل" },
-            ...(showMembers ? [{ href: `/dashboard/${id}/members`, icon: "👥", title: "الأعضاء والاشتراكات", detail: "إدارة المشتركين" }] : []),
-            { href: `/dashboard/${id}/growth`, icon: "🚀", title: "أدوات النمو", detail: "طرق زيادة الوصول" },
+            { href: `/dashboard/${id}`, icon: "✏️", title: org.type === "gym" ? "إدارة النادي" : org.type === "sports_facility" ? "إدارة الملاعب والحجوزات" : org.type === "store" ? "إدارة المتجر والمنتجات" : org.type === "nutritionist" ? "إدارة خدمات التغذية" : org.type === "independent_coach" ? "إدارة التدريب والباقات" : org.type === "healthy_food" ? "إدارة الوجبات والباقات" : org.type === "sports_health" ? "إدارة الجلسات والعلاجات" : "تعديل صفحة النشاط", detail: org.type === "sports_facility" ? "الملاعب والأسعار والأوقات" : org.type === "store" ? "المنتجات والصور والتوفر" : org.type === "gym" ? "الاشتراكات والصور والخدمات" : "حدّث معلوماتك وأسعارك وصورك" },
+            ...(showMembers ? [{ href: `/dashboard/${id}/members`, icon: "👥", title: org.type === "independent_coach" ? "العملاء والبرامج" : org.type === "nutritionist" ? "العملاء والخطط" : org.type === "sports_facility" ? "العملاء والاشتراكات" : "الأعضاء والاشتراكات", detail: "إضافة أعضاء ومتابعة الاشتراكات" }] : []),
+            ...(showMembers ? [{ href: `/dashboard/${id}/attendance`, icon: "🗓️", title: "سجل الحضور", detail: "راجع سجلات حضور الأعضاء" }] : []),
+            { href: `/dashboard/${id}/inquiries`, icon: "💬", title: "الرسائل والاستفسارات", detail: "تابع تواصل الزوار ورد عليهم" },
+            { href: `/dashboard/${id}/stats`, icon: "📊", title: "أداء النشاط", detail: "المشاهدات ونقرات التواصل" },
+            { href: `/dashboard/${id}/growth`, icon: "🚀", title: "أدوات النمو", detail: "روّج لنشاطك وزِد الوصول" },
           ].map((item) => (
             <Link key={item.href} href={item.href} className="group flex min-h-28 flex-col justify-between gap-3 rounded-2xl border border-white/10 bg-surface p-4 transition hover:-translate-y-0.5 hover:border-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
               <span className="text-2xl" aria-hidden="true">{item.icon}</span>
