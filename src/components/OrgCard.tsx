@@ -6,7 +6,7 @@ import type { Enums } from "@/lib/database.types";
 export function OrgCard({ org }: {
   org: { slug: string; name_ar: string; type: Enums<"org_type">; city: string; area: string | null; description_ar: string | null; verified_at: string | null; is_featured?: boolean;
     category_name?: string | null; free_trial_note?: string | null; min_price_jod?: number | null; distance_km?: number; glow_color?: GlowColor | null; open_now?: boolean | null; branch_count?: number; branch_women_only?: boolean; has_mosque?: boolean; no_music?: boolean; has_kids_area?: boolean; kids_friendly?: boolean; kids_transport?: boolean; accessibility?: string[]; women_access?: "none" | "women_only" | "women_hours";
-    cover?: { storage_path: string; alt_text: string | null } | null };
+    cover?: { storage_path: string; alt_text: string | null } | null; profile_image?: { storage_path: string; alt_text: string | null } | null };
 }) {
   const facilities = facilityBadges(org);
   return (
@@ -16,13 +16,21 @@ export function OrgCard({ org }: {
         className={`group block h-full overflow-hidden rounded-3xl bg-surface shadow-lg shadow-black/10 ring-1 ring-[#e0e9df] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#1c5737]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none motion-reduce:transition-none ${org.women_access === "women_only" ? "ring-pink-400/60" : "ring-[#e0e9df] hover:ring-[#91c9a1]"}`}
       >
         {org.women_access === "women_only" && <div className="bg-pink-600 px-4 py-1.5 text-center text-xs font-bold tracking-wide text-white">💗 {WOMEN_LABEL.women_only}</div>}
-        {org.cover ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={publicMediaUrl(org.cover.storage_path)} alt={org.cover.alt_text?.trim() || org.name_ar} loading="lazy" decoding="async" className="aspect-[16/10] w-full object-cover transition duration-500 group-hover:scale-[1.04] motion-reduce:transform-none motion-reduce:transition-none" />
-        ) : (
-          <div className="relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_25%_15%,rgba(101,183,122,.3),transparent_45%),linear-gradient(135deg,#dff0df,#edf5eb)] text-sm text-[#5b7c65]"><span className="text-5xl opacity-70" aria-hidden="true">✦</span><span className="absolute bottom-3 right-4 rounded-full border border-white/10 bg-black/50 px-3 py-1.5 text-xs text-white">اكتشف المكان</span></div>
-        )}
-        <div className="p-5 sm:p-6">
+        <div className="relative">
+          {org.cover ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={publicMediaUrl(org.cover.storage_path)} alt={org.cover.alt_text?.trim() || org.name_ar} loading="lazy" decoding="async" className="aspect-[16/10] w-full object-cover transition duration-500 group-hover:scale-[1.04] motion-reduce:transform-none motion-reduce:transition-none" />
+          ) : (
+            <div className="relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_25%_15%,rgba(101,183,122,.3),transparent_45%),linear-gradient(135deg,#dff0df,#edf5eb)] text-sm text-[#5b7c65]"><span className="text-5xl opacity-70" aria-hidden="true">✦</span><span className="absolute bottom-3 right-4 rounded-full border border-white/10 bg-black/50 px-3 py-1.5 text-xs text-white">اكتشف المكان</span></div>
+          )}
+          {org.profile_image && (
+            <span className="absolute -bottom-7 right-5 grid size-16 place-items-center overflow-hidden rounded-full border-4 border-white bg-white shadow-lg">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={publicMediaUrl(org.profile_image.storage_path)} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
+            </span>
+          )}
+        </div>
+        <div className={org.profile_image ? "p-5 pt-10 sm:p-6 sm:pt-10" : "p-5 sm:p-6"}>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
             <span>{org.category_name ?? ORG_TYPE_LABEL[org.type]}</span>
             <span className="flex flex-wrap items-center gap-1.5">
