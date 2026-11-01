@@ -103,66 +103,83 @@ export async function renderCard(o: CardOrg, story: boolean) {
   const gl = o.glow ? GLOW[o.glow] : null;
   const photoH = story ? 800 : 380;
 
+  const photoH = story ? 900 : 520;
+  const title = o.name_ar ?? "";
+  const typeLabel = ORG_TYPE_LABEL[o.type as keyof typeof ORG_TYPE_LABEL] ?? "نادي رياضي";
+  const location = whereParts.join(" • ");
+  const url = `${host}/g/${o.slug}`;
+  const photoFrame = o.photo ? (
+    <div style={{ display: "flex", padding: gl ? 9 : 0, borderRadius: story ? 48 : 36, background: gl ? `linear-gradient(135deg, ${gl.a}, ${gl.b}, ${gl.a})` : "#25483c", boxShadow: gl ? `0 0 70px 18px ${gl.glow}` : "0 18px 55px rgba(0,0,0,.32)" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={o.photo} width={story ? 900 : 940} height={photoH} alt="" style={{ borderRadius: story ? 40 : 30, objectFit: "cover" }} />
+    </div>
+  ) : (
+    <div style={{ display: "flex", height: story ? 760 : 460, borderRadius: 42, background: "radial-gradient(circle at 20% 20%, #477b52 0%, #174638 48%, #0a2922 100%)", border: "2px solid rgba(182,242,58,.3)", alignItems: "center", justifyContent: "center" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={logoSrc} width={story ? 260 : 210} height={story ? 260 : 210} alt="" style={{ opacity: .9 }} />
+    </div>
+  );
+  const brand = (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexDirection: "row-reverse" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={logoSrc} width={story ? 76 : 68} height={story ? 76 : 68} alt="" style={{ borderRadius: 50 }} />
+        <div style={{ display: "flex", fontSize: story ? 42 : 38, fontWeight: 800 }}>Gym<span style={{ color: "#b6f23a", marginLeft: 10 }}>Jo</span></div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "row-reverse", gap: 10 }}>
+        {isVerified(o) && <div style={{ display: "flex", background: "#b6f23a", padding: "7px 22px 11px", borderRadius: 40 }}><R t="موثّق" size={30} weight={800} color="#07211c" nowrap /></div>}
+        {gl && <div style={{ display: "flex", background: `linear-gradient(135deg, ${gl.a}, ${gl.b})`, padding: "7px 22px 11px", borderRadius: 40 }}><R t={`عضو ${GLOW_NAME[o.glow as GlowColor]}`} size={28} weight={800} color="#2a1a00" nowrap /></div>}
+      </div>
+    </div>
+  );
+  const details = (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: story ? 18 : 14 }}>
+      <div style={{ display: "flex", padding: "7px 28px 12px", borderRadius: 40, background: "rgba(182,242,58,.13)", border: "2px solid #b6f23a" }}>
+        <R t={typeLabel} size={story ? 34 : 30} weight={800} color="#b6f23a" nowrap />
+      </div>
+      <R t={title} size={story ? (title.length > 32 ? 66 : 82) : (title.length > 32 ? 58 : 70)} weight={800} lh={1.2} maxW={story ? 900 : 920} />
+      {location && <R t={location} size={story ? 38 : 34} color="#c9ddd4" maxW={900} />}
+      {o.min_price_jod != null && (
+        <div style={{ display: "flex", flexDirection: "row-reverse", alignItems: "baseline", gap: 14, padding: "5px 28px 14px", borderRadius: 26, background: "rgba(182,242,58,.12)" }}>
+          <R t="يبدأ الاشتراك من" size={story ? 30 : 26} color="#c9ddd4" nowrap />
+          <div style={{ display: "flex", fontSize: story ? 76 : 64, fontWeight: 800, color: "#b6f23a" }}>{Number(o.min_price_jod).toFixed(0)}</div>
+          <R t="د.أ" size={story ? 36 : 32} weight={800} nowrap />
+        </div>
+      )}
+      {chips.length > 0 && <div style={{ display: "flex", flexDirection: "row-reverse", flexWrap: "wrap", gap: 10 }}>
+        {chips.slice(0, story ? 5 : 4).map((c) => <div key={c} style={{ display: "flex", padding: "6px 20px 10px", borderRadius: 30, background: "rgba(255,255,255,.11)" }}><R t={c} size={story ? 28 : 25} nowrap /></div>)}
+      </div>}
+    </div>
+  );
+  const cta = (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 12 }}>
+      <div style={{ display: "flex", justifyContent: "center", background: "#b6f23a", color: "#07211c", borderRadius: 24, padding: story ? "20px 24px" : "16px 20px" }}>
+        <R t={story ? "اكتشف النادي على GymJo" : "اكتشف النادي"} size={story ? 42 : 36} weight={800} color="#07211c" nowrap />
+      </div>
+      <div style={{ display: "flex", justifyContent: "center", fontSize: story ? 28 : 25, color: "#c9ddd4", fontWeight: 700 }}>{url}</div>
+    </div>
+  );
+
   return new ImageResponse(
-    (
-      <div style={{ width: W, height: H, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: hasPhoto ? "64px 70px 70px" : "90px 80px", background: "radial-gradient(circle at 85% 12%, #1c5a47 0%, rgba(28,90,71,0) 45%), radial-gradient(circle at 10% 95%, rgba(182,242,58,0.18) 0%, rgba(182,242,58,0) 40%), linear-gradient(160deg,#0d2f28 0%,#07211c 75%)", color: "#eef6f2", fontFamily: "Taj, TajL", ...(gl && !hasPhoto ? { border: `10px solid ${gl.a}` } : {}) }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexDirection: "row-reverse" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoSrc} width={hasPhoto ? 84 : 120} height={hasPhoto ? 84 : 120} alt="" style={{ borderRadius: 60 }} />
-            <div style={{ display: "flex", fontSize: hasPhoto ? 44 : 54, fontWeight: 800 }}>Jordan <span style={{ color: "#b6f23a", marginLeft: 14 }}>Gym</span></div>
-          </div>
-          <div style={{ display: "flex", flexDirection: "row-reverse", gap: 12 }}>
-            {isVerified(o) && <div style={{ display: "flex", background: "#b6f23a", padding: "6px 30px 12px", borderRadius: 50 }}><R t="موثّق" size={36} weight={800} color="#07211c" nowrap /></div>}
-            {gl && <div style={{ display: "flex", background: `linear-gradient(135deg, ${gl.a}, ${gl.b})`, padding: "6px 30px 12px", borderRadius: 50 }}><R t={`عضو ${GLOW_NAME[o.glow as GlowColor]}`} size={36} weight={800} color="#2a1a00" nowrap /></div>}
-          </div>
+    story ? (
+      <div style={{ width: W, height: H, display: "flex", flexDirection: "column", padding: "58px 72px 62px", gap: 30, background: "radial-gradient(circle at 85% 12%, #1c5a47 0%, rgba(28,90,71,0) 42%), linear-gradient(160deg,#0d2f28 0%,#07211c 78%)", color: "#eef6f2", fontFamily: "Taj, TajL" }}>
+        {brand}
+        {photoFrame}
+        <div style={{ display: "flex", flex: 1, flexDirection: "column", justifyContent: "center", gap: 20 }}>{details}</div>
+        {cta}
+        <div style={{ display: "flex", justifyContent: "center", color: "#78968a", fontSize: 23 }}>دليلك لاكتشاف الرياضة في الأردن</div>
+      </div>
+    ) : (
+      <div style={{ width: W, height: H, display: "flex", flexDirection: "column", background: "#08251e", color: "#eef6f2", fontFamily: "Taj, TajL" }}>
+        <div style={{ display: "flex", padding: "38px 58px 26px", alignItems: "center", justifyContent: "space-between", flexDirection: "row-reverse" }}>
+          {brand}
         </div>
-
-        {o.photo && (
-          <div style={{ display: "flex", padding: gl ? 8 : 0, borderRadius: 44, background: gl ? `linear-gradient(135deg, ${gl.a}, ${gl.b}, ${gl.a})` : "rgba(0,0,0,0)", boxShadow: gl ? `0 0 90px 24px ${gl.glow}` : "0 20px 60px rgba(0,0,0,0.45)" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={o.photo} width={W - 140 - (gl ? 16 : 0)} height={photoH} alt="" style={{ borderRadius: 38, objectFit: "cover" }} />
-          </div>
-        )}
-
-        <div style={{ display: "flex", flexDirection: "column", gap: hasPhoto ? 22 : 34, alignItems: ar }}>
-          <div style={{ display: "flex", padding: "8px 40px 14px", borderRadius: 50, border: "3px solid #b6f23a" }}>
-            <R t={ORG_TYPE_LABEL[o.type as keyof typeof ORG_TYPE_LABEL] ?? ""} size={hasPhoto ? 40 : 48} weight={800} color="#b6f23a" nowrap />
-          </div>
-          {!hasPhoto && <div style={{ display: "flex", width: 140, height: 10, borderRadius: 5, background: "#b6f23a" }} />}
-          <R t={o.name_ar ?? ""} size={nameSize} weight={800} lh={1.25} />
-          {whereParts.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "row-reverse", alignItems: "center", gap: 20 }}>
-              <div style={{ display: "flex", width: 22, height: 22, borderRadius: 11, background: "#b6f23a" }} />
-              {whereParts.map((w, i) => (
-                <div key={i} style={{ display: "flex", flexDirection: "row-reverse", alignItems: "center", gap: 20 }}>
-                  {i > 0 && <div style={{ display: "flex", width: 8, height: 8, borderRadius: 4, background: "#6f8d82" }} />}
-                  <R t={w} size={hasPhoto ? 48 : 58} color="#c9ddd4" nowrap />
-                </div>))}
-            </div>
-          )}
-          {o.min_price_jod != null && (
-            <div style={{ display: "flex", flexDirection: "row-reverse", alignItems: "baseline", gap: 20, marginTop: hasPhoto ? 4 : 16, padding: hasPhoto ? "4px 36px 14px" : "10px 44px 24px", borderRadius: 36, background: "rgba(182,242,58,0.12)" }}>
-              <R t="يبدأ من" size={hasPhoto ? 40 : 48} color="#c9ddd4" nowrap />
-              <div style={{ display: "flex", fontSize: hasPhoto ? 96 : 130, fontWeight: 800, color: "#b6f23a" }}>{Number(o.min_price_jod).toFixed(0)}</div>
-              <R t="د.أ" size={hasPhoto ? 44 : 52} weight={800} nowrap />
-            </div>
-          )}
-          {chips.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "row-reverse", flexWrap: "wrap", gap: 14, marginTop: 4 }}>
-              {chips.map((c) => <div key={c} style={{ display: "flex", padding: "6px 30px 12px", borderRadius: 50, background: "rgba(255,255,255,0.12)" }}><R t={c} size={hasPhoto ? 34 : 40} nowrap /></div>)}
-            </div>
-          )}
+        <div style={{ display: "flex", padding: "0 58px" }}>{photoFrame}</div>
+        <div style={{ display: "flex", flex: 1, flexDirection: "column", justifyContent: "space-between", padding: "30px 64px 34px", background: "linear-gradient(160deg,#103d30 0%,#071f19 100%)" }}>
+          {details}
+          {cta}
         </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 22, alignItems: ar }}>
-          {((!hasPhoto && chips.length === 0 && o.min_price_jod == null) || story) && (
-            <div style={{ display: "flex", flexDirection: "row-reverse", gap: 14 }}>
-              {feats.map((f) => <div key={f} style={{ display: "flex", padding: "6px 26px 12px", borderRadius: 40, background: "rgba(255,255,255,0.1)" }}><R t={f} size={36} color="#c9ddd4" nowrap /></div>)}
-            </div>
-          )}
-          <div style={{ display: "flex", alignSelf: "stretch", justifyContent: "center", background: "#b6f23a", color: "#07211c", borderRadius: 30, padding: hasPhoto ? "20px 20px" : "26px 20px", fontSize: host.length + (o.slug ?? "").length > 42 ? 36 : 44, fontWeight: 800 }}>{host}/g/{o.slug}</div>
-        </div>
+        {gl && <div style={{ display: "flex", height: 9, background: `linear-gradient(90deg, ${gl.a}, ${gl.b}, ${gl.a})` }} />}
       </div>
     ),
     {
@@ -176,4 +193,3 @@ export async function renderCard(o: CardOrg, story: boolean) {
       headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" },
     },
   );
-}
