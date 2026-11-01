@@ -36,6 +36,15 @@ const FEATURE_TILES = [
   { href: "/favorites", icon: "❤️", label: "المفضلة", description: "احفظ الأنشطة وارجع لها بسهولة." },
 ];
 
+async function listHomepageCodes() {
+  try {
+    const { data } = await createPublicClient().rpc("list_public_codes", {});
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export const revalidate = 300;
 
 export default async function Home() {
@@ -51,7 +60,7 @@ export default async function Home() {
     listTrails().catch(() => []),
     listCities().catch(() => []),
     listExercises().catch(() => []),
-    createPublicClient().rpc("list_public_codes", {}).then(({ data }) => data ?? []).catch(() => []),
+    listHomepageCodes(),
   ]);
   const codes = codesRaw.slice(0, 3);
   const offers = offersRaw.filter((o, i, a) => a.findIndex((x) => x.title_ar === o.title_ar && x.organizations?.slug === o.organizations?.slug) === i);
