@@ -181,6 +181,26 @@ export default async function Home() {
           </div>
         </section>
       )}
+      {show.offers && offers.length > 0 && (
+        <section className="mb-12">
+          <h2 className="mb-4 text-xl font-bold">عروض ودورات حالية</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {offers.map((o) => (
+              <Link key={o.id} href={`/g/${o.organizations!.slug}`} className="rounded-2xl bg-surface p-5 ring-1 ring-white/10 hover:ring-accent/60">
+                <p className="text-xs text-accent">{o.kind === "course" ? "دورة" : o.discount_percent ? `خصم ${o.discount_percent}%` : "عرض"}</p>
+                <h3 className="mt-1 font-bold">{o.title_ar}</h3>
+                <p className="mt-1 text-sm text-muted">{o.organizations!.name_ar} · {o.organizations!.city}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+      {show.trails && trails.length > 0 && (
+        <section className="mb-12">
+          <div className="mb-4 flex items-baseline justify-between"><h2 className="text-xl font-bold">🥾 مسارات المشي والهايكنق</h2><Link href="/trails" className="text-sm text-accent underline">كل المسارات</Link></div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{trails.slice(0, 6).map((t) => <TrailCard key={t.id} t={t} />)}</div>
+        </section>
+      )}
       {show.banner && banner && (
         <a href={`/a/${banner.id}`} rel="sponsored noopener" className="relative mb-10 block overflow-hidden rounded-2xl bg-surface ring-1 ring-white/10">
           {banner.image_path && (
@@ -261,12 +281,6 @@ export default async function Home() {
             </section>
           )}
         </>
-      )}
-      {show.trails && trails.length > 0 && (
-        <section className="mb-12">
-          <div className="mb-4 flex items-baseline justify-between"><h2 className="text-xl font-bold">🥾 مسارات المشي والهايكنق</h2><Link href="/trails" className="text-sm text-accent underline">كل المسارات</Link></div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{trails.slice(0, 6).map((t) => <TrailCard key={t.id} t={t} />)}</div>
-        </section>
       )}
       {show.partners && partners.length > 0 && (
         <section className="mb-12">
