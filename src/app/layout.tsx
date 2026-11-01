@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [{ url: "/brand-mark.svg", type: "image/svg+xml" }],
     shortcut: "/brand-mark.svg",
-    apple: "/icons/apple-touch-icon.png",
+    apple: [{ url: "/brand-mark.svg", type: "image/svg+xml" }],
   },
   metadataBase: new URL(baseUrl()),
   title: "GymJo | دليلك الرياضي في الأردن",
