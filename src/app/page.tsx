@@ -5,6 +5,7 @@ import { TrailCard } from "@/components/TrailCard";
 import { adImageUrl, listLiveAds } from "@/lib/ads";
 import { listActiveOffers, listCities, listHomeSections, listLiveFlash, listPartners, listTrails } from "@/lib/queries";
 import { getSiteSettings } from "@/lib/site-settings";
+import { listExercises } from "@/lib/exercises";
 
 const TYPE_TILES = [
   { href: "/search?type=gym", icon: "🏋️", label: "نوادي", description: "قارن النوادي والأسعار والمرافق." },
@@ -39,7 +40,7 @@ export default async function Home() {
   // Homepage content and visibility are configured by the platform owner in /admin/settings.
   const cfg = await getSiteSettings();
   const show = cfg.home;
-  const [home, offersRaw, ads, flash, partners, trails, cities] = await Promise.all([
+  const [home, offersRaw, ads, flash, partners, trails, cities, exercises] = await Promise.all([
     listHomeSections(cfg.perSection).catch(() => ({ sections: [], pink: { total: 0, items: [] } })),
     listActiveOffers(6).catch(() => []),
     listLiveAds().catch(() => []),
@@ -141,6 +142,24 @@ export default async function Home() {
         </div>
       </section>
 
+      {exercises.length > 0 && (
+        <section className="mb-12">
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div><p className="text-xs font-extrabold tracking-wider text-accent">LEARN & TRAIN</p><h2 className="mt-1 text-2xl font-black">جرّب مكتبة التمارين</h2><p className="mt-1 text-sm text-muted">شوف أسماء التمارين والعضلات المستهدفة قبل ما تدخل للقسم.</p></div>
+            <Link href="/exercises" className="text-sm font-bold text-accent">كل التمارين ←</Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {exercises.slice(0, 4).map((exercise) => (
+              <Link key={exercise.id} href={`/exercises/${exercise.slug}`} className="rounded-2xl border border-white/10 bg-surface p-4 transition hover:border-accent/50 hover:bg-accent/5">
+                <span className="inline-flex rounded-lg bg-accent/10 px-2.5 py-1 text-xs font-bold text-accent">{exercise.muscle_group}</span>
+                <h3 className="mt-3 font-extrabold">{exercise.name_ar}</h3>
+                {exercise.summary_ar && <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{exercise.summary_ar}</p>}
+                <p className="mt-3 text-xs font-bold text-accent">{exercise.count > 0 ? `${exercise.count} شرح من مدربين` : "شوف تفاصيل التمرين"} ←</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
       {show.banner && banner && (
         <a href={`/a/${banner.id}`} rel="sponsored noopener" className="relative mb-10 block overflow-hidden rounded-2xl bg-surface ring-1 ring-white/10">
           {banner.image_path && (
