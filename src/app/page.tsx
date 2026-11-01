@@ -4,7 +4,7 @@ import { OrgCard } from "@/components/OrgCard";
 import { TrailCard } from "@/components/TrailCard";
 import { adImageUrl, listLiveAds } from "@/lib/ads";
 import { listActiveOffers, listCities, listHomeSections, listLiveFlash, listPartners, listTrails } from "@/lib/queries";
-import { getSiteSettings, NAV_CATALOG } from "@/lib/site-settings";
+import { getSiteSettings } from "@/lib/site-settings";
 
 const TYPE_TILES = [
   { href: "/search?type=gym", icon: "🏋️", label: "نوادي", description: "قارن النوادي والأسعار والمرافق." },
