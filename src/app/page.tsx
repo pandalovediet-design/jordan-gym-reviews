@@ -50,8 +50,11 @@ export default async function Home() {
     listPartners().catch(() => []),
     listTrails().catch(() => []),
     listCities().catch(() => []),
+    listExercises().catch(() => []),
+    createPublicClient().rpc("list_public_codes", {}).then(({ data }) => data ?? []).catch(() => []),
   ]);
-  const codes = codesRaw.slice(0, 3);\n  const offers = offersRaw.filter((o, i, a) => a.findIndex((x) => x.title_ar === o.title_ar && x.organizations?.slug === o.organizations?.slug) === i);
+  const codes = codesRaw.slice(0, 3);
+  const offers = offersRaw.filter((o, i, a) => a.findIndex((x) => x.title_ar === o.title_ar && x.organizations?.slug === o.organizations?.slug) === i);
   const sorted = [...home.sections].sort((a, b) => b.total - a.total);
   const full = cfg.maxSections > 0 ? sorted.slice(0, cfg.maxSections) : sorted;
   const tiles = home.sections.filter((s) => !new Set(full.map((item) => item.key)).has(s.key));
