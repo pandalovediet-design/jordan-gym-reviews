@@ -6,6 +6,8 @@ import { adImageUrl, listLiveAds } from "@/lib/ads";
 import { listActiveOffers, listCities, listHomeSections, listLiveFlash, listPartners, listTrails } from "@/lib/queries";
 import { getSiteSettings } from "@/lib/site-settings";
 import { listExercises } from "@/lib/exercises";
+import { createPublicClient } from "@/lib/supabase/public";
+import { RevealCode } from "@/components/RevealCode";
 
 const TYPE_TILES = [
   { href: "/search?type=gym", icon: "🏋️", label: "نوادي", description: "قارن النوادي والأسعار والمرافق." },
@@ -40,7 +42,7 @@ export default async function Home() {
   // Homepage content and visibility are configured by the platform owner in /admin/settings.
   const cfg = await getSiteSettings();
   const show = cfg.home;
-  const [home, offersRaw, ads, flash, partners, trails, cities, exercises] = await Promise.all([
+  const [home, offersRaw, ads, flash, partners, trails, cities, exercises, codesRaw] = await Promise.all([
     listHomeSections(cfg.perSection).catch(() => ({ sections: [], pink: { total: 0, items: [] } })),
     listActiveOffers(6).catch(() => []),
     listLiveAds().catch(() => []),
@@ -49,7 +51,7 @@ export default async function Home() {
     listTrails().catch(() => []),
     listCities().catch(() => []),
   ]);
-  const offers = offersRaw.filter((o, i, a) => a.findIndex((x) => x.title_ar === o.title_ar && x.organizations?.slug === o.organizations?.slug) === i);
+  const codes = codesRaw.slice(0, 3);\n  const offers = offersRaw.filter((o, i, a) => a.findIndex((x) => x.title_ar === o.title_ar && x.organizations?.slug === o.organizations?.slug) === i);
   const sorted = [...home.sections].sort((a, b) => b.total - a.total);
   const full = cfg.maxSections > 0 ? sorted.slice(0, cfg.maxSections) : sorted;
   const tiles = home.sections.filter((s) => !new Set(full.map((item) => item.key)).has(s.key));
@@ -156,6 +158,22 @@ export default async function Home() {
                 {exercise.summary_ar && <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{exercise.summary_ar}</p>}
                 <p className="mt-3 text-xs font-bold text-accent">{exercise.count > 0 ? `${exercise.count} شرح من مدربين` : "شوف تفاصيل التمرين"} ←</p>
               </Link>
+            ))}
+          </div>
+        </section>
+      )}
+      {codes.length > 0 && (
+        <section className="mb-12 rounded-3xl border border-[#d4ff00]/20 bg-gradient-to-l from-[#d4ff00]/[0.08] to-surface p-5 sm:p-7">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div><p className="text-xs font-extrabold tracking-wider text-accent">GYMJO EXCLUSIVE</p><h2 className="mt-1 text-2xl font-black">وفّر مع أكواد GymJo</h2><p className="mt-1 text-sm text-muted">خصومات حقيقية من أنشطة ومتاجر مشاركة — اكشف الكود واستخدمه مباشرة.</p></div>
+            <Link href="/deals" className="text-sm font-bold text-accent">كل أكواد الخصم ←</Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {codes.map((code) => (
+              <article key={code.id} className="flex flex-col justify-between gap-4 rounded-2xl border border-white/10 bg-surface p-4">
+                <div><h3 className="font-extrabold">{code.title_ar}</h3>{code.details_ar && <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{code.details_ar}</p>}<p className="mt-2 text-xs text-muted">{code.org_name} · {code.org_city}</p></div>
+                <RevealCode id={code.id} />
+              </article>
             ))}
           </div>
         </section>
