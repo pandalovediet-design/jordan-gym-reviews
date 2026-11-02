@@ -323,7 +323,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </div>
       )}
       {!multi && <p className="mt-1 text-muted">{[org.address, org.area, org.city].filter(Boolean).join("، ")}</p>}
-      <div className="mt-5 grid gap-2 border-t border-white/10 pt-4 sm:grid-cols-3">
+      <div className="mt-5 grid gap-2 border-t border-white/10 pt-4 sm:grid-cols-2">
         <div className="rounded-xl bg-background/55 p-3">
           <p className="text-[11px] font-bold text-muted">📍 الموقع</p>
           <p className="mt-1 line-clamp-2 text-sm font-bold">{[org.area, org.city].filter(Boolean).join("، ") || "الموقع غير محدد"}</p>
@@ -333,11 +333,6 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           <p className="text-[11px] font-bold text-muted">☎ التواصل</p>
           <p className="mt-1 text-sm font-bold" dir="ltr">{org.phone || "غير متوفر"}</p>
           {org.phone && <a href={"tel:" + org.phone} className="mt-1 inline-block text-xs font-bold text-accent underline">اتصل بالنادي</a>}
-        </div>
-        <div className="rounded-xl bg-background/55 p-3">
-          <p className="text-[11px] font-bold text-muted">💳 يبدأ الاشتراك من</p>
-          <p className="mt-1 text-sm font-bold text-accent">{org.min_price_jod != null ? jod(org.min_price_jod) : "تواصل لمعرفة الأسعار"}</p>
-          <a href="#prices" className="mt-1 inline-block text-xs font-bold text-accent underline">تفاصيل الأسعار</a>
         </div>
       </div>
       {(org.instagram || org.website) && <div className="mt-3 flex flex-wrap gap-2">
