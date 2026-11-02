@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { DeleteAccountForm } from "./DeleteAccountForm";
+import { MemberProfileForm } from "./MemberProfileForm";
 
 export const metadata: Metadata = { title: "حسابي الرياضي", robots: { index: false } };
 
@@ -37,6 +38,8 @@ export default async function Account() {
           <Link href="/search" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-[#d4ff00] px-5 font-black text-[#151a0b] transition hover:-translate-y-0.5">اكتشف ناديك القادم ←</Link>
         </div>
       </section>
+
+      <section className="mt-6"><MemberProfileForm initialName={displayName === "عضو GymJo" ? "" : displayName} /></section>
 
       <section className="mt-9">
         <div className="mb-4 flex items-end justify-between gap-3">
