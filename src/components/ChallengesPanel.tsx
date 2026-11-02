@@ -14,7 +14,11 @@ export function ChallengesPanel() {
   const [progress, setProgress] = useState<Progress>({});
   const [ready, setReady] = useState(false);
   const [sync, setSync] = useState<"loading" | "synced" | "local" | "error">("loading");
-  const weekStart = (() => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - ((now.getDay() + 6) % 7)); return start.toISOString().slice(0, 10); })();
+  const weekStart = (() => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+    return [start.getFullYear(), String(start.getMonth() + 1).padStart(2, "0"), String(start.getDate()).padStart(2, "0")].join("-");
+  })();
   useEffect(() => {
     try {
       const raw = localStorage.getItem("gymjo-challenge-progress-v1");
@@ -23,14 +27,21 @@ export function ChallengesPanel() {
         const now = new Date();
         const start = new Date(now);
         start.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-        const week = start.toISOString().slice(0, 10);
+        const week = [start.getFullYear(), String(start.getMonth() + 1).padStart(2, "0"), String(start.getDate()).padStart(2, "0")].join("-");
         if (parsed.week === week) setProgress(parsed.values ?? {});
       }
     } catch { /* Ignore invalid local progress. */ }
     getAccountChallengeProgress(weekStart).then((remote) => {
       if (remote === null) { setSync("local"); return; }
-      setProgress((current) => { const merged = { ...current }; for (const item of remote) merged[item.challenge_id] = item.progress; return merged; });
-      setSync("synced");
+      const remoteIds = new Set(remote.map((item) => item.challenge_id));
+      const local = (() => { try { const raw = localStorage.getItem("gymjo-challenge-progress-v1"); const parsed = raw ? JSON.parse(raw) as { week: string; values: Progress } : null; return parsed?.week === weekStart ? parsed.values ?? {} : {}; } catch { return {}; } })();
+      const merged: Progress = { ...local };
+      for (const item of remote) merged[item.challenge_id] = item.progress;
+      setProgress(merged);
+      try { localStorage.setItem("gymjo-challenge-progress-v1", JSON.stringify({ week: weekStart, values: merged })); } catch { /* Storage may be unavailable. */ }
+      Promise.all(challenges.filter((item) => !remoteIds.has(item.id) && typeof local[item.id] === "number").map((item) =>
+        saveAccountChallengeProgress(weekStart, { challenge_id: item.id as "sessions" | "walks" | "water", progress: local[item.id] })
+      )).then(() => setSync("synced")).catch(() => setSync("error"));
     }).catch(() => setSync("error")).finally(() => setReady(true));
   }, [weekStart]);
   function change(id: string, delta: number) {
@@ -39,7 +50,7 @@ export function ChallengesPanel() {
       const now = new Date();
       const start = new Date(now);
       start.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-      const week = start.toISOString().slice(0, 10);
+      const week = [start.getFullYear(), String(start.getMonth() + 1).padStart(2, "0"), String(start.getDate()).padStart(2, "0")].join("-");
       try { localStorage.setItem("gymjo-challenge-progress-v1", JSON.stringify({ week, values: next })); } catch { /* Storage may be unavailable. */ }
       saveAccountChallengeProgress(week, { challenge_id: id as "sessions" | "walks" | "water", progress: next[id] }).then((ok) => setSync(ok ? "synced" : "local")).catch(() => setSync("error"));
       return next;
