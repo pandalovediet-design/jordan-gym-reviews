@@ -361,8 +361,21 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       <div className="mt-5 flex flex-wrap gap-2 sm:gap-3 [&>a]:min-h-11 [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center [&>a]:text-center">
         {wa && org.free_trial_note && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${trialMsg}`} className="rounded-xl bg-accent/15 px-5 py-2.5 font-bold text-accent ring-1 ring-accent/50">🎟 {org.free_trial_note}</TrackedLink>}
         <a href={shareHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">شارك على واتساب</a>
-        <a href={`/g/${org.slug}/card`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">🖼 كرت للمنشور</a>
-        <a href={`/g/${org.slug}/card?s=1`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">📱 كرت للستوري</a>
+      </div>
+      <div className="mt-3 grid max-w-md grid-cols-2 gap-2 sm:gap-3" aria-label="كروت جاهزة للمشاركة">
+        {[
+          { href: `/g/${org.slug}/card`, title: "كرت منشور", hint: "مربّع تقريباً · للفيد", shape: "h-10 w-8" },
+          { href: `/g/${org.slug}/card?s=1`, title: "كرت ستوري", hint: "طولي · للستوري والريلز", shape: "h-12 w-7" },
+        ].map((c) => (
+          <a key={c.href} href={c.href} target="_blank" rel="noopener noreferrer"
+            className="flex min-h-16 items-center gap-3 rounded-xl bg-surface p-3 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+            <span aria-hidden className={`${c.shape} shrink-0 rounded-md border-2 border-accent/70 bg-accent/10`} />
+            <span className="min-w-0">
+              <span className="block text-sm font-bold">{c.title}</span>
+              <span className="block text-xs text-muted">{c.hint}</span>
+            </span>
+          </a>
+        ))}
       </div>
       <details className="mt-3 w-fit rounded-xl bg-surface ring-1 ring-white/10 [&[open]]:p-4">
         <summary className="min-h-11 cursor-pointer list-none rounded-xl px-5 py-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent [&::-webkit-details-marker]:hidden">📲 QR للمشاركة</summary>

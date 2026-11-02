@@ -53,6 +53,15 @@ html[data-theme="light"] .text-blue-100, html[data-theme="light"] .text-blue-200
 html[data-theme="light"] .bg-cyan-300\/10, html[data-theme="light"] .bg-cyan-200\/10 { background-color: rgb(77 114 0 / 8%) !important; }
 html[data-theme="light"] .border-cyan-300\/20, html[data-theme="light"] .border-cyan-200\/20 { border-color: rgb(77 114 0 / 20%) !important; }
 html[data-theme="light"] .shadow-black\/5 { --tw-shadow-color: rgb(23 32 22 / 5%) !important; }
+/* Card edges, soft buttons and status text written for the dark theme stay visible in light mode. */
+html[data-theme="light"] .ring-white\/10 { --tw-ring-color: rgb(23 32 22 / 12%) !important; }
+html[data-theme="light"] .ring-white\/15, html[data-theme="light"] .ring-white\/20 { --tw-ring-color: rgb(23 32 22 / 18%) !important; }
+html[data-theme="light"] .bg-white\/10, html[data-theme="light"] .bg-white\/15 { background-color: rgb(23 32 22 / 7%) !important; }
+html[data-theme="light"] .hover\:bg-white\/5:hover { background-color: rgb(23 32 22 / 5%) !important; }
+html[data-theme="light"] .hover\:bg-white\/20:hover, html[data-theme="light"] .hover\:bg-white\/25:hover { background-color: rgb(23 32 22 / 11%) !important; }
+html[data-theme="light"] .text-red-300 { color: #b42318 !important; }
+html[data-theme="light"] .text-emerald-300, html[data-theme="light"] .text-emerald-200 { color: #067647 !important; }
+html[data-theme="light"] .text-amber-300, html[data-theme="light"] .text-amber-200 { color: #93370d !important; }
 
 body { background: var(--background); color: var(--foreground); font-family: "Cairo Variable", system-ui, sans-serif; }
 ::selection { background: rgb(212 255 0 / 28%); color: var(--foreground); }
