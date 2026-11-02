@@ -13,6 +13,9 @@ export function FavoritesList() {
   const key = favs.join(",");
   useEffect(() => {
     let alive = true;
+    getAccountFavoriteSlugs().then((remote) => {
+      if (alive && remote) replaceFavs(remote);
+    }).catch(() => {});
     loadFavorites(key ? key.split(",") : []).then((r) => alive && setItems(r)).catch(() => alive && setItems([]));
     return () => { alive = false; };
   }, [key]);
