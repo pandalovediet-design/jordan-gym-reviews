@@ -25,6 +25,7 @@ const FEATURE_TILES = [
   { href: "/awards", icon: "🏆", label: "نادي الشهر", description: "تابع الترشيحات واكتشف الأندية المميزة." },
   { href: "/exercises", icon: "💪", label: "مكتبة التمارين", description: "تعلّم التمارين وطريقة أدائها." },
   { href: "/log", icon: "🔥", label: "سجل تمريني", description: "سجّل نشاطك وتابع استمراريتك." },
+  { href: "/challenges", icon: "🏆", label: "التحديات", description: "شارك بتحديات أسبوعية وتابع إنجازاتك." },
   { href: "/deals", icon: "🎟️", label: "أكواد الخصم", description: "وفّر مع عروض الأنشطة الرياضية." },
   { href: "/no-gym", icon: "🏠", label: "من غير جيم", description: "تمارين وأفكار بدون اشتراك نادي." },
   { href: "/no-deprivation", icon: "🥗", label: "من غير حرمان", description: "محتوى غذائي متوازن وواقعي." },
