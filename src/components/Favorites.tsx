@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useSyncExternalStore } from "react";
-import { getAccountFavoriteSlugs, syncAccountFavorites } from "@/app/favorites/actions";
+import { useSyncExternalStore } from "react";
+import { syncAccountFavorites } from "@/app/favorites/actions";
 
 const KEY = "jgr:favs";
 const EVT = "jgr:favs-change";
