@@ -2,7 +2,8 @@
 import { useEffect, useState } from "react";
 import { OrgCard } from "@/components/OrgCard";
 import { useFavs } from "@/components/Favorites";
-import { loadFavorites } from "./actions";
+import { getAccountFavoriteSlugs, loadFavorites } from "./actions";
+import { replaceFavs } from "@/components/Favorites";
 
 type Items = Awaited<ReturnType<typeof loadFavorites>>;
 
