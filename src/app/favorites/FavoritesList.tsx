@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { OrgCard } from "@/components/OrgCard";
 import { useFavs } from "@/components/Favorites";
-import { getAccountFavoriteSlugs, loadFavorites } from "./actions";
+import { getAccountFavoriteSlugs, loadFavorites, syncAccountFavorites } from "./actions";
 import { replaceFavs } from "@/components/Favorites";
 
 type Items = Awaited<ReturnType<typeof loadFavorites>>;
@@ -14,7 +14,7 @@ export function FavoritesList() {
   useEffect(() => {
     let alive = true;
     getAccountFavoriteSlugs().then((remote) => {
-      if (alive && remote) replaceFavs(remote);
+      if (alive && remote) {\n        const merged = [...new Set([...remote, ...favs])];\n        replaceFavs(merged);\n        if (merged.length !== remote.length || merged.some((slug, i) => slug !== remote[i])) await syncAccountFavorites(merged);\n      }
     }).catch(() => {});
     loadFavorites(key ? key.split(",") : []).then((r) => alive && setItems(r)).catch(() => alive && setItems([]));
     return () => { alive = false; };
