@@ -215,38 +215,57 @@ test("child rows cannot be moved to another organization", async () => {
   });
 });
 
-test("reviews: one per user, not for own org, identity cannot be forged, rating summary", async () => {
-  await asBob(async () => {
-    const r = await db.query(
-      `insert into public.reviews (organization_id, user_id, rating, body)
-       values ($1, $2, 4, 'جيد') returning id, user_id, author_name, status`,
-      [ctx.gym, ALICE], // tries to impersonate alice
-    );
-    ctx.review = r.rows[0].id;
-    assert.equal(r.rows[0].user_id, BOB);
-    assert.equal(r.rows[0].author_name, "Bob");
-    await rejects(() =>
-      db.query(`insert into public.reviews (organization_id, user_id, rating) values ($1, $2, 5)`, [ctx.gym, BOB]),
-    );
-    await db.query(`update public.reviews set status = 'hidden', rating = 5 where id = $1`, [ctx.review]);
-    const u = await db.query(`select status, rating from public.reviews where id = $1`, [ctx.review]);
-    assert.equal(u.rows[0].status, "published");
-    assert.equal(u.rows[0].rating, 5);
-  });
-  await asAlice(() =>
+test("reviews are disabled: nobody can create, edit or forge a review", async () => {
+  // Reviews were removed from the product (migration 20261023190000_review_writes_off).
+  await asBob(() =>
     rejects(
-      () => db.query(`insert into public.reviews (organization_id, user_id, rating) values ($1, $2, 5)`, [ctx.gym, ALICE]),
-      /own organization/,
+      () => db.query(
+        `insert into public.reviews (organization_id, user_id, rating, body) values ($1, $2, 4, 'جيد')`,
+        [ctx.gym, BOB],
+      ),
+      /row-level security/,
     ),
   );
+  await asBob(() =>
+    rejects(
+      () => db.query(
+        `insert into public.reviews (organization_id, user_id, rating) values ($1, $2, 5)`,
+        [ctx.gym, ALICE], // impersonation attempt
+      ),
+      /row-level security/,
+    ),
+  );
+  await asAlice(() =>
+    rejects(() =>
+      db.query(`insert into public.reviews (organization_id, user_id, rating) values ($1, $2, 5)`, [ctx.gym, ALICE]),
+    ),
+  );
+  await asAnon(() =>
+    rejects(() => db.query(`insert into public.reviews (organization_id, rating) values ($1, 5)`, [ctx.gym])),
+  );
   await asAnon(async () => {
-    const r = await db.query(`select review_count, average_rating from public.organization_ratings where organization_id = $1`, [ctx.gym]);
-    assert.equal(r.rows[0].review_count, 1);
-    assert.equal(Number(r.rows[0].average_rating), 5);
+    const r = await db.query(`select review_count from public.organization_ratings where organization_id = $1`, [ctx.gym]);
+    assert.equal(r.rows.length, 0);
   });
+
+  // A legacy review (written before reviews were turned off) cannot be edited by its author.
+  const legacy = await asService(() =>
+    db.query(
+      `insert into public.reviews (organization_id, user_id, rating, body, status, author_name)
+       values ($1, $2, 3, 'قديم', 'published', 'Bob') returning id`,
+      [ctx.gym, BOB],
+    ),
+  );
+  ctx.review = legacy.rows[0].id;
+  await asBob(async () => {
+    await db.query(`update public.reviews set rating = 5, body = 'معدّل' where id = $1`, [ctx.review]);
+  });
+  const after = await asService(() => db.query(`select rating, body from public.reviews where id = $1`, [ctx.review]));
+  assert.equal(after.rows[0].rating, 3);
+  assert.equal(after.rows[0].body, "قديم");
 });
 
-test("review responses: only the organization can answer its own reviews", async () => {
+test("review responses: strangers cannot answer and an answer cannot be attached to another organization", async () => {
   await asBob(() =>
     rejects(() =>
       db.query(
@@ -255,10 +274,12 @@ test("review responses: only the organization can answer its own reviews", async
       ),
     ),
   );
-  await asAlice(() =>
-    db.query(
-      `insert into public.review_responses (review_id, organization_id, body, created_by) values ($1, $2, 'شكراً لك', $3)`,
-      [ctx.review, ctx.gym, ALICE],
+  await asBob(() =>
+    rejects(() =>
+      db.query(
+        `insert into public.review_responses (review_id, organization_id, body, created_by) values ($1, $2, 'شكراً', $3)`,
+        [ctx.review, ctx.gym, ALICE], // forged author
+      ),
     ),
   );
   await asAlice(() =>
@@ -271,12 +292,21 @@ test("review responses: only the organization can answer its own reviews", async
   );
 });
 
-test("review reports: reporter is the caller and duplicates are rejected", async () => {
-  await asAlice(async () => {
-    await db.query(`insert into public.review_reports (review_id, reporter_id, reason) values ($1, $2, 'fake')`, [ctx.review, ALICE]);
-    await rejects(() => db.query(`insert into public.review_reports (review_id, reporter_id, reason) values ($1, $2, 'fake')`, [ctx.review, ALICE]));
-    await rejects(() => db.query(`insert into public.review_reports (review_id, reporter_id, reason) values ($1, $2, 'spam')`, [ctx.review, BOB]));
-  });
+test("review reports are disabled alongside public review writes", async () => {
+  for (const runAs of [asAlice, asBob]) {
+    await runAs(() =>
+      rejects(
+        () => db.query(
+          `insert into public.review_reports (review_id, reporter_id, reason) values ($1, $2, 'fake')`,
+          [ctx.review, runAs === asAlice ? ALICE : BOB],
+        ),
+        /row-level security/,
+      ),
+    );
+  }
+  await asAnon(() =>
+    rejects(() => db.query(`insert into public.review_reports (review_id, reason) values ($1, 'fake')`, [ctx.review])),
+  );
 });
 
 test("inquiries are server-only, de-duplicated, and private to the organization", async () => {
