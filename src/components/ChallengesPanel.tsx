@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getAccountChallengeProgress, saveAccountChallengeProgress } from "@/app/challenges/actions";
 
 const challenges = [
   { id: "sessions", title: "3 حصص هذا الأسبوع", description: "خصص وقتاً لثلاث حصص رياضية", target: 3, unit: "حصص", icon: "🏋️" },
@@ -12,6 +13,8 @@ type Progress = Record<string, number>;
 export function ChallengesPanel() {
   const [progress, setProgress] = useState<Progress>({});
   const [ready, setReady] = useState(false);
+  const [sync, setSync] = useState<"loading" | "synced" | "local" | "error">("loading");
+  const weekStart = (() => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - ((now.getDay() + 6) % 7)); return start.toISOString().slice(0, 10); })();
   useEffect(() => {
     try {
       const raw = localStorage.getItem("gymjo-challenge-progress-v1");
@@ -40,7 +43,7 @@ export function ChallengesPanel() {
   const completed = challenges.filter((x) => (progress[x.id] ?? 0) >= x.target).length;
   return (
     <div>
-      <div className="mb-5 rounded-2xl border border-accent/20 bg-accent/10 p-4">
+      <p aria-live="polite" className="mb-3 text-xs text-muted">{sync === "loading" ? "جارٍ تحميل تحدياتك…" : sync === "synced" ? "🔒 تقدمك محفوظ بحسابك." : sync === "local" ? "تقدمك محفوظ على هذا الجهاز؛ سجّل الدخول لمزامنته." : "تعذرت المزامنة الآن؛ تقدمك المحلي محفوظ."}</p>\n      <div className="mb-5 rounded-2xl border border-accent/20 bg-accent/10 p-4">
         <div className="flex items-center justify-between gap-3"><div><p className="text-sm font-bold">تقدمك هذا الأسبوع</p><p className="mt-1 text-xs text-muted">أنجز {completed} من {challenges.length} تحديات</p></div><strong className="text-2xl text-accent">{Math.round(completed / challenges.length * 100)}%</strong></div>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-background"><div className="h-full rounded-full bg-accent transition-all" style={{ width: (completed / challenges.length * 100) + "%" }} /></div>
       </div>
@@ -58,7 +61,7 @@ export function ChallengesPanel() {
           );
         })}
       </div>
-      <p className="mt-4 text-xs leading-6 text-muted">التحديات تجريبية وشخصية، وتُحفظ حالياً على هذا الجهاز. اضغط (+) بعد إنجاز النشاط؛ لا يوجد تحقق تلقائي من التمرين.</p>
+      <p className="mt-4 text-xs leading-6 text-muted">التحديات شخصية؛ اضغط (+) بعد إنجاز النشاط. لا يوجد تحقق تلقائي من التمرين أو احتساب آلي من سجل النشاط.</p>
     </div>
   );
 }
