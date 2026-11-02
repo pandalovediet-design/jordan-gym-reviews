@@ -27,15 +27,21 @@ export function ChallengesPanel() {
         if (parsed.week === week) setProgress(parsed.values ?? {});
       }
     } catch { /* Ignore invalid local progress. */ }
-    setReady(true);
-  }, []);
+    getAccountChallengeProgress(weekStart).then((remote) => {
+      if (remote === null) { setSync("local"); return; }
+      setProgress((current) => { const merged = { ...current }; for (const item of remote) merged[item.challenge_id] = item.progress; return merged; });
+      setSync("synced");
+    }).catch(() => setSync("error")).finally(() => setReady(true));
+  }, [weekStart]);
   function change(id: string, delta: number) {
     setProgress((current) => {
       const next = { ...current, [id]: Math.max(0, Math.min(challenges.find((x) => x.id === id)?.target ?? 99, (current[id] ?? 0) + delta)) };
       const now = new Date();
       const start = new Date(now);
       start.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-      try { localStorage.setItem("gymjo-challenge-progress-v1", JSON.stringify({ week: start.toISOString().slice(0, 10), values: next })); } catch { /* Storage may be unavailable. */ }
+      const week = start.toISOString().slice(0, 10);
+      try { localStorage.setItem("gymjo-challenge-progress-v1", JSON.stringify({ week, values: next })); } catch { /* Storage may be unavailable. */ }
+      saveAccountChallengeProgress(week, { challenge_id: id as "sessions" | "walks" | "water", progress: next[id] }).then((ok) => setSync(ok ? "synced" : "local")).catch(() => setSync("error"));
       return next;
     });
   }
@@ -43,7 +49,8 @@ export function ChallengesPanel() {
   const completed = challenges.filter((x) => (progress[x.id] ?? 0) >= x.target).length;
   return (
     <div>
-      <p aria-live="polite" className="mb-3 text-xs text-muted">{sync === "loading" ? "جارٍ تحميل تحدياتك…" : sync === "synced" ? "🔒 تقدمك محفوظ بحسابك." : sync === "local" ? "تقدمك محفوظ على هذا الجهاز؛ سجّل الدخول لمزامنته." : "تعذرت المزامنة الآن؛ تقدمك المحلي محفوظ."}</p>\n      <div className="mb-5 rounded-2xl border border-accent/20 bg-accent/10 p-4">
+      <p aria-live="polite" className="mb-3 text-xs text-muted">{sync === "loading" ? "جارٍ تحميل تحدياتك…" : sync === "synced" ? "🔒 تقدمك محفوظ بحسابك." : sync === "local" ? "تقدمك محفوظ على هذا الجهاز؛ سجّل الدخول لمزامنته." : "تعذرت المزامنة الآن؛ تقدمك المحلي محفوظ."}</p>
+      <div className="mb-5 rounded-2xl border border-accent/20 bg-accent/10 p-4">
         <div className="flex items-center justify-between gap-3"><div><p className="text-sm font-bold">تقدمك هذا الأسبوع</p><p className="mt-1 text-xs text-muted">أنجز {completed} من {challenges.length} تحديات</p></div><strong className="text-2xl text-accent">{Math.round(completed / challenges.length * 100)}%</strong></div>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-background"><div className="h-full rounded-full bg-accent transition-all" style={{ width: (completed / challenges.length * 100) + "%" }} /></div>
       </div>
