@@ -3,8 +3,8 @@ name: CI
 on:
   push:
     branches: [main]
+  # Run on every pull request, including stacked PRs that target feature branches.
   pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
