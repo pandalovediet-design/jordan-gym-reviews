@@ -50,3 +50,27 @@ create policy "Users remove own workout logs" on public.user_workout_logs
 create trigger user_workout_logs_updated_at
   before update on public.user_workout_logs
   for each row execute function public.set_updated_at();
+
+-- Weekly challenge progress belongs to the signed-in member.
+create table if not exists public.user_challenge_progress (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  week_start date not null,
+  challenge_id text not null check (challenge_id in ('sessions', 'walks', 'water')),
+  progress integer not null default 0 check (progress between 0 and 10),
+  updated_at timestamptz not null default now(),
+  primary key (user_id, week_start, challenge_id)
+);
+alter table public.user_challenge_progress enable row level security;
+drop policy if exists "Users read own challenge progress" on public.user_challenge_progress;
+create policy "Users read own challenge progress" on public.user_challenge_progress
+  for select to authenticated using (user_id = (select auth.uid()));
+drop policy if exists "Users insert own challenge progress" on public.user_challenge_progress;
+create policy "Users insert own challenge progress" on public.user_challenge_progress
+  for insert to authenticated with check (user_id = (select auth.uid()));
+drop policy if exists "Users update own challenge progress" on public.user_challenge_progress;
+create policy "Users update own challenge progress" on public.user_challenge_progress
+  for update to authenticated using (user_id = (select auth.uid()))
+  with check (user_id = (select auth.uid()));
+create trigger user_challenge_progress_updated_at
+  before update on public.user_challenge_progress
+  for each row execute function public.set_updated_at();
