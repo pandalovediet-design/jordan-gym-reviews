@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { deleteAccountWorkoutLog, getAccountWorkoutLogs, saveAccountWorkoutLog } from "@/app/log/actions";
+import { deleteAccountWorkoutLog, getAccountWorkoutLogs, saveAccountWorkoutLogs } from "@/app/log/actions";
+import { claimLocalData } from "@/lib/member-sync";
 import { GOALS, KINDS, MINUTES, addDays, bestStreak, daysThisWeek, dow, monthCount, sanitize, streak, weekStart, ammanToday, type Log } from "@/lib/workout-log";
 
 const KEY = "jgr:log-v1", GOAL_KEY = "jgr:log-goal", EVT = "jgr:log-change";
@@ -48,19 +49,28 @@ export function WorkoutLog() {
     getAccountWorkoutLogs().then(async (remote) => {
       if (!active) return;
       if (remote === null) { setCloudStatus("local"); return; }
-      const merged: Log = { ...read() };
-      for (const item of remote) {
-        if (!merged[item.workout_date]) merged[item.workout_date] = { kind: item.activity, min: item.minutes };
+      const fromAccount: Log = {};
+      for (const item of remote.items) fromAccount[item.workout_date] = { kind: item.activity, min: item.minutes };
+      if (claimLocalData("workouts", remote.userId) === "replace") {
+        // The account is the source of truth: days deleted on another device stay deleted.
+        save(fromAccount);
+        setCloudStatus("synced");
+        return;
       }
-      save(merged);
-      const localOnly = Object.entries(merged).filter(([date]) => !remote.some((item) => item.workout_date === date));
+      // First sign-in on this device: add days logged here before signing in.
+      const local = read();
+      const localOnly = Object.entries(local).filter(([date]) => !fromAccount[date]);
+      save({ ...local, ...fromAccount });
       try {
-        for (const [date, item] of localOnly) await saveAccountWorkoutLog({ workout_date: date, activity: item.kind, minutes: item.min });
+        await saveAccountWorkoutLogs(localOnly.map(([date, item]) => ({ workout_date: date, activity: item.kind, minutes: item.min })));
         if (active) setCloudStatus("synced");
       } catch { if (active) setCloudStatus("error"); }
     }).catch(() => { if (active) setCloudStatus("error"); });
     return () => { active = false; };
   }, []);
+
+  const syncResult = (p: Promise<{ signedIn: boolean }>) =>
+    p.then((r) => setCloudStatus(r.signedIn ? "synced" : "local")).catch(() => setCloudStatus("error"));
 
   if (!today) return <p className="text-sm text-muted">لحظة...</p>;
 
@@ -74,11 +84,11 @@ export function WorkoutLog() {
     if (next[d]) {
       delete next[d];
       save(next);
-      deleteAccountWorkoutLog(d).then(() => setCloudStatus("synced")).catch(() => setCloudStatus("error"));
+      syncResult(deleteAccountWorkoutLog(d));
     } else {
       next[d] = { kind: d === today ? kind : "تمرين", min: d === today ? min : 0 };
       save(next);
-      saveAccountWorkoutLog({ workout_date: d, activity: next[d].kind, minutes: next[d].min }).then((r) => setCloudStatus(r.signedIn ? "synced" : "local")).catch(() => setCloudStatus("error"));
+      syncResult(saveAccountWorkoutLogs([{ workout_date: d, activity: next[d].kind, minutes: next[d].min }]));
     }
   };
   const setGoal = (g: number) => { try { localStorage.setItem(GOAL_KEY, String(g)); window.dispatchEvent(new Event(EVT)); } catch {} };
@@ -146,7 +156,7 @@ export function WorkoutLog() {
         <p>🔒 خذ نسخة احتياطية إضافية من سجلّك للاحتفاظ بها عند الحاجة:</p>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={() => { setBackup(JSON.stringify(log)); setNote("انسخ النص تحت واحفظه عندك."); }} className="rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/20">نسخة احتياطية</button>
-          <button type="button" onClick={() => { try { const l = sanitize(JSON.parse(backup)); if (!Object.keys(l).length) throw new Error(); save({ ...log, ...l }); setNote("تم الاسترجاع ✓"); } catch { setNote("النص مش صحيح."); } }} className="rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/20">استرجاع من النص</button>
+          <button type="button" onClick={() => { try { const l = sanitize(JSON.parse(backup)); if (!Object.keys(l).length) throw new Error(); save({ ...log, ...l }); setNote("تم الاسترجاع ✓"); syncResult(saveAccountWorkoutLogs(Object.entries(l).map(([date, item]) => ({ workout_date: date, activity: item.kind, minutes: item.min })))); } catch { setNote("النص مش صحيح."); } }} className="rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/20">استرجاع من النص</button>
         </div>
         <textarea value={backup} onChange={(e) => setBackup(e.target.value)} aria-label="نص النسخة الاحتياطية أو البيانات المراد استرجاعها" dir="ltr" rows={3} placeholder="الصق النسخة الاحتياطية هون للاسترجاع" className="w-full rounded-xl bg-background p-2 text-[11px] ring-1 ring-white/10 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface" />
         {note && <p role="status" aria-live="polite" className="text-accent">{note}</p>}

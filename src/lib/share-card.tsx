@@ -88,7 +88,6 @@ export async function renderCard(o: CardOrg, story: boolean) {
       </div>
     );
   };
-  const ar = "flex-end";
 
   const whereParts = [o.area, o.city].filter(Boolean) as string[];
   const gl = o.glow ? GLOW[o.glow] : null;

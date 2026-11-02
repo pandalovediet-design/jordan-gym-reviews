@@ -144,7 +144,7 @@ export default async function Home() {
           <span className="rounded-full border border-white/10 bg-surface px-3 py-1.5 text-xs font-bold text-muted">{FEATURE_TILES.length} ميزة</span>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {FEATURE_TILES.map((tile, index) => (
+          {FEATURE_TILES.map((tile) => (
             <Link key={tile.href} href={tile.href} className="group relative flex min-h-36 flex-col overflow-hidden rounded-2xl border border-white/10 bg-surface p-4 transition duration-200 hover:-translate-y-1 hover:border-accent/50 hover:shadow-xl hover:shadow-black/10 sm:min-h-40 sm:p-5">
               <span aria-hidden className="absolute -left-3 -top-4 text-7xl opacity-[0.06] transition group-hover:scale-110">{tile.icon}</span>
               <span className="relative flex size-11 items-center justify-center rounded-xl bg-accent/10 text-2xl">{tile.icon}</span>

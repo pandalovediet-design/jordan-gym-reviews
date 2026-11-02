@@ -1504,6 +1504,83 @@ export type Database = {
           },
         ]
       }
+      user_challenge_progress: {
+        Row: {
+          challenge_id: string
+          progress: number
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          challenge_id: string
+          progress?: number
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          challenge_id?: string
+          progress?: number
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
+      user_favorites: {
+        Row: {
+          created_at: string
+          organization_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          organization_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          organization_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_favorites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_workout_logs: {
+        Row: {
+          activity: string
+          created_at: string
+          minutes: number
+          updated_at: string
+          user_id: string
+          workout_date: string
+        }
+        Insert: {
+          activity?: string
+          created_at?: string
+          minutes?: number
+          updated_at?: string
+          user_id: string
+          workout_date: string
+        }
+        Update: {
+          activity?: string
+          created_at?: string
+          minutes?: number
+          updated_at?: string
+          user_id?: string
+          workout_date?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       organizations_listing: {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { signout } from "@/app/login/actions";
+import { clearMemberLocalData } from "@/lib/member-sync";
 
 /** Header actions reflect the current browser session without causing layout shifts. */
 export function HeaderAuth() {
@@ -15,10 +16,15 @@ export function HeaderAuth() {
     const supabase = createClient();
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       receivedAuthEvent = true;
+      if (!session) clearMemberLocalData();
       if (alive) setState(session ? "in" : "out");
     });
     supabase.auth.getSession().then(
-      ({ data }) => { if (alive && !receivedAuthEvent) setState(data.session ? "in" : "out"); },
+      ({ data }) => {
+        // Signed out: drop the account's copy from this device (no-op for anonymous visitors' own data).
+        if (!data.session) clearMemberLocalData();
+        if (alive && !receivedAuthEvent) setState(data.session ? "in" : "out");
+      },
       () => { if (alive && !receivedAuthEvent) setState("out"); },
     );
     return () => { alive = false; sub.subscription.unsubscribe(); };

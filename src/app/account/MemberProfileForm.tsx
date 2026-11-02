@@ -13,9 +13,14 @@ export function MemberProfileForm({ initialName }: { initialName: string }) {
     if (!clean) { setMessage("اكتب الاسم أولاً."); return; }
     if (clean.length > 60) { setMessage("الاسم طويل أكثر من اللازم."); return; }
     setBusy(true); setMessage("");
-    const { error } = await createClient().auth.updateUser({ data: { full_name: clean } });
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.updateUser({ data: { full_name: clean } });
+    // Keep the profile row in step so the name is the same everywhere (admin user list included).
+    const profile = data.user
+      ? await supabase.from("profiles").update({ display_name: clean }).eq("id", data.user.id)
+      : { error: null };
     setBusy(false);
-    if (error) { setMessage("ما قدرنا نحفظ الاسم. جرّب مرة ثانية."); return; }
+    if (error || profile.error) { setMessage("ما قدرنا نحفظ الاسم. جرّب مرة ثانية."); return; }
     setSavedName(clean);
     setMessage("تم حفظ اسمك بنجاح.");
   }

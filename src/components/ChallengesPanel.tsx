@@ -1,63 +1,77 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getAccountChallengeProgress, saveAccountChallengeProgress } from "@/app/challenges/actions";
+import { getAccountChallengeProgress, saveAccountChallengeProgress, type ChallengeId } from "@/app/challenges/actions";
+import { claimLocalData, localWeekStart } from "@/lib/member-sync";
 
 const challenges = [
   { id: "sessions", title: "3 حصص هذا الأسبوع", description: "خصص وقتاً لثلاث حصص رياضية", target: 3, unit: "حصص", icon: "🏋️" },
   { id: "walks", title: "4 مرات مشي", description: "أضف المشي إلى روتينك الأسبوعي", target: 4, unit: "مرات", icon: "🚶" },
   { id: "water", title: "5 أيام اهتمام بنفسك", description: "التزم بعادة صحية تختارها كل يوم", target: 5, unit: "أيام", icon: "💧" },
- ] as const;
-type ChallengeId = (typeof challenges)[number]["id"];
-type Progress = Record<string, number>;
+] as const;
+type Progress = Partial<Record<ChallengeId, number>>;
+
+const STORAGE_KEY = "gymjo-challenge-progress-v1";
+function readLocal(week: string): Progress {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const parsed = raw ? (JSON.parse(raw) as { week?: string; values?: Progress }) : null;
+    return parsed?.week === week && parsed.values ? parsed.values : {};
+  } catch {
+    return {};
+  }
+}
+function writeLocal(week: string, values: Progress) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ week, values })); } catch { /* Storage may be unavailable. */ }
+}
+const toItems = (values: Progress) =>
+  challenges.flatMap((c) => typeof values[c.id] === "number" ? [{ challenge_id: c.id, progress: values[c.id] as number }] : []);
 
 export function ChallengesPanel() {
+  const [weekStart] = useState(localWeekStart);
   const [progress, setProgress] = useState<Progress>({});
   const [ready, setReady] = useState(false);
   const [sync, setSync] = useState<"loading" | "synced" | "local" | "error">("loading");
-  const weekStart = (() => {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
-    return [start.getFullYear(), String(start.getMonth() + 1).padStart(2, "0"), String(start.getDate()).padStart(2, "0")].join("-");
-  })();
+
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("gymjo-challenge-progress-v1");
-      if (raw) {
-        const parsed = JSON.parse(raw) as { week: string; values: Progress };
-        const now = new Date();
-        const start = new Date(now);
-        start.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-        const week = [start.getFullYear(), String(start.getMonth() + 1).padStart(2, "0"), String(start.getDate()).padStart(2, "0")].join("-");
-        if (parsed.week === week) setProgress(parsed.values ?? {});
-      }
-    } catch { /* Ignore invalid local progress. */ }
-    getAccountChallengeProgress(weekStart).then((remote) => {
-      if (remote === null) { setSync("local"); return; }
-      const remoteIds = new Set(remote.map((item) => item.challenge_id));
-      const local = (() => { try { const raw = localStorage.getItem("gymjo-challenge-progress-v1"); const parsed = raw ? JSON.parse(raw) as { week: string; values: Progress } : null; return parsed?.week === weekStart ? parsed.values ?? {} : {}; } catch { return {}; } })();
-      const merged: Progress = { ...local };
-      for (const item of remote) merged[item.challenge_id] = item.progress;
-      setProgress(merged);
-      try { localStorage.setItem("gymjo-challenge-progress-v1", JSON.stringify({ week: weekStart, values: merged })); } catch { /* Storage may be unavailable. */ }
-      Promise.all(challenges.filter((item) => !remoteIds.has(item.id) && typeof local[item.id] === "number").map((item) =>
-        saveAccountChallengeProgress(weekStart, { challenge_id: item.id as ChallengeId, progress: local[item.id] })
-      )).then(() => setSync("synced")).catch(() => setSync("error"));
-    }).catch(() => setSync("error")).finally(() => setReady(true));
+    let alive = true;
+    const local = readLocal(weekStart);
+    getAccountChallengeProgress(weekStart)
+      .then(async (remote) => {
+        if (!alive) return;
+        if (remote === null) { setProgress(local); setSync("local"); return; }
+        const fromAccount: Progress = {};
+        for (const item of remote.items) fromAccount[item.challenge_id] = item.progress;
+        if (claimLocalData("challenges", remote.userId) === "replace") {
+          setProgress(fromAccount);
+          writeLocal(weekStart, fromAccount);
+          setSync("synced");
+          return;
+        }
+        const localOnly: Progress = {};
+        for (const c of challenges) if (fromAccount[c.id] === undefined && typeof local[c.id] === "number") localOnly[c.id] = local[c.id];
+        const merged = { ...local, ...fromAccount };
+        setProgress(merged);
+        writeLocal(weekStart, merged);
+        await saveAccountChallengeProgress(weekStart, toItems(localOnly));
+        if (alive) setSync("synced");
+      })
+      .catch(() => { if (alive) { setProgress(local); setSync("error"); } })
+      .finally(() => { if (alive) setReady(true); });
+    return () => { alive = false; };
   }, [weekStart]);
-  function change(id: string, delta: number) {
-    setProgress((current) => {
-      const next = { ...current, [id]: Math.max(0, Math.min(challenges.find((x) => x.id === id)?.target ?? 99, (current[id] ?? 0) + delta)) };
-      const now = new Date();
-      const start = new Date(now);
-      start.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-      const week = [start.getFullYear(), String(start.getMonth() + 1).padStart(2, "0"), String(start.getDate()).padStart(2, "0")].join("-");
-      try { localStorage.setItem("gymjo-challenge-progress-v1", JSON.stringify({ week, values: next })); } catch { /* Storage may be unavailable. */ }
-      saveAccountChallengeProgress(week, { challenge_id: id as ChallengeId, progress: next[id] }).then((ok) => setSync(ok ? "synced" : "local")).catch(() => setSync("error"));
-      return next;
-    });
+
+  function change(id: ChallengeId, delta: number) {
+    const target = challenges.find((x) => x.id === id)?.target ?? 10;
+    const value = Math.max(0, Math.min(target, (progress[id] ?? 0) + delta));
+    const next = { ...progress, [id]: value };
+    setProgress(next);
+    writeLocal(weekStart, next);
+    saveAccountChallengeProgress(weekStart, [{ challenge_id: id, progress: value }])
+      .then((ok) => setSync(ok ? "synced" : "local"))
+      .catch(() => setSync("error"));
   }
-  if (!ready) return <p className="text-sm text-muted">جاري تحميل تقدمك…</p>;
+  if (!ready) return <div aria-busy="true" aria-label="جاري تحميل تقدمك" className="grid gap-3 md:grid-cols-2">{[0, 1, 2].map((i) => <div key={i} className="h-44 animate-pulse rounded-2xl bg-surface motion-reduce:animate-none" />)}</div>;
   const completed = challenges.filter((x) => (progress[x.id] ?? 0) >= x.target).length;
   return (
     <div>
