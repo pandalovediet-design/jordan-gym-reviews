@@ -1,5 +1,6 @@
 "use client";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { deleteAccountWorkoutLog, getAccountWorkoutLogs, saveAccountWorkoutLog } from "@/app/log/actions";
 import { GOALS, KINDS, MINUTES, addDays, bestStreak, daysThisWeek, dow, monthCount, sanitize, streak, weekStart, ammanToday, type Log } from "@/lib/workout-log";
 
 const KEY = "jgr:log-v1", GOAL_KEY = "jgr:log-goal", EVT = "jgr:log-change";
@@ -40,6 +41,26 @@ export function WorkoutLog() {
   const [min, setMin] = useState<number>(45);
   const [backup, setBackup] = useState("");
   const [note, setNote] = useState("");
+  const [cloudStatus, setCloudStatus] = useState<"loading" | "synced" | "local" | "error">("loading");
+
+  useEffect(() => {
+    let active = true;
+    getAccountWorkoutLogs().then(async (remote) => {
+      if (!active) return;
+      if (remote === null) { setCloudStatus("local"); return; }
+      const merged: Log = { ...read() };
+      for (const item of remote) {
+        if (!merged[item.workout_date]) merged[item.workout_date] = { kind: item.activity, min: item.minutes };
+      }
+      save(merged);
+      const localOnly = Object.entries(merged).filter(([date]) => !remote.some((item) => item.workout_date === date));
+      try {
+        for (const [date, item] of localOnly) await saveAccountWorkoutLog({ workout_date: date, activity: item.kind, minutes: item.min });
+        if (active) setCloudStatus("synced");
+      } catch { if (active) setCloudStatus("error"); }
+    }).catch(() => { if (active) setCloudStatus("error"); });
+    return () => { active = false; };
+  }, []);
 
   if (!today) return <p className="text-sm text-muted">لحظة...</p>;
 
@@ -50,8 +71,15 @@ export function WorkoutLog() {
 
   const toggleDay = (d: string) => {
     const next = { ...log };
-    if (next[d]) delete next[d]; else next[d] = { kind: d === today ? kind : "تمرين", min: d === today ? min : 0 };
-    save(next);
+    if (next[d]) {
+      delete next[d];
+      save(next);
+      deleteAccountWorkoutLog(d).then(() => setCloudStatus("synced")).catch(() => setCloudStatus("error"));
+    } else {
+      next[d] = { kind: d === today ? kind : "تمرين", min: d === today ? min : 0 };
+      save(next);
+      saveAccountWorkoutLog({ workout_date: d, activity: next[d].kind, minutes: next[d].min }).then((r) => setCloudStatus(r.signedIn ? "synced" : "local")).catch(() => setCloudStatus("error"));
+    }
   };
   const setGoal = (g: number) => { try { localStorage.setItem(GOAL_KEY, String(g)); window.dispatchEvent(new Event(EVT)); } catch {} };
 
@@ -63,6 +91,7 @@ export function WorkoutLog() {
 
   return (
     <div className="space-y-5">
+      <p aria-live="polite" className="text-xs text-muted">{cloudStatus === "loading" ? "جارٍ تحميل سجل حسابك…" : cloudStatus === "synced" ? "🔒 سجلّك محفوظ بحسابك ويمكنك الوصول إليه من أجهزتك." : cloudStatus === "local" ? "السجل محفوظ على هذا الجهاز فقط؛ سجّل الدخول لمزامنته." : "تعذرت المزامنة الآن؛ بياناتك المحلية ما زالت محفوظة."}</p>
       <section className={`${box} text-center`}>
         <p className="text-5xl font-extrabold text-accent">{ar(s)}</p>
         <p className="mt-1 text-sm">{s === 1 ? "يوم متتالي" : "يوم متتالي 🔥"}</p>
@@ -114,7 +143,7 @@ export function WorkoutLog() {
       </section>
 
       <section className={`${box} space-y-2 text-xs text-muted`}>
-        <p>🔒 السجل محفوظ على جهازك فقط، بدون حساب. لو غيّرت الجهاز أو مسحت بيانات المتصفح بينمسح، فخذ نسخة احتياطية:</p>
+        <p>🔒 خذ نسخة احتياطية إضافية من سجلّك للاحتفاظ بها عند الحاجة:</p>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={() => { setBackup(JSON.stringify(log)); setNote("انسخ النص تحت واحفظه عندك."); }} className="rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/20">نسخة احتياطية</button>
           <button type="button" onClick={() => { try { const l = sanitize(JSON.parse(backup)); if (!Object.keys(l).length) throw new Error(); save({ ...log, ...l }); setNote("تم الاسترجاع ✓"); } catch { setNote("النص مش صحيح."); } }} className="rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/20">استرجاع من النص</button>
