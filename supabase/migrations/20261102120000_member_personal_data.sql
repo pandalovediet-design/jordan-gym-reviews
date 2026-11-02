@@ -47,6 +47,7 @@ drop policy if exists "Users remove own workout logs" on public.user_workout_log
 create policy "Users remove own workout logs" on public.user_workout_logs
   for delete to authenticated using (user_id = (select auth.uid()));
 
+drop trigger if exists user_workout_logs_updated_at on public.user_workout_logs;
 create trigger user_workout_logs_updated_at
   before update on public.user_workout_logs
   for each row execute function public.set_updated_at();
@@ -71,6 +72,7 @@ drop policy if exists "Users update own challenge progress" on public.user_chall
 create policy "Users update own challenge progress" on public.user_challenge_progress
   for update to authenticated using (user_id = (select auth.uid()))
   with check (user_id = (select auth.uid()));
+drop trigger if exists user_challenge_progress_updated_at on public.user_challenge_progress;
 create trigger user_challenge_progress_updated_at
   before update on public.user_challenge_progress
   for each row execute function public.set_updated_at();

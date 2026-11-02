@@ -1229,3 +1229,112 @@ test("gym badges: owner sets mosque / no-music, public listing shows them, stran
     assert.equal(r.no_music, true);
   });
 });
+
+// ---- Member personal data (20261102120000_member_personal_data.sql) ----
+
+async function newPublishedOrg(slug) {
+  const r = await asService(() =>
+    db.query(
+      `insert into public.organizations (type, slug, name_ar, created_by, status)
+       values ('gym', $1, 'نادي اختبار', $2, 'published') returning id`,
+      [slug, ADMIN],
+    ),
+  );
+  return r.rows[0].id;
+}
+
+test("member favorites: private to each member, no writing for someone else", async () => {
+  const org = await newPublishedOrg("member-fav-gym");
+  await asAlice(() => db.query(`insert into public.user_favorites (user_id, organization_id) values ($1, $2)`, [ALICE, org]));
+  await asAlice(() =>
+    rejects(() => db.query(`insert into public.user_favorites (user_id, organization_id) values ($1, $2)`, [ALICE, org])),
+  ); // duplicate
+  await asBob(() =>
+    rejects(
+      () => db.query(`insert into public.user_favorites (user_id, organization_id) values ($1, $2)`, [ALICE, org]),
+      /row-level security/,
+    ),
+  );
+  await asBob(async () => {
+    assert.equal((await db.query(`select * from public.user_favorites where user_id = $1`, [ALICE])).rows.length, 0);
+    assert.equal((await db.query(`delete from public.user_favorites where user_id = $1 returning user_id`, [ALICE])).rows.length, 0);
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select * from public.user_favorites`)).rows.length, 0);
+    await rejects(() => db.query(`insert into public.user_favorites (user_id, organization_id) values ($1, $2)`, [ALICE, org]));
+  });
+  await asAlice(async () => {
+    assert.equal((await db.query(`select * from public.user_favorites`)).rows.length, 1);
+    assert.equal((await db.query(`delete from public.user_favorites where organization_id = $1 returning user_id`, [org])).rows.length, 1);
+  });
+  // Deleting a place removes it from everyone's favorites.
+  await asAlice(() => db.query(`insert into public.user_favorites (user_id, organization_id) values ($1, $2)`, [ALICE, org]));
+  await asService(() => db.query(`delete from public.organizations where id = $1`, [org]));
+  const left = await asService(() => db.query(`select * from public.user_favorites where organization_id = $1`, [org]));
+  assert.equal(left.rows.length, 0);
+});
+
+test("member workout logs: add, edit, delete own only; values are bounded", async () => {
+  await asAlice(async () => {
+    await db.query(`insert into public.user_workout_logs (user_id, workout_date, activity, minutes) values ($1, '2026-11-01', 'حديد', 45)`, [ALICE]);
+    const before = (await db.query(`select updated_at from public.user_workout_logs where user_id = $1 and workout_date = '2026-11-01'`, [ALICE])).rows[0].updated_at;
+    await db.query(`select pg_sleep(0.01)`);
+    await db.query(`update public.user_workout_logs set minutes = 60 where workout_date = '2026-11-01'`);
+    const row = (await db.query(`select minutes, updated_at from public.user_workout_logs where workout_date = '2026-11-01'`)).rows[0];
+    assert.equal(row.minutes, 60);
+    assert.ok(row.updated_at > before, "updated_at should move on update");
+    await rejects(() => db.query(`insert into public.user_workout_logs (user_id, workout_date, minutes) values ($1, '2026-11-02', 2000)`, [ALICE]));
+    await rejects(() => db.query(`insert into public.user_workout_logs (user_id, workout_date, activity) values ($1, '2026-11-03', '')`, [ALICE]));
+    // A member cannot hand their row to someone else.
+    await rejects(
+      () => db.query(`update public.user_workout_logs set user_id = $1 where workout_date = '2026-11-01'`, [BOB]),
+      /row-level security/,
+    );
+  });
+  await asBob(async () => {
+    assert.equal((await db.query(`select * from public.user_workout_logs where user_id = $1`, [ALICE])).rows.length, 0);
+    assert.equal((await db.query(`update public.user_workout_logs set minutes = 1 where user_id = $1 returning user_id`, [ALICE])).rows.length, 0);
+    assert.equal((await db.query(`delete from public.user_workout_logs where user_id = $1 returning user_id`, [ALICE])).rows.length, 0);
+    await rejects(
+      () => db.query(`insert into public.user_workout_logs (user_id, workout_date) values ($1, '2026-11-04')`, [ALICE]),
+      /row-level security/,
+    );
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select * from public.user_workout_logs`)).rows.length, 0);
+  });
+  await asAlice(async () => {
+    assert.equal((await db.query(`delete from public.user_workout_logs where workout_date = '2026-11-01' returning user_id`)).rows.length, 1);
+  });
+});
+
+test("member challenge progress: own rows only, known challenges, progress 0-10", async () => {
+  await asAlice(async () => {
+    await db.query(`insert into public.user_challenge_progress (user_id, week_start, challenge_id, progress) values ($1, '2026-10-26', 'walks', 2)`, [ALICE]);
+    await db.query(`update public.user_challenge_progress set progress = 3 where challenge_id = 'walks'`);
+    assert.equal((await db.query(`select progress from public.user_challenge_progress`)).rows[0].progress, 3);
+    await rejects(() => db.query(`insert into public.user_challenge_progress (user_id, week_start, challenge_id, progress) values ($1, '2026-10-26', 'hack', 1)`, [ALICE]));
+    await rejects(() => db.query(`update public.user_challenge_progress set progress = 11 where challenge_id = 'walks'`));
+  });
+  await asBob(async () => {
+    assert.equal((await db.query(`select * from public.user_challenge_progress`)).rows.length, 0);
+    assert.equal((await db.query(`update public.user_challenge_progress set progress = 0 where user_id = $1 returning user_id`, [ALICE])).rows.length, 0);
+    await rejects(
+      () => db.query(`insert into public.user_challenge_progress (user_id, week_start, challenge_id) values ($1, '2026-10-26', 'water')`, [ALICE]),
+      /row-level security/,
+    );
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select * from public.user_challenge_progress`)).rows.length, 0);
+  });
+});
+
+test("member data is removed with the member's account", async () => {
+  const fk = await db.query(`
+    select c.conrelid::regclass::text as t, c.confdeltype
+    from pg_constraint c
+    where c.contype = 'f' and c.confrelid = 'auth.users'::regclass
+      and c.conrelid in ('public.user_favorites'::regclass, 'public.user_workout_logs'::regclass, 'public.user_challenge_progress'::regclass)`);
+  assert.equal(fk.rows.length, 3);
+  for (const r of fk.rows) assert.equal(r.confdeltype, "c", `${r.t} should cascade when the account is deleted`);
+});
