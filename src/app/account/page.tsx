@@ -3,12 +3,16 @@ import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { DeleteAccountForm } from "./DeleteAccountForm";
 import { MemberProfileForm } from "./MemberProfileForm";
+import { ActivityHeatmap, type DayActivity } from "@/components/ActivityHeatmap";
+import { isHealthyDay, isMeal, isRating, type FoodLog } from "@/lib/food-log";
+import { addDays, ammanToday } from "@/lib/workout-log";
 
 export const metadata: Metadata = { title: "حسابي الرياضي", robots: { index: false } };
 
 const spaces = [
   { href: "/favorites", icon: "♡", title: "نواديي المفضلة", note: "ارجع للأماكن والعروض اللي حفظتها", tone: "from-rose-500/20 to-transparent" },
-  { href: "/log", icon: "🔥", title: "سجل نشاطي", note: "تابع أيام التمرين واستمراريتك", tone: "from-orange-500/20 to-transparent" },
+  { href: "/log", icon: "🔥", title: "سجل تماريني", note: "سجّل تمرينك والعضلات اللي اشتغلت عليها", tone: "from-orange-500/20 to-transparent" },
+  { href: "/food", icon: "🥗", title: "سجل أكلي", note: "سجّل وجباتك بضغطة، بدون عدّ سعرات", tone: "from-emerald-500/20 to-transparent" },
   { href: "/exercises", icon: "💪", title: "مكتبة التمارين", note: "اكتشف التمارين والعضلات المستهدفة", tone: "from-lime-400/20 to-transparent" },
   { href: "/deals", icon: "🎟️", title: "العروض والخصومات", note: "اكتشف التوفير في الأنشطة الرياضية", tone: "from-violet-500/20 to-transparent" },
   { href: "/reels", icon: "🎬", title: "الفيديوهات الرياضية", note: "شاهد محتوى من مجتمع الرياضة", tone: "from-sky-500/20 to-transparent" },
@@ -17,7 +21,20 @@ const spaces = [
 ];
 
 export default async function Account() {
-  const { user } = await requireUser();
+  const { user, supabase } = await requireUser();
+  const today = ammanToday();
+  const since = addDays(today, -190);
+  const [workouts, meals] = await Promise.all([
+    supabase.from("user_workout_logs").select("workout_date").eq("user_id", user.id).gte("workout_date", since),
+    supabase.from("user_food_logs").select("log_date,meal,rating").eq("user_id", user.id).gte("log_date", since),
+  ]);
+  // The map is optional: if the member tables are not there yet, the page still renders.
+  const activity: Record<string, DayActivity> = {};
+  for (const w of workouts.data ?? []) activity[w.workout_date] = { workout: true, healthy: false };
+  const food: FoodLog = {};
+  for (const m of meals.data ?? []) if (isMeal(m.meal) && isRating(m.rating)) (food[m.log_date] ??= {})[m.meal] = { note: "", rating: m.rating };
+  for (const [date, day] of Object.entries(food)) if (isHealthyDay(day)) activity[date] = { workout: activity[date]?.workout ?? false, healthy: true };
+  const showMap = !workouts.error && !meals.error;
   const displayName = typeof user.user_metadata?.full_name === "string" && user.user_metadata.full_name.trim()
     ? user.user_metadata.full_name.trim()
     : "عضو GymJo";
@@ -40,7 +57,17 @@ export default async function Account() {
         </div>
       </section>
 
-      <section className="mt-6"><MemberProfileForm initialName={displayName === "عضو GymJo" ? "" : displayName} /></section>
+      {showMap && (
+        <section className="mt-6 rounded-2xl border border-white/10 bg-surface p-5">
+          <h2 className="mb-1 font-black">خريطة نشاطك</h2>
+          <p className="mb-4 text-sm text-muted">كل مربّع يوم. سجّل تمرينك وأكلك وشوف الخريطة تتعبّى.</p>
+          <ActivityHeatmap days={activity} today={today} />
+          <div className="mt-4 flex flex-wrap gap-2 text-sm">
+            <Link href="/log" className="inline-flex min-h-11 items-center rounded-xl bg-accent px-4 font-bold text-accent-foreground">🔥 سجّل تمرين</Link>
+            <Link href="/food" className="inline-flex min-h-11 items-center rounded-xl bg-background px-4 font-bold ring-1 ring-white/10 hover:ring-accent">🥗 سجّل أكل</Link>
+          </div>
+        </section>
+      )}
 
       <section className="mt-9">
         <div className="mb-4 flex items-end justify-between gap-3">
@@ -61,6 +88,8 @@ export default async function Account() {
           ))}
         </div>
       </section>
+
+      <section className="mt-9"><MemberProfileForm initialName={displayName === "عضو GymJo" ? "" : displayName} /></section>
 
       <section className="mt-9 grid gap-3 sm:grid-cols-2">
         <Link href="/account/export" className="rounded-2xl border border-white/10 bg-surface p-5 transition hover:border-accent/40">

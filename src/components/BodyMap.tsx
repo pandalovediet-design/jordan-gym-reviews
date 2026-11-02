@@ -53,13 +53,13 @@ const BACK: Shape[] = [
   z("calves", "225,590 275,592 286,612 288,645 284,680 280,710 277,732 250,732 244,705 234,680 224,660 219,630 220,605"),
 ];
 
-export function BodyMap({ view, active, onPick }: { view: "front" | "back"; active: Muscle | readonly Muscle[] | null; onPick: (g: Muscle) => void }) {
+export function BodyMap({ view, active, onPick, compact = false }: { view: "front" | "back"; active: Muscle | readonly Muscle[] | null; onPick: (g: Muscle) => void; compact?: boolean }) {
   const [hov, setHov] = useState<Muscle | null>(null);
   const v = view === "front" ? FRONT_VIEW : BACK_VIEW;
   const shapes = view === "front" ? FRONT : BACK;
   const firstIdx = (g: Muscle) => shapes.findIndex((x) => x.g === g);
   return (
-    <svg viewBox={`0 0 ${v.w} ${v.h}`} className="mx-auto h-[420px] w-auto touch-manipulation select-none rounded-2xl bg-[#101011]" role="group" aria-label="خريطة الجسم التفاعلية">
+    <svg viewBox={`0 0 ${v.w} ${v.h}`} className={`mx-auto ${compact ? "h-[300px]" : "h-[420px]"} w-auto touch-manipulation select-none rounded-2xl bg-[#101011]`} role="group" aria-label="خريطة الجسم التفاعلية">
       <image href={v.src} width={v.w} height={v.h} aria-hidden="true" />
       {shapes.map((s, i) => {
         const on = Array.isArray(active) ? (active as readonly Muscle[]).includes(s.g) : active === s.g;

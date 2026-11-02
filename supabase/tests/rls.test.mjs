@@ -1338,3 +1338,69 @@ test("member data is removed with the member's account", async () => {
   assert.equal(fk.rows.length, 3);
   for (const r of fk.rows) assert.equal(r.confdeltype, "c", `${r.t} should cascade when the account is deleted`);
 });
+
+// ---- Member food log, water and muscles (20261103090000_member_food_log.sql) ----
+
+test("member food log: own meals only, valid meal and rating, short note", async () => {
+  await asAlice(async () => {
+    await db.query(`insert into public.user_food_logs (user_id, log_date, meal, note, rating) values ($1, '2026-11-02', 'breakfast', 'بيض وخبز', 'healthy')`, [ALICE]);
+    await db.query(`update public.user_food_logs set rating = 'ok' where meal = 'breakfast'`);
+    assert.equal((await db.query(`select rating from public.user_food_logs`)).rows[0].rating, "ok");
+    await rejects(() => db.query(`insert into public.user_food_logs (user_id, log_date, meal, rating) values ($1, '2026-11-02', 'brunch', 'ok')`, [ALICE]));
+    await rejects(() => db.query(`insert into public.user_food_logs (user_id, log_date, meal, rating) values ($1, '2026-11-02', 'lunch', 'great')`, [ALICE]));
+    await rejects(() => db.query(`insert into public.user_food_logs (user_id, log_date, meal, note, rating) values ($1, '2026-11-02', 'lunch', repeat('x', 121), 'ok')`, [ALICE]));
+    await rejects(() => db.query(`insert into public.user_food_logs (user_id, log_date, meal, rating) values ($1, '2026-11-02', 'breakfast', 'ok')`, [ALICE])); // one row per meal
+  });
+  await asBob(async () => {
+    assert.equal((await db.query(`select * from public.user_food_logs`)).rows.length, 0);
+    assert.equal((await db.query(`update public.user_food_logs set note = 'x' where user_id = $1 returning user_id`, [ALICE])).rows.length, 0);
+    assert.equal((await db.query(`delete from public.user_food_logs where user_id = $1 returning user_id`, [ALICE])).rows.length, 0);
+    await rejects(
+      () => db.query(`insert into public.user_food_logs (user_id, log_date, meal, rating) values ($1, '2026-11-02', 'dinner', 'ok')`, [ALICE]),
+      /row-level security/,
+    );
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select * from public.user_food_logs`)).rows.length, 0);
+  });
+  await asAlice(async () => {
+    assert.equal((await db.query(`delete from public.user_food_logs where meal = 'breakfast' returning user_id`)).rows.length, 1);
+  });
+});
+
+test("member water log: own days only, 0-20 cups", async () => {
+  await asAlice(async () => {
+    await db.query(`insert into public.user_water_logs (user_id, log_date, cups) values ($1, '2026-11-02', 6)`, [ALICE]);
+    await rejects(() => db.query(`update public.user_water_logs set cups = 21`));
+    await rejects(() => db.query(`insert into public.user_water_logs (user_id, log_date, cups) values ($1, '2026-11-03', -1)`, [ALICE]));
+  });
+  await asBob(async () => {
+    assert.equal((await db.query(`select * from public.user_water_logs`)).rows.length, 0);
+    await rejects(
+      () => db.query(`insert into public.user_water_logs (user_id, log_date, cups) values ($1, '2026-11-04', 1)`, [ALICE]),
+      /row-level security/,
+    );
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select * from public.user_water_logs`)).rows.length, 0);
+  });
+});
+
+test("member workout muscles: only known muscle keys are accepted", async () => {
+  await asAlice(async () => {
+    await db.query(`insert into public.user_workout_logs (user_id, workout_date, muscles) values ($1, '2026-11-05', array['chest','triceps'])`, [ALICE]);
+    assert.deepEqual((await db.query(`select muscles from public.user_workout_logs where workout_date = '2026-11-05'`)).rows[0].muscles, ["chest", "triceps"]);
+    await rejects(() => db.query(`update public.user_workout_logs set muscles = array['wings'] where workout_date = '2026-11-05'`));
+    await db.query(`delete from public.user_workout_logs where workout_date = '2026-11-05'`);
+  });
+});
+
+test("food and water rows are removed with the member's account", async () => {
+  const fk = await db.query(`
+    select c.conrelid::regclass::text as t, c.confdeltype
+    from pg_constraint c
+    where c.contype = 'f' and c.confrelid = 'auth.users'::regclass
+      and c.conrelid in ('public.user_food_logs'::regclass, 'public.user_water_logs'::regclass)`);
+  assert.equal(fk.rows.length, 2);
+  for (const r of fk.rows) assert.equal(r.confdeltype, "c", `${r.t} should cascade when the account is deleted`);
+});

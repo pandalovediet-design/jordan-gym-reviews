@@ -1554,11 +1554,60 @@ export type Database = {
           },
         ]
       }
+      user_food_logs: {
+        Row: {
+          log_date: string
+          meal: string
+          note: string
+          rating: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          log_date: string
+          meal: string
+          note?: string
+          rating: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          log_date?: string
+          meal?: string
+          note?: string
+          rating?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_water_logs: {
+        Row: {
+          cups: number
+          log_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cups?: number
+          log_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cups?: number
+          log_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_workout_logs: {
         Row: {
           activity: string
           created_at: string
           minutes: number
+          muscles: string[]
           updated_at: string
           user_id: string
           workout_date: string
@@ -1567,6 +1616,7 @@ export type Database = {
           activity?: string
           created_at?: string
           minutes?: number
+          muscles?: string[]
           updated_at?: string
           user_id: string
           workout_date: string
@@ -1575,6 +1625,7 @@ export type Database = {
           activity?: string
           created_at?: string
           minutes?: number
+          muscles?: string[]
           updated_at?: string
           user_id?: string
           workout_date?: string

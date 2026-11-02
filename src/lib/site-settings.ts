@@ -9,6 +9,7 @@ export const NAV_CATALOG = [
   { href: "/awards", label: "🏆 نادي الشهر" },
   { href: "/exercises", label: "🏋️ التمارين" },
   { href: "/log", label: "🔥 سجل تمريني" },
+  { href: "/food", label: "🍽️ سجل أكلي" },
   { href: "/deals", label: "🎟️ أكواد خصم" },
   { href: "/no-gym", label: "🏠 من غير جيم" },
   { href: "/no-deprivation", label: "🥗 من غير حرمان" },

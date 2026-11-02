@@ -28,6 +28,7 @@ const DESCRIPTIONS: Record<string, string> = {
   "/awards": "تابع ترشيحات واختيارات نادي الشهر.",
   "/exercises": "تعرّف على التمارين وكيفية أدائها.",
   "/log": "سجّل نشاطك وتابع استمراريتك.",
+  "/food": "سجّل وجباتك بضغطة بدون عدّ سعرات.",
   "/deals": "اعثر على أكواد وعروض من الأنشطة المشاركة.",
   "/no-gym": "أفكار للتمرين في البيت ومن دون اشتراك.",
   "/no-deprivation": "محتوى غذائي متوازن بعيد عن الحرمان.",
@@ -48,7 +49,7 @@ const GROUPS = [
   {
     title: "تمرّن واهتم بصحتك",
     description: "أدوات ومحتوى يساعدك تحافظ على نشاطك.",
-    hrefs: ["/exercises", "/log", "/no-gym", "/no-deprivation", "/rooh-w-jasad", "/tools", "/trails"],
+    hrefs: ["/exercises", "/log", "/food", "/no-gym", "/no-deprivation", "/rooh-w-jasad", "/tools", "/trails"],
   },
   {
     title: "العروض والمجتمع",

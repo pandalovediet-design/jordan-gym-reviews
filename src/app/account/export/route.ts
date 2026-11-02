@@ -16,16 +16,20 @@ export async function GET() {
     byOrg("org_branches"), byOrg("organization_hours"), byOrg("organization_services"), byOrg("products"), byOrg("offers"),
     byOrg("menu_items"), byOrg("inquiries"), byOrg("org_classes"), byOrg("org_trainers"),
   ]);
-  const [favorites, workouts, challenges] = await Promise.all([
+  const [favorites, workouts, challenges, food, water] = await Promise.all([
     supabase.from("user_favorites").select("created_at, organizations(slug, name_ar)").eq("user_id", u.user.id),
-    supabase.from("user_workout_logs").select("workout_date, activity, minutes, updated_at").eq("user_id", u.user.id).order("workout_date"),
+    supabase.from("user_workout_logs").select("workout_date, activity, minutes, muscles, updated_at").eq("user_id", u.user.id).order("workout_date"),
     supabase.from("user_challenge_progress").select("week_start, challenge_id, progress, updated_at").eq("user_id", u.user.id).order("week_start"),
+    supabase.from("user_food_logs").select("log_date, meal, note, rating, updated_at").eq("user_id", u.user.id).order("log_date"),
+    supabase.from("user_water_logs").select("log_date, cups").eq("user_id", u.user.id).order("log_date"),
   ]);
   const member = {
     display_name: typeof u.user.user_metadata?.full_name === "string" ? u.user.user_metadata.full_name : null,
     favorites: favorites.data ?? [],
     workout_logs: workouts.data ?? [],
     challenge_progress: challenges.data ?? [],
+    food_log: food.data ?? [],
+    water_log: water.data ?? [],
   };
   const body = JSON.stringify({ exported_at: new Date().toISOString(), email: u.user.email, member, organizations: orgs ?? [], branches, hours, services, products, offers, menu, classes, trainers, inquiries }, null, 2);
   return new NextResponse(body, { headers: { "content-type": "application/json; charset=utf-8", "content-disposition": 'attachment; filename="my-data.json"' } });
