@@ -1,9 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { OrgCard } from "@/components/OrgCard";
-import { useFavs } from "@/components/Favorites";
+import { useFavs, replaceFavs } from "@/components/Favorites";
 import { getAccountFavoriteSlugs, loadFavorites, syncAccountFavorites } from "./actions";
-import { replaceFavs } from "@/components/Favorites";
 
 type Items = Awaited<ReturnType<typeof loadFavorites>>;
 
@@ -13,10 +12,20 @@ export function FavoritesList() {
   const key = favs.join(",");
   useEffect(() => {
     let alive = true;
-    getAccountFavoriteSlugs().then((remote) => {
-      if (alive && remote) {\n        const merged = [...new Set([...remote, ...favs])];\n        replaceFavs(merged);\n        if (merged.length !== remote.length || merged.some((slug, i) => slug !== remote[i])) await syncAccountFavorites(merged);\n      }
-    }).catch(() => {});
-    loadFavorites(key ? key.split(",") : []).then((r) => alive && setItems(r)).catch(() => alive && setItems([]));
+    void (async () => {
+      try {
+        const remote = await getAccountFavoriteSlugs();
+        if (alive && remote !== null) {
+          const merged = [...new Set([...remote, ...key.split(",").filter(Boolean)])];
+          replaceFavs(merged);
+          if (merged.length !== remote.length || merged.some((slug, i) => slug !== remote[i])) await syncAccountFavorites(merged);
+        }
+      } catch { /* Keep local favorites available. */ }
+      try {
+        const result = await loadFavorites(key ? key.split(",") : []);
+        if (alive) setItems(result);
+      } catch { if (alive) setItems([]); }
+    })();
     return () => { alive = false; };
   }, [key]);
   if (items === null) return <p className="text-muted">جاري التحميل...</p>;
