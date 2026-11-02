@@ -7,7 +7,8 @@ const challenges = [
   { id: "sessions", title: "3 حصص هذا الأسبوع", description: "خصص وقتاً لثلاث حصص رياضية", target: 3, unit: "حصص", icon: "🏋️" },
   { id: "walks", title: "4 مرات مشي", description: "أضف المشي إلى روتينك الأسبوعي", target: 4, unit: "مرات", icon: "🚶" },
   { id: "water", title: "5 أيام اهتمام بنفسك", description: "التزم بعادة صحية تختارها كل يوم", target: 5, unit: "أيام", icon: "💧" },
-];
+ ] as const;
+type ChallengeId = (typeof challenges)[number]["id"];
 type Progress = Record<string, number>;
 
 export function ChallengesPanel() {
@@ -40,7 +41,7 @@ export function ChallengesPanel() {
       setProgress(merged);
       try { localStorage.setItem("gymjo-challenge-progress-v1", JSON.stringify({ week: weekStart, values: merged })); } catch { /* Storage may be unavailable. */ }
       Promise.all(challenges.filter((item) => !remoteIds.has(item.id) && typeof local[item.id] === "number").map((item) =>
-        saveAccountChallengeProgress(weekStart, { challenge_id: item.id as "sessions" | "walks" | "water", progress: local[item.id] })
+        saveAccountChallengeProgress(weekStart, { challenge_id: item.id as ChallengeId, progress: local[item.id] })
       )).then(() => setSync("synced")).catch(() => setSync("error"));
     }).catch(() => setSync("error")).finally(() => setReady(true));
   }, [weekStart]);
@@ -52,7 +53,7 @@ export function ChallengesPanel() {
       start.setDate(now.getDate() - ((now.getDay() + 6) % 7));
       const week = [start.getFullYear(), String(start.getMonth() + 1).padStart(2, "0"), String(start.getDate()).padStart(2, "0")].join("-");
       try { localStorage.setItem("gymjo-challenge-progress-v1", JSON.stringify({ week, values: next })); } catch { /* Storage may be unavailable. */ }
-      saveAccountChallengeProgress(week, { challenge_id: id as "sessions" | "walks" | "water", progress: next[id] }).then((ok) => setSync(ok ? "synced" : "local")).catch(() => setSync("error"));
+      saveAccountChallengeProgress(week, { challenge_id: id as ChallengeId, progress: next[id] }).then((ok) => setSync(ok ? "synced" : "local")).catch(() => setSync("error"));
       return next;
     });
   }
