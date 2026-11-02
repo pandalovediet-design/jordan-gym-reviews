@@ -13,6 +13,7 @@ const spaces = [
   { href: "/deals", icon: "🎟️", title: "العروض والخصومات", note: "اكتشف التوفير في الأنشطة الرياضية", tone: "from-violet-500/20 to-transparent" },
   { href: "/reels", icon: "🎬", title: "الفيديوهات الرياضية", note: "شاهد محتوى من مجتمع الرياضة", tone: "from-sky-500/20 to-transparent" },
   { href: "/tools", icon: "🧮", title: "أدواتي الرياضية", note: "حاسبات وأدوات تساعدك في رحلتك", tone: "from-emerald-500/20 to-transparent" },
+  { href: "/challenges", icon: "🏆", title: "التحديات والإنجازات", note: "شارك بتحديات أسبوعية وتابع تقدمك", tone: "from-amber-500/20 to-transparent" },
 ];
 
 export default async function Account() {
