@@ -13,26 +13,15 @@ export function HeaderAuth() {
     let alive = true;
     let receivedAuthEvent = false;
     const supabase = createClient();
-
-    // A late session lookup must not overwrite a newer auth-state event.
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       receivedAuthEvent = true;
       if (alive) setState(session ? "in" : "out");
     });
-
     supabase.auth.getSession().then(
-      ({ data }) => {
-        if (alive && !receivedAuthEvent) setState(data.session ? "in" : "out");
-      },
-      () => {
-        if (alive && !receivedAuthEvent) setState("out");
-      },
+      ({ data }) => { if (alive && !receivedAuthEvent) setState(data.session ? "in" : "out"); },
+      () => { if (alive && !receivedAuthEvent) setState("out"); },
     );
-
-    return () => {
-      alive = false;
-      sub.subscription.unsubscribe();
-    };
+    return () => { alive = false; sub.subscription.unsubscribe(); };
   }, []);
 
   const base = "inline-flex min-h-11 items-center justify-center rounded-xl px-3 py-2 text-sm font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background";
@@ -41,26 +30,19 @@ export function HeaderAuth() {
   if (state === "in") {
     return (
       <>
-        <Link href="/dashboard" className={`${base} bg-accent text-accent-foreground hover:brightness-110`}>
-          لوحتي
+        <Link href="/account" aria-label="حسابي" className={`${base} bg-accent text-accent-foreground hover:brightness-110`}>
+          حسابي
         </Link>
         <form action={signout}>
-          <button type="submit" className={`${base} ring-1 ring-white/20 hover:bg-white/5 hover:text-accent`}>
-            خروج
-          </button>
+          <button type="submit" className={`${base} ring-1 ring-white/20 hover:bg-white/5 hover:text-accent`}>خروج</button>
         </form>
       </>
     );
   }
-
   return (
     <>
-      <Link href="/login" aria-hidden={state === "checking"} tabIndex={state === "checking" ? -1 : undefined} className={`${base} ring-1 ring-white/20 hover:bg-white/5 hover:text-accent ${hide}`}>
-        دخول
-      </Link>
-      <Link href="/join" aria-hidden={state === "checking"} tabIndex={state === "checking" ? -1 : undefined} className={`${base} bg-accent text-accent-foreground hover:brightness-110 ${hide}`}>
-        سجّل نشاطك
-      </Link>
+      <Link href="/login" aria-hidden={state === "checking"} tabIndex={state === "checking" ? -1 : undefined} className={`${base} ring-1 ring-white/20 hover:bg-white/5 hover:text-accent ${hide}`}>دخول</Link>
+      <Link href="/join" aria-hidden={state === "checking"} tabIndex={state === "checking" ? -1 : undefined} className={`${base} bg-accent text-accent-foreground hover:brightness-110 ${hide}`}>سجّل نشاطك</Link>
     </>
   );
 }
