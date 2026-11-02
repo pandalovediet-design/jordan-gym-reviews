@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ActionForm, field } from "@/components/Form";
+import { ActionForm } from "@/components/Form";
+import { field } from "@/lib/form-styles";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { requestClaim } from "./actions";
@@ -30,7 +31,7 @@ export default async function Claim({ params }: { params: Promise<{ slug: string
       </div>
 
       {org.is_claimed !== false ? (
-        <p className={box}>هاي الصفحة مستلَمة من صاحبها. إذا إنت صاحب النادي وفي خطأ، راسلنا من <Link href="/join" className="text-accent underline">صفحة التسجيل</Link>.</p>
+        <p className={box}>هاي الصفحة مستلَمة من صاحبها. إذا إنت صاحب النادي وفي خطأ، راسلنا من <Link href="/join" className="text-accent underline">صفحة إضافة الأماكن</Link>.</p>
       ) : (
         <>
           <section className={box}>

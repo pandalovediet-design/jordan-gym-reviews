@@ -17,7 +17,7 @@ const MORE = [
   { href: "/search?type=store", label: "🛍️ المتاجر الرياضية", description: "تصفّح متاجر المعدات والمنتجات الرياضية." },
   { href: "/search?type=sports_health", label: "🩺 العلاج والطب الرياضي", description: "اعثر على خدمات الرعاية والتأهيل الرياضي." },
   { href: "/guides", label: "📚 الأدلة والنصائح", description: "معلومات تساعدك تختار وتبدأ." },
-  { href: "/join", label: "➕ سجّل نشاطك", description: "أضف ناديك أو نشاطك إلى الدليل." },
+  { href: "/join", label: "➕ أضف ناديك", description: "ابعتلنا اسم المكان ونضيفه للدليل مجاناً." },
   { href: "/sponsors", label: "🤝 للرعاة والشركاء", description: "اكتشف فرص الظهور والشراكة." },
 ];
 

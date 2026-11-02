@@ -26,7 +26,7 @@ const GROUPS = [
       { href: "/admin/ads", label: "الإعلانات" },
       { href: "/admin/flash", label: "الفلاش" },
       { href: "/admin/partners", label: "الشركاء" },
-      { href: "/admin/leads", label: "طلبات الرعاة" },
+      { href: "/admin/leads", label: "الطلبات" },
     ],
   },
   {

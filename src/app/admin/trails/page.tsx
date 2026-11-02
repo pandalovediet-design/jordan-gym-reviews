@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { ImageInput } from "@/components/ImageInput";
-import { ActionForm, field } from "@/components/Form";
+import { ActionForm } from "@/components/Form";
+import { field } from "@/lib/form-styles";
 import { TRAIL_DIFFICULTY, TRAIL_TYPE } from "@/lib/format";
 import { addTrail, deleteTrail, setTrailPublished } from "../more-actions";
 

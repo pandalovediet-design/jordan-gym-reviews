@@ -10,7 +10,7 @@ export default async function LeadsAdmin() {
   const list = data ?? [];
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
-      <h1 className="text-2xl font-extrabold">طلبات الرعاة ({list.length})</h1>
+      <h1 className="text-2xl font-extrabold">الطلبات: رعاية وإضافة أماكن ({list.length})</h1>
       <ul className="space-y-3">
         {list.map((l) => {
           const num = l.phone.replace(/\D/g, "");

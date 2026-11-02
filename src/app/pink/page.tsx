@@ -47,12 +47,12 @@ export default async function PinkZone() {
       {block("🏋️‍♀️ مدربات ومدربون للنساء", "مدربون مستقلون بتدريب نسائي", coaches.items, "/search?women=any&type=independent_coach")}
       {block("🥗 أخصائيات تغذية", "متابعة تغذية للنساء", health.items, "/search?women=any&type=nutritionist")}
       {only.items.length + hoursOnly.length + coaches.items.length + health.items.length === 0 && (
-        <p className="mt-10 text-center text-muted">لسا ما في أماكن مضافة. هل مكانك نسائي؟ <Link href="/join" className="text-pink-200 underline">سجّله مجاناً</Link>.</p>
+        <p className="mt-10 text-center text-muted">لسا ما في أماكن مضافة. هل مكانك نسائي؟ <Link href="/join" className="text-pink-200 underline">اطلبي إضافته مجاناً</Link>.</p>
       )}
       <section className="mt-12 rounded-2xl bg-surface p-6 ring-1 ring-pink-400/30">
         <h2 className="text-lg font-bold">عندك نادي أو بتدرّبي نساء؟</h2>
         <p className="mt-1 text-sm text-muted">فعّلي «خاص بالنساء» أو «أوقات نسائية» من لوحة التحكم وبتظهري هون مباشرة.</p>
-        <Link href="/join" className="mt-3 inline-block rounded-xl bg-pink-500 px-5 py-2 font-bold text-white">سجّلي مكانك</Link>
+        <Link href="/join" className="mt-3 inline-block rounded-xl bg-pink-500 px-5 py-2 font-bold text-white">اطلبي إضافة مكانك</Link>
       </section>
     </div>
   );

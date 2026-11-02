@@ -5,7 +5,8 @@ import { requireUser } from "@/lib/auth";
 import { missingForPublish } from "@/lib/completeness";
 import { ORG_TYPE_LABEL, dateAr, isVerified, isoDaysFromNow, msAgo } from "@/lib/format";
 import { siteUrl } from "@/lib/site";
-import { ActionForm, field } from "@/components/Form";
+import { ActionForm } from "@/components/Form";
+import { field } from "@/lib/form-styles";
 import { saveFlashDeal } from "../../flash-actions";
 
 export const metadata: Metadata = { title: "نظرة عامة", robots: { index: false } };

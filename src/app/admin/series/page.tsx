@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
-import { ActionForm, field } from "@/components/Form";
+import { ActionForm } from "@/components/Form";
+import { field } from "@/lib/form-styles";
 import { mealIcon, mealLabel } from "@/lib/nutrition-meta";
 import { focusLabel, equipLabel } from "@/lib/home-meta";
 import { addSeries, deleteSeries, setSeriesActive } from "../series-actions";
