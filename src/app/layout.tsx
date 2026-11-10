@@ -6,6 +6,7 @@ import "./globals.css";
 import { SiteHeader, SiteFooter } from "@/components/SiteHeader";
 import { JsonLd } from "@/lib/jsonld";
 import { PwaRegister } from "@/components/PwaRegister";
+import { Analytics } from "@vercel/analytics/next";
 import { BottomBar } from "@/components/SiteTabs";
 import { QuranAudioProvider, QuranMiniBar } from "@/components/QuranAudio";
 
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <BottomBar />
         </QuranAudioProvider>
         <PwaRegister />
+        <Analytics />
       </body>
     </html>
   );

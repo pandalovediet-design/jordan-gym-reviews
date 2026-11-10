@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
  * group you are in. Every admin page is still one tap away; there are just fewer pills on screen.
  */
 const GROUPS = [
-  { label: "🏠 الرئيسية", tabs: [{ href: "/admin", label: "نظرة عامة" }] },
+  { label: "🏠 الرئيسية", tabs: [{ href: "/admin/missing", label: "🧩 الناقص" }, { href: "/admin", label: "نظرة عامة" }] },
   {
     label: "🏋️ الأنشطة",
     tabs: [

@@ -54,6 +54,9 @@ const BAR = [
 /** Phones: a thumb-reach tab bar with the five places people go most. */
 export function BottomBar() {
   const on = useIsOn();
+  const path = usePathname();
+  // A place's page has its own contact bar at the bottom (WhatsApp, call), which matters more there.
+  if (path.startsWith("/g/")) return null;
   return (
     <nav aria-label="التنقل السريع" className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl print:hidden md:hidden">
       <ul className="mx-auto grid max-w-md grid-cols-5">
