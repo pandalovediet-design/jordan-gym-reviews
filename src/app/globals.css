@@ -1,18 +1,20 @@
 @import "tailwindcss";
 
-/* Jordan Gym Reviews — Momentum identity */
+/* GYM (GYMJO) — "Forest Night" identity, taken from the panda mark: deep forest black, lime, chalk white. */
 :root {
-  --background: #10130f;
-  --surface: #1b2119;
-  --foreground: #f4f7ef;
-  --muted: #a7b2a0;
-  --accent: #d4ff00;
-  --accent-foreground: #151a0b;
-  --brand-blue: #a8cc18;
-  --brand-cyan: #d4ff00;
-  --brand-border: #343e2b;
-  --brand-lime: #d4ff00;
-  --brand-lime-soft: #a8cc18;
+  --background: #04130c;
+  --surface: #0c2016;
+  --foreground: #f3f8f2;
+  --muted: #9db3a4;
+  --flag-red: #ce1126;
+  --flag-green: #007a3d;
+  --accent: #c8f53a;
+  --accent-foreground: #0b1a08;
+  --brand-blue: #9fd41f;
+  --brand-cyan: #c8f53a;
+  --brand-border: #1d3626;
+  --brand-lime: #c8f53a;
+  --brand-lime-soft: #9fd41f;
 }
 
 @theme inline {
@@ -22,7 +24,8 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  --font-sans: "Cairo Variable", system-ui, sans-serif;
+  --font-sans: "Sora Variable", "Cairo Variable", system-ui, sans-serif;
+  --font-display: "Sora Variable", "Cairo Variable", system-ui, sans-serif;
 }
 
 html { color-scheme: dark; scroll-behavior: smooth; }
@@ -63,8 +66,18 @@ html[data-theme="light"] .text-red-300 { color: #b42318 !important; }
 html[data-theme="light"] .text-emerald-300, html[data-theme="light"] .text-emerald-200 { color: #067647 !important; }
 html[data-theme="light"] .text-amber-300, html[data-theme="light"] .text-amber-200 { color: #93370d !important; }
 
-body { background: var(--background); color: var(--foreground); font-family: "Cairo Variable", system-ui, sans-serif; }
-::selection { background: rgb(212 255 0 / 28%); color: var(--foreground); }
+html, body { overflow-x: clip; }
+/* Latin letters and numerals in Sora, Arabic in Cairo: one voice in both scripts. */
+body { background: var(--background); color: var(--foreground); font-family: "Sora Variable", "Cairo Variable", system-ui, sans-serif; font-feature-settings: "ss01"; }
+h1, h2, h3 { text-wrap: balance; }
+
+/* Brand pieces */
+.wordmark { font-family: "Sora Variable", system-ui, sans-serif; font-weight: 800; letter-spacing: -0.02em; line-height: 1; direction: ltr; unicode-bidi: isolate; }
+.wordmark b { font-weight: 800; color: var(--brand-lime); }
+/* The flag stripe: a thin Jordan-flag rule used once per surface as the brand signature. */
+.flag-rule { height: 3px; border-radius: 3px; background: linear-gradient(90deg, #0b0b0b 0 30%, #f3f8f2 30% 60%, var(--flag-green) 60% 88%, var(--flag-red) 88% 100%); }
+.brand-glow { background: radial-gradient(closest-side, rgb(200 245 58 / 22%), transparent 70%); }
+::selection { background: rgb(200 245 58 / 28%); color: var(--foreground); }
 :where(a, button, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid var(--brand-lime); outline-offset: 3px; }
 :where(button, a, input, select, textarea) { -webkit-tap-highlight-color: transparent; }
 
@@ -72,14 +85,14 @@ body { background: var(--background); color: var(--foreground); font-family: "Ca
 .text-accent { color: var(--brand-lime) !important; }
 .bg-accent { background-color: var(--brand-lime) !important; color: var(--accent-foreground) !important; }
 .border-accent { border-color: var(--brand-lime) !important; }
-.text-cyan-200, .text-cyan-100 { color: #d4ff00 !important; }
-.bg-cyan-300\/10, .bg-cyan-200\/10 { background-color: rgb(212 255 0 / 9%) !important; }
-.border-cyan-300\/20, .border-cyan-200\/20 { border-color: rgb(212 255 0 / 24%) !important; }
+.text-cyan-200, .text-cyan-100 { color: #c8f53a !important; }
+.bg-cyan-300\/10, .bg-cyan-200\/10 { background-color: rgb(200 245 58 / 9%) !important; }
+.border-cyan-300\/20, .border-cyan-200\/20 { border-color: rgb(200 245 58 / 24%) !important; }
 .text-blue-100, .text-blue-200, .text-blue-300 { color: #dce9b4 !important; }
-.bg-blue-500 { background-color: #a8cc18 !important; }
-.from-blue-500 { --tw-gradient-from: #d4ff00 var(--tw-gradient-from-position) !important; --tw-gradient-to: rgb(212 255 0 / 0%) var(--tw-gradient-to-position) !important; }
-.to-blue-600 { --tw-gradient-to: #a8cc18 var(--tw-gradient-to-position) !important; }
-.ring-cyan-300:focus { --tw-ring-color: #d4ff00 !important; }
+.bg-blue-500 { background-color: #9fd41f !important; }
+.from-blue-500 { --tw-gradient-from: #c8f53a var(--tw-gradient-from-position) !important; --tw-gradient-to: rgb(200 245 58 / 0%) var(--tw-gradient-to-position) !important; }
+.to-blue-600 { --tw-gradient-to: #9fd41f var(--tw-gradient-to-position) !important; }
+.ring-cyan-300:focus { --tw-ring-color: #c8f53a !important; }
 .shadow-blue-950\/30 { --tw-shadow-color: rgb(0 0 0 / .3) !important; }
 
 /* Per-activity themes remain available to organizations. */
@@ -97,8 +110,8 @@ body { background: var(--background); color: var(--foreground); font-family: "Ca
 .glow::before { content: ""; position: absolute; inset: -4px; z-index: -1; border-radius: 1.4rem; background: var(--glow); filter: blur(14px); opacity: .7; animation: glow-pulse 3s ease-in-out infinite; }
 @keyframes glow-pulse { 0%,100% { opacity: .4; } 50% { opacity: .95; } }
 .glow-gold { --glow: linear-gradient(135deg, #ffe08a, #ff9f1c, #ffd76a); }
-.glow-blue { --glow: linear-gradient(135deg, #d4ff00, #a8cc18, #eefc9a); }
-.glow-green { --glow: linear-gradient(135deg, #d4ff00, #a8cc18, #eefc9a); }
+.glow-blue { --glow: linear-gradient(135deg, #c8f53a, #9fd41f, #eefc9a); }
+.glow-green { --glow: linear-gradient(135deg, #c8f53a, #9fd41f, #eefc9a); }
 .glow-pink { --glow: linear-gradient(135deg, #f472b6, #ec4899, #fb7185); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }

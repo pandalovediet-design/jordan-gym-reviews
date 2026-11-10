@@ -5,7 +5,7 @@ import { NAV_CATALOG } from "@/lib/site-settings";
 export const metadata: Metadata = {
   title: "كل الأقسام",
   description:
-    "اكتشف أقسام GymJo الرياضية في مكان واحد: دليل النوادي، التمارين، العروض، المسارات والأدوات.",
+    "اكتشف أقسام GYMJO الرياضية في مكان واحد: دليل النوادي، التمارين، العروض، المسارات والأدوات.",
 };
 
 const MORE = [
@@ -58,7 +58,7 @@ const GROUPS = [
   },
   {
     title: "للأنشطة والشركاء",
-    description: "خلّي نشاطك الرياضي جزءاً من دليل GymJo.",
+    description: "خلّي نشاطك الرياضي جزءاً من دليل GYMJO.",
     hrefs: ["/join", "/sponsors"],
   },
 ];
@@ -91,7 +91,7 @@ export default function Sections() {
 
       <div className="mb-7 flex items-end justify-between gap-3">
         <div>
-          <h2 className="text-xl font-black sm:text-2xl">استكشف أقسام GymJo</h2>
+          <h2 className="text-xl font-black sm:text-2xl">استكشف أقسام GYMJO</h2>
           <p className="mt-1 text-sm text-muted">رتّبناها حسب احتياجك، وكل قسم ظاهر مباشرة بدون قوائم مخفية.</p>
         </div>
         <span className="shrink-0 rounded-full border border-white/10 px-3 py-1 text-xs font-bold text-muted">{ALL_LINKS.length} قسم وأداة</span>
@@ -123,7 +123,7 @@ export default function Sections() {
                         <span aria-hidden="true" className="mt-1 text-lg text-accent transition-transform group-hover:-translate-x-1">←</span>
                       </span>
                       <span className="mt-2 text-sm leading-6 text-muted">
-                        {("description" in item && item.description) || DESCRIPTIONS[item.href] || "اكتشف المزيد من خدمات GymJo."}
+                        {("description" in item && item.description) || DESCRIPTIONS[item.href] || "اكتشف المزيد من خدمات GYMJO."}
                       </span>
                     </Link>
                   </li>

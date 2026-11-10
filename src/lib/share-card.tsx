@@ -143,7 +143,7 @@ export async function renderCard(o: CardOrg, story: boolean) {
   const cta = (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 12 }}>
       <div style={{ display: "flex", justifyContent: "center", background: "#b6f23a", color: "#07211c", borderRadius: 24, padding: story ? "20px 24px" : "16px 20px" }}>
-        <R t={story ? "اكتشف النادي على GymJo" : "اكتشف النادي"} size={story ? 42 : 36} weight={800} color="#07211c" nowrap />
+        <R t={story ? "اكتشف النادي على GYMJO" : "اكتشف النادي"} size={story ? 42 : 36} weight={800} color="#07211c" nowrap />
       </div>
       <div style={{ display: "flex", justifyContent: "center", fontSize: story ? 28 : 25, color: "#c9ddd4", fontWeight: 700 }}>{url}</div>
     </div>

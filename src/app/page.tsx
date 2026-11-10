@@ -74,50 +74,60 @@ export default async function Home() {
   const sponsored = ads.filter((a) => a.placement === "sponsored").slice(0, 3);
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6">
-      <section className="relative isolate -mx-4 overflow-hidden rounded-b-[2rem] border-b border-white/10 bg-[radial-gradient(ellipse_at_15%_10%,rgba(212,255,0,.15),transparent_38%),radial-gradient(ellipse_at_85%_80%,rgba(168,204,24,.09),transparent_34%)] px-4 pb-10 pt-8 sm:rounded-b-[2.75rem] sm:px-8 sm:pb-16 sm:pt-12 lg:pb-20">
+      <section className="relative isolate -mx-4 overflow-hidden rounded-b-[2rem] border-b border-white/10 bg-[radial-gradient(ellipse_at_15%_10%,rgba(200,245,58,.15),transparent_38%),radial-gradient(ellipse_at_85%_80%,rgba(159,212,31,.09),transparent_34%)] px-4 pb-10 pt-8 sm:rounded-b-[2.75rem] sm:px-8 sm:pb-16 sm:pt-12 lg:pb-20">
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 opacity-40 [background-image:linear-gradient(rgba(255,255,255,.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.035)_1px,transparent_1px)] [background-size:36px_36px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
+        {/* Brand mascot as a quiet watermark behind the hero. */}
+        <div aria-hidden className="pointer-events-none absolute -top-10 end-[-5rem] -z-10 w-64 opacity-20 [mask-image:radial-gradient(closest-side,black_50%,transparent)] sm:w-80 sm:opacity-30 lg:hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/panda.webp" alt="" width={900} height={900} className="h-auto w-full" />
+        </div>
         <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[1.1fr_.9fr] lg:gap-14">
           <div className="text-right">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#d4ff00]/20 bg-[#d4ff00]/10 px-3 py-1.5 text-xs font-bold text-[#d4ff00] sm:text-sm"><span className="size-2 animate-pulse rounded-full bg-emerald-400 motion-reduce:animate-none" /> دليلك الرياضي من عمّان لكل الأردن</div>
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#c8f53a]/20 bg-[#c8f53a]/10 px-3 py-1.5 text-xs font-bold text-[#c8f53a] sm:text-sm"><span className="size-2 animate-pulse rounded-full bg-emerald-400 motion-reduce:animate-none" /> دليلك الرياضي من عمّان لكل الأردن</div>
             <h1 className="max-w-3xl text-4xl font-black leading-[1.25] tracking-tight sm:text-5xl lg:text-6xl">
-              {cfg.heroTitle}<br /><span className="bg-gradient-to-l from-[#efffa0] via-[#d4ff00] to-[#a8cc18] bg-clip-text text-transparent">{cfg.heroAccent}</span>
+              {cfg.heroTitle}<br /><span className="bg-gradient-to-l from-[#e9ffa3] via-[#c8f53a] to-[#9fd41f] bg-clip-text text-transparent">{cfg.heroAccent}</span>
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-muted sm:text-lg">{cfg.heroSubtitle}</p>
             <form action="/search" className="mt-8 grid gap-2 rounded-2xl border border-white/10 bg-surface/90 p-2 shadow-2xl shadow-black/20 backdrop-blur sm:grid-cols-[1fr_auto]">
               <label className="flex min-w-0 items-center gap-3 rounded-xl bg-background/70 px-4">
-                <span aria-hidden className="text-xl text-[#d4ff00]">⌕</span>
+                <span aria-hidden className="text-xl text-[#c8f53a]">⌕</span>
                 <input name="q" aria-label="بحث" placeholder="شو حاب تتمرّن؟ نادي، مدرب، ملاعب..." className="min-w-0 flex-1 bg-transparent py-4 outline-none placeholder:text-muted/80 focus:ring-0" />
               </label>
               <div className="grid grid-cols-[1fr_auto] gap-2">
-                <select name="city" aria-label="المدينة" defaultValue="" className="min-w-0 rounded-xl bg-background px-3 py-3 text-sm ring-1 ring-white/10 focus:ring-[#d4ff00]">
+                <select name="city" aria-label="المدينة" defaultValue="" className="min-w-0 rounded-xl bg-background px-3 py-3 text-sm ring-1 ring-white/10 focus:ring-[#c8f53a]">
                   <option value="">كل المدن</option>
                   {cities.map((c) => <option key={c.city} value={c.city}>{c.city}</option>)}
                 </select>
-                <button className="rounded-xl bg-[#d4ff00] text-[#151a0b] px-6 py-3 font-extrabold shadow-lg shadow-black/30 transition hover:-translate-y-0.5 hover:brightness-110">اكتشف الآن <span aria-hidden>←</span></button>
+                <button className="rounded-xl bg-[#c8f53a] text-[#0b1a08] px-6 py-3 font-extrabold shadow-lg shadow-black/30 transition hover:-translate-y-0.5 hover:brightness-110">اكتشف الآن <span aria-hidden>←</span></button>
               </div>
             </form>
             <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted sm:text-sm"><span className="inline-flex items-center gap-2"><span className="text-emerald-300">✓</span> قارن قبل ما تشترك</span><span className="inline-flex items-center gap-2"><span className="text-emerald-300">✓</span> معلومات محلية</span><span className="inline-flex items-center gap-2"><span className="text-emerald-300">✓</span> تواصل مباشر</span></div>
           </div>
           <div className="relative mx-auto w-full max-w-lg lg:me-0">
-            <div aria-hidden className="absolute inset-8 rounded-full bg-[#d4ff00]/10 blur-3xl" />
+            <div aria-hidden className="absolute inset-8 rounded-full bg-[#c8f53a]/10 blur-3xl" />
             <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[#252c20] via-[#1b2119] to-[#10130f] p-4 shadow-2xl shadow-black/40 sm:p-6">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div><p className="text-xs text-muted">رحلتك الرياضية تبدأ هون</p><p className="mt-1 text-lg font-extrabold">اختار أسلوبك</p></div>
-                <span className="rounded-2xl border border-[#d4ff00]/20 bg-[#d4ff00]/10 p-3 text-2xl">✦</span>
+                <span className="rounded-2xl border border-[#c8f53a]/20 bg-[#c8f53a]/10 p-3 text-2xl">✦</span>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3">
                 {TYPE_TILES.slice(0, 4).map((tile) => (
-                  <Link key={tile.href} href={tile.href} className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-[#d4ff00]/40 hover:bg-[#d4ff00]/10">
-                    <span className="mb-5 flex size-11 items-center justify-center rounded-xl bg-[#d4ff00]/10 text-2xl">{tile.icon}</span>
+                  <Link key={tile.href} href={tile.href} className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-[#c8f53a]/40 hover:bg-[#c8f53a]/10">
+                    <span className="mb-5 flex size-11 items-center justify-center rounded-xl bg-[#c8f53a]/10 text-2xl">{tile.icon}</span>
                     <span className="block font-extrabold">{tile.label}</span>
                     <span className="mt-1 block text-xs text-muted">{tile.description}</span>
                   </Link>
                 ))}
               </div>
-              <Link href="/search" className="mt-3 flex items-center justify-between rounded-2xl border border-[#d4ff00]/20 bg-[#d4ff00]/10 px-4 py-3 text-sm font-bold text-[#d4ff00] transition hover:bg-[#d4ff00]/15"><span>استكشف كل الأنشطة الرياضية</span><span aria-hidden>←</span></Link>
+              <Link href="/search" className="mt-3 flex items-center justify-between rounded-2xl border border-[#c8f53a]/20 bg-[#c8f53a]/10 px-4 py-3 text-sm font-bold text-[#c8f53a] transition hover:bg-[#c8f53a]/15"><span>استكشف كل الأنشطة الرياضية</span><span aria-hidden>←</span></Link>
               <div className="mt-4 flex items-center gap-3 rounded-2xl bg-black/20 p-3"><span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-lg">⌖</span><div><p className="text-sm font-bold">منطقتك، ميزانيتك، هدفك</p><p className="mt-0.5 text-xs text-muted">اكتشف خيارات أقرب لإلك بدل البحث العشوائي</p></div></div>
             </div>
-            <div className="absolute -left-2 top-10 hidden -translate-x-1/4 rounded-2xl border border-white/10 bg-surface/95 px-4 py-3 shadow-xl backdrop-blur sm:block"><p className="text-xs text-muted">قرار أذكى</p><p className="mt-1 text-sm font-extrabold">قارن. اختار. انطلق.</p></div>
+            <div aria-hidden className="pointer-events-none absolute -top-24 end-[-3rem] hidden w-44 lg:block xl:w-52">
+              <div className="brand-glow absolute inset-0 scale-125" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/brand/panda.webp" alt="" width={900} height={900} className="relative h-auto w-full [mask-image:radial-gradient(closest-side,black_72%,transparent)]" />
+            </div>
+            <div className="absolute -left-2 top-10 hidden -translate-x-1/4 rounded-2xl border border-white/10 bg-surface/95 px-4 py-3 shadow-xl backdrop-blur sm:block lg:top-auto lg:bottom-10"><p className="text-xs text-muted">قرار أذكى</p><p className="mt-1 text-sm font-extrabold">قارن. اختار. انطلق.</p></div>
           </div>
         </div>
         {show.tiles && (
@@ -142,7 +152,7 @@ export default async function Home() {
 
       <section className="py-12 sm:py-16">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-          <div><p className="text-xs font-extrabold tracking-wider text-accent">MORE THAN A DIRECTORY</p><h2 className="mt-1 text-2xl font-black sm:text-3xl">كل ميزات GymJo قدامك</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">مش بس دليل نوادي؛ أدوات ومحتوى وعروض تساعدك تتمرّن وتتابع تقدمك وتكتشف أشياء جديدة — كل قسم ظاهر هون بدون قوائم مخفية.</p></div>
+          <div><p className="text-xs font-extrabold tracking-wider text-accent">MORE THAN A DIRECTORY</p><h2 className="mt-1 text-2xl font-black sm:text-3xl">كل ميزات GYMJO قدامك</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">مش بس دليل نوادي؛ أدوات ومحتوى وعروض تساعدك تتمرّن وتتابع تقدمك وتكتشف أشياء جديدة — كل قسم ظاهر هون بدون قوائم مخفية.</p></div>
           <span className="rounded-full border border-white/10 bg-surface px-3 py-1.5 text-xs font-bold text-muted">{FEATURE_TILES.length} ميزة</span>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -178,9 +188,9 @@ export default async function Home() {
         </section>
       )}
       {codes.length > 0 && (
-        <section className="mb-12 rounded-3xl border border-[#d4ff00]/20 bg-gradient-to-l from-[#d4ff00]/[0.08] to-surface p-5 sm:p-7">
+        <section className="mb-12 rounded-3xl border border-[#c8f53a]/20 bg-gradient-to-l from-[#c8f53a]/[0.08] to-surface p-5 sm:p-7">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-            <div><p className="text-xs font-extrabold tracking-wider text-accent">GYMJO EXCLUSIVE</p><h2 className="mt-1 text-2xl font-black">وفّر مع أكواد GymJo</h2><p className="mt-1 text-sm text-muted">خصومات حقيقية من أنشطة ومتاجر مشاركة — اكشف الكود واستخدمه مباشرة.</p></div>
+            <div><p className="text-xs font-extrabold tracking-wider text-accent">GYMJO EXCLUSIVE</p><h2 className="mt-1 text-2xl font-black">وفّر مع أكواد GYMJO</h2><p className="mt-1 text-sm text-muted">خصومات حقيقية من أنشطة ومتاجر مشاركة — اكشف الكود واستخدمه مباشرة.</p></div>
             <Link href="/deals" className="text-sm font-bold text-accent">كل أكواد الخصم ←</Link>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
