@@ -168,3 +168,25 @@ test("ads accept the new placements and nothing else", async () => {
     await assert.rejects(() => db.query(`insert into public.ads (placement, title, link_url, starts_at, ends_at) values ('popup', 'x y', 'https://example.com', now(), now() + interval '1 day')`));
   });
 });
+
+test("notifications: followers of a published place get its posts and offers, and only they can read them", async () => {
+  await db.query(`update public.organizations set status = 'published' where id = $1`, [ctx.gym]);
+  await db.query(`delete from public.business_posts where organization_id = $1`, [ctx.gym]);
+  await asUser(JO_MANAGER, async () => {
+    await db.query(`insert into public.user_favorites (user_id, organization_id) values ($1, $2)`, [JO_MANAGER, ctx.gym]);
+  });
+  await asUser(OWNER, async () => {
+    await db.query(`insert into public.business_posts (organization_id, body) values ($1, 'دوام العيد')`, [ctx.gym]);
+    await db.query(`insert into public.offers (organization_id, title_ar, discount_percent, starts_at, ends_at) values ($1, 'خصم الشتاء', 20, now(), now() + interval '7 day')`, [ctx.gym]);
+    const mine = await db.query(`select count(*)::int as n from public.notifications`);
+    assert.equal(mine.rows[0].n, 0);
+  });
+  await asUser(JO_MANAGER, async () => {
+    const r = await db.query(`select kind, body, read_at from public.notifications order by kind`);
+    assert.deepEqual(r.rows.map((x) => [x.kind, x.body]), [["offer", "خصم الشتاء"], ["post", "دوام العيد"]]);
+    await assert.rejects(() => db.query(`insert into public.notifications (user_id, organization_id, kind, body) values ($1, $2, 'post', 'مزوّر')`, [JO_MANAGER, ctx.gym]));
+    await db.query(`select public.mark_notifications_read()`);
+    const read = await db.query(`select count(*)::int as n from public.notifications where read_at is null`);
+    assert.equal(read.rows[0].n, 0);
+  });
+});
