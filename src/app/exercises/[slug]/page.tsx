@@ -64,8 +64,8 @@ export default async function ExercisePage({ params }: PageProps<"/exercises/[sl
         {explanations.length > 0 ? <ExplanationTabs items={explanations} exName={ex.name_ar} /> : (
           <div className="rounded-2xl bg-surface p-6 text-center ring-1 ring-white/10">
             <p className="font-bold">لسا ما في شرح لهالتمرين</p>
-            <p className="mt-1 text-sm text-muted">إذا إنت مدرب مستقل، سجّل نشاطك وأضف شرحك وبيظهر هون بعد موافقة الإدارة.</p>
-            <Link href="/join" className="mt-4 inline-block rounded-xl bg-accent px-5 py-2 text-sm font-bold text-accent-foreground">سجّل كمدرب</Link>
+            <p className="mt-1 text-sm text-muted">إذا إنت مدرب مستقل وبدك تضيف شرحك، تواصل معنا وبيظهر هون بعد المراجعة.</p>
+            <Link href="/join" className="mt-4 inline-block rounded-xl bg-accent px-5 py-2 text-sm font-bold text-accent-foreground">تواصل معنا</Link>
           </div>
         )}
       </div>

@@ -3,8 +3,8 @@ name: CI
 on:
   push:
     branches: [main]
+  # Run on every pull request, including stacked PRs that target feature branches.
   pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -34,6 +34,9 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint
+
+      - name: Run unit tests
+        run: npm run test:unit
 
       - name: Run local database security tests
         run: npm run test:db

@@ -1,6 +1,10 @@
 "use client";
-import { useState, useSyncExternalStore } from "react";
-import { GOALS, KINDS, MINUTES, addDays, bestStreak, daysThisWeek, dow, monthCount, sanitize, streak, weekStart, ammanToday, type Log } from "@/lib/workout-log";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { deleteAccountWorkoutLog, getAccountWorkoutLogs, saveAccountWorkoutLogs } from "@/app/log/actions";
+import { claimLocalData } from "@/lib/member-sync";
+import { BodyMap } from "@/components/BodyMap";
+import { MUSCLES, MUSCLE_LABEL, type Muscle } from "@/lib/exercise-meta";
+import { GOALS, KINDS, MINUTES, addDays, bestStreak, daysThisWeek, dow, monthCount, sanitize, streak, weekStart, ammanToday, musclesThisWeek, type Entry, type Log } from "@/lib/workout-log";
 
 const KEY = "jgr:log-v1", GOAL_KEY = "jgr:log-goal", EVT = "jgr:log-change";
 const EMPTY: Log = {};
@@ -32,27 +36,69 @@ function message(s: number, today: boolean): string {
   return "ما شاء الله، شهر من الالتزام. استمر 🔥";
 }
 
+const toCloud = (date: string, e: Entry) => ({ workout_date: date, activity: e.kind, minutes: e.min, muscles: e.muscles ?? [] });
+
 export function WorkoutLog() {
   const log = useSyncExternalStore(subscribe, read, () => EMPTY);
   const goal = useSyncExternalStore(subscribe, readGoal, () => 3);
   const today = useSyncExternalStore(() => () => {}, ammanToday, () => "");
   const [kind, setKind] = useState<string>(KINDS[0]);
   const [min, setMin] = useState<number>(45);
+  const [muscles, setMuscles] = useState<Muscle[]>([]);
+  const [view, setView] = useState<"front" | "back">("front");
   const [backup, setBackup] = useState("");
   const [note, setNote] = useState("");
+  const [cloudStatus, setCloudStatus] = useState<"loading" | "synced" | "local" | "error">("loading");
+
+  useEffect(() => {
+    let active = true;
+    getAccountWorkoutLogs().then(async (remote) => {
+      if (!active) return;
+      if (remote === null) { setCloudStatus("local"); return; }
+      const fromAccount: Log = {};
+      for (const item of remote.items) fromAccount[item.workout_date] = { kind: item.activity, min: item.minutes, ...(item.muscles?.length ? { muscles: item.muscles } : {}) };
+      if (claimLocalData("workouts", remote.userId) === "replace") {
+        // The account is the source of truth: days deleted on another device stay deleted.
+        save(fromAccount);
+        setCloudStatus("synced");
+        return;
+      }
+      // First sign-in on this device: add days logged here before signing in.
+      const local = read();
+      const localOnly = Object.entries(local).filter(([date]) => !fromAccount[date]);
+      save({ ...local, ...fromAccount });
+      try {
+        await saveAccountWorkoutLogs(localOnly.map(([date, item]) => toCloud(date, item)));
+        if (active) setCloudStatus("synced");
+      } catch { if (active) setCloudStatus("error"); }
+    }).catch(() => { if (active) setCloudStatus("error"); });
+    return () => { active = false; };
+  }, []);
+
+  const syncResult = (p: Promise<{ signedIn: boolean }>) =>
+    p.then((r) => setCloudStatus(r.signedIn ? "synced" : "local")).catch(() => setCloudStatus("error"));
 
   if (!today) return <p className="text-sm text-muted">لحظة...</p>;
 
   const done = !!log[today];
   const s = streak(log, today), best = bestStreak(log), week = daysThisWeek(log, today);
+  const weekMuscles = musclesThisWeek(log, today);
   const chip = (on: boolean) => `rounded-full px-3 py-1.5 text-sm ring-1 ring-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${on ? "bg-accent font-bold text-accent-foreground" : "bg-background/50 hover:ring-accent"}`;
   const box = "rounded-2xl bg-surface p-5 ring-1 ring-white/10";
 
   const toggleDay = (d: string) => {
     const next = { ...log };
-    if (next[d]) delete next[d]; else next[d] = { kind: d === today ? kind : "تمرين", min: d === today ? min : 0 };
-    save(next);
+    if (next[d]) {
+      delete next[d];
+      save(next);
+      syncResult(deleteAccountWorkoutLog(d));
+    } else {
+      next[d] = { kind: d === today ? kind : "تمرين", min: d === today ? min : 0, ...(d === today && muscles.length ? { muscles } : {}) };
+      save(next);
+      syncResult(saveAccountWorkoutLogs([toCloud(d, next[d])]));
+    }
   };
+  const pickMuscle = (g: Muscle) => setMuscles((cur) => cur.includes(g) ? cur.filter((x) => x !== g) : [...cur, g]);
   const setGoal = (g: number) => { try { localStorage.setItem(GOAL_KEY, String(g)); window.dispatchEvent(new Event(EVT)); } catch {} };
 
   // calendar for the current month, weeks start on Sunday
@@ -63,6 +109,7 @@ export function WorkoutLog() {
 
   return (
     <div className="space-y-5">
+      <p aria-live="polite" className="text-xs text-muted">{cloudStatus === "loading" ? "جارٍ تحميل سجل حسابك…" : cloudStatus === "synced" ? "🔒 سجلّك محفوظ بحسابك ويمكنك الوصول إليه من أجهزتك." : cloudStatus === "local" ? "السجل محفوظ على هذا الجهاز فقط؛ سجّل الدخول لمزامنته." : "تعذرت المزامنة الآن؛ بياناتك المحلية ما زالت محفوظة."}</p>
       <section className={`${box} text-center`}>
         <p className="text-5xl font-extrabold text-accent">{ar(s)}</p>
         <p className="mt-1 text-sm">{s === 1 ? "يوم متتالي" : "يوم متتالي 🔥"}</p>
@@ -74,6 +121,7 @@ export function WorkoutLog() {
         {done ? (
           <div className="text-center">
             <p className="font-bold text-accent">✅ سجّلت تمرين اليوم ({log[today].kind}{log[today].min ? ` · ${ar(log[today].min)} دقيقة` : ""})</p>
+            {log[today].muscles?.length ? <p className="mt-1 text-xs text-muted">💪 {log[today].muscles!.map((g) => MUSCLE_LABEL[g]).join("، ")}</p> : null}
             <button type="button" onClick={() => toggleDay(today)} className="mt-2 text-xs text-muted underline">إلغاء تسجيل اليوم</button>
           </div>
         ) : (
@@ -82,6 +130,14 @@ export function WorkoutLog() {
             <div className="flex flex-wrap gap-2">{KINDS.map((k) => <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} className={chip(kind === k)}>{k}</button>)}</div>
             <p className="text-xs text-muted">المدة</p>
             <div className="flex flex-wrap gap-2">{MINUTES.map((m) => <button key={m} type="button" aria-pressed={min === m} onClick={() => setMin(m)} className={chip(min === m)}>{ar(m)} دقيقة</button>)}</div>
+            <details className="rounded-xl bg-background/40 ring-1 ring-white/10 [&[open]]:p-3" open={muscles.length > 0}>
+              <summary className="min-h-11 cursor-pointer list-none px-3 py-2.5 text-sm font-bold [&::-webkit-details-marker]:hidden">💪 شو العضلات اللي اشتغلت عليها؟ <span className="font-normal text-muted">(اختياري{muscles.length ? ` · ${ar(muscles.length)}` : ""})</span></summary>
+              <div className="mt-2 space-y-3">
+                <div className="flex flex-wrap gap-2">{MUSCLES.map((g) => <button key={g} type="button" aria-pressed={muscles.includes(g)} onClick={() => pickMuscle(g)} className={chip(muscles.includes(g))}>{MUSCLE_LABEL[g]}</button>)}</div>
+                <div className="flex justify-center gap-2 text-xs">{(["front", "back"] as const).map((v) => <button key={v} type="button" aria-pressed={view === v} onClick={() => setView(v)} className={chip(view === v)}>{v === "front" ? "من قدّام" : "من ورا"}</button>)}</div>
+                <BodyMap compact view={view} active={muscles} onPick={pickMuscle} />
+              </div>
+            </details>
             <button type="button" onClick={() => toggleDay(today)} className="w-full rounded-xl bg-accent py-3 text-lg font-extrabold text-accent-foreground active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface">تمرنت اليوم ✓</button>
           </>
         )}
@@ -102,8 +158,20 @@ export function WorkoutLog() {
         <p className="text-xs text-muted">{week >= goal ? "حققت هدف الأسبوع، ما شاء الله 🎉" : `${ar(week)} من ${ar(goal)}، باقي ${ar(goal - week)}`}</p>
       </section>
 
+      {weekMuscles.length > 0 && (
+        <section className={`${box} space-y-3`}>
+          <p className="font-bold">💪 عضلاتك هالأسبوع</p>
+          <div className="flex flex-wrap gap-1.5 text-xs">
+            {MUSCLES.map((g) => <span key={g} className={`rounded-full px-2.5 py-1 ring-1 ${weekMuscles.includes(g) ? "bg-accent/15 font-bold text-accent ring-accent/40" : "text-muted ring-white/10"}`}>{MUSCLE_LABEL[g]}</span>)}
+          </div>
+          <div className="flex justify-center gap-2 text-xs">{(["front", "back"] as const).map((v) => <button key={v} type="button" aria-pressed={view === v} onClick={() => setView(v)} className={chip(view === v)}>{v === "front" ? "من قدّام" : "من ورا"}</button>)}</div>
+          <BodyMap compact view={view} active={weekMuscles} onPick={() => {}} />
+          <p className="text-xs text-muted">{MUSCLES.length - weekMuscles.length > 0 ? `لسا ما اشتغلت على ${ar(MUSCLES.length - weekMuscles.length)} من العضلات هالأسبوع.` : "اشتغلت على كل العضلات هالأسبوع 👏"}</p>
+        </section>
+      )}
+
       <section className={box}>
-        <p className="mb-3 font-bold">{MONTHS[Number(today.slice(5, 7)) - 1]} {ar(Number(today.slice(0, 4)))}</p>
+        <p className="mb-3 font-bold">{MONTHS[Number(today.slice(5, 7)) - 1]} {today.slice(0, 4)}</p>
         <div className="grid grid-cols-7 gap-1 text-center text-[11px] text-muted">{DOW.map((d) => <span key={d}>{d}</span>)}</div>
         <div className="mt-1 grid grid-cols-7 gap-1">
           {monthDays.map((d, i) => d === null ? <span key={`e${i}`} /> : (
@@ -114,10 +182,10 @@ export function WorkoutLog() {
       </section>
 
       <section className={`${box} space-y-2 text-xs text-muted`}>
-        <p>🔒 السجل محفوظ على جهازك فقط، بدون حساب. لو غيّرت الجهاز أو مسحت بيانات المتصفح بينمسح، فخذ نسخة احتياطية:</p>
+        <p>🔒 خذ نسخة احتياطية إضافية من سجلّك للاحتفاظ بها عند الحاجة:</p>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={() => { setBackup(JSON.stringify(log)); setNote("انسخ النص تحت واحفظه عندك."); }} className="rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/20">نسخة احتياطية</button>
-          <button type="button" onClick={() => { try { const l = sanitize(JSON.parse(backup)); if (!Object.keys(l).length) throw new Error(); save({ ...log, ...l }); setNote("تم الاسترجاع ✓"); } catch { setNote("النص مش صحيح."); } }} className="rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/20">استرجاع من النص</button>
+          <button type="button" onClick={() => { try { const l = sanitize(JSON.parse(backup)); if (!Object.keys(l).length) throw new Error(); save({ ...log, ...l }); setNote("تم الاسترجاع ✓"); syncResult(saveAccountWorkoutLogs(Object.entries(l).map(([date, item]) => toCloud(date, item)))); } catch { setNote("النص مش صحيح."); } }} className="rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/20">استرجاع من النص</button>
         </div>
         <textarea value={backup} onChange={(e) => setBackup(e.target.value)} aria-label="نص النسخة الاحتياطية أو البيانات المراد استرجاعها" dir="ltr" rows={3} placeholder="الصق النسخة الاحتياطية هون للاسترجاع" className="w-full rounded-xl bg-background p-2 text-[11px] ring-1 ring-white/10 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface" />
         {note && <p role="status" aria-live="polite" className="text-accent">{note}</p>}

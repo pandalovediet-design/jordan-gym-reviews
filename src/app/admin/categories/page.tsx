@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
-import { ActionForm, field } from "@/components/Form";
+import { ActionForm } from "@/components/Form";
+import { field } from "@/lib/form-styles";
 import { ORG_TYPE_LABEL } from "@/lib/format";
 import { addCategory, deleteCategory, setCategoryActive, updateCategory } from "../actions";
 

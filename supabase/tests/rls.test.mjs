@@ -215,38 +215,57 @@ test("child rows cannot be moved to another organization", async () => {
   });
 });
 
-test("reviews: one per user, not for own org, identity cannot be forged, rating summary", async () => {
-  await asBob(async () => {
-    const r = await db.query(
-      `insert into public.reviews (organization_id, user_id, rating, body)
-       values ($1, $2, 4, 'جيد') returning id, user_id, author_name, status`,
-      [ctx.gym, ALICE], // tries to impersonate alice
-    );
-    ctx.review = r.rows[0].id;
-    assert.equal(r.rows[0].user_id, BOB);
-    assert.equal(r.rows[0].author_name, "Bob");
-    await rejects(() =>
-      db.query(`insert into public.reviews (organization_id, user_id, rating) values ($1, $2, 5)`, [ctx.gym, BOB]),
-    );
-    await db.query(`update public.reviews set status = 'hidden', rating = 5 where id = $1`, [ctx.review]);
-    const u = await db.query(`select status, rating from public.reviews where id = $1`, [ctx.review]);
-    assert.equal(u.rows[0].status, "published");
-    assert.equal(u.rows[0].rating, 5);
-  });
-  await asAlice(() =>
+test("reviews are disabled: nobody can create, edit or forge a review", async () => {
+  // Reviews were removed from the product (migration 20261023190000_review_writes_off).
+  await asBob(() =>
     rejects(
-      () => db.query(`insert into public.reviews (organization_id, user_id, rating) values ($1, $2, 5)`, [ctx.gym, ALICE]),
-      /own organization/,
+      () => db.query(
+        `insert into public.reviews (organization_id, user_id, rating, body) values ($1, $2, 4, 'جيد')`,
+        [ctx.gym, BOB],
+      ),
+      /row-level security/,
     ),
   );
+  await asBob(() =>
+    rejects(
+      () => db.query(
+        `insert into public.reviews (organization_id, user_id, rating) values ($1, $2, 5)`,
+        [ctx.gym, ALICE], // impersonation attempt
+      ),
+      /row-level security/,
+    ),
+  );
+  await asAlice(() =>
+    rejects(() =>
+      db.query(`insert into public.reviews (organization_id, user_id, rating) values ($1, $2, 5)`, [ctx.gym, ALICE]),
+    ),
+  );
+  await asAnon(() =>
+    rejects(() => db.query(`insert into public.reviews (organization_id, rating) values ($1, 5)`, [ctx.gym])),
+  );
   await asAnon(async () => {
-    const r = await db.query(`select review_count, average_rating from public.organization_ratings where organization_id = $1`, [ctx.gym]);
-    assert.equal(r.rows[0].review_count, 1);
-    assert.equal(Number(r.rows[0].average_rating), 5);
+    const r = await db.query(`select review_count from public.organization_ratings where organization_id = $1`, [ctx.gym]);
+    assert.equal(r.rows.length, 0);
   });
+
+  // A legacy review (written before reviews were turned off) cannot be edited by its author.
+  const legacy = await asService(() =>
+    db.query(
+      `insert into public.reviews (organization_id, user_id, rating, body, status, author_name)
+       values ($1, $2, 3, 'قديم', 'published', 'Bob') returning id`,
+      [ctx.gym, BOB],
+    ),
+  );
+  ctx.review = legacy.rows[0].id;
+  await asBob(async () => {
+    await db.query(`update public.reviews set rating = 5, body = 'معدّل' where id = $1`, [ctx.review]);
+  });
+  const after = await asService(() => db.query(`select rating, body from public.reviews where id = $1`, [ctx.review]));
+  assert.equal(after.rows[0].rating, 3);
+  assert.equal(after.rows[0].body, "قديم");
 });
 
-test("review responses: only the organization can answer its own reviews", async () => {
+test("review responses: strangers cannot answer and an answer cannot be attached to another organization", async () => {
   await asBob(() =>
     rejects(() =>
       db.query(
@@ -255,10 +274,12 @@ test("review responses: only the organization can answer its own reviews", async
       ),
     ),
   );
-  await asAlice(() =>
-    db.query(
-      `insert into public.review_responses (review_id, organization_id, body, created_by) values ($1, $2, 'شكراً لك', $3)`,
-      [ctx.review, ctx.gym, ALICE],
+  await asBob(() =>
+    rejects(() =>
+      db.query(
+        `insert into public.review_responses (review_id, organization_id, body, created_by) values ($1, $2, 'شكراً', $3)`,
+        [ctx.review, ctx.gym, ALICE], // forged author
+      ),
     ),
   );
   await asAlice(() =>
@@ -271,12 +292,21 @@ test("review responses: only the organization can answer its own reviews", async
   );
 });
 
-test("review reports: reporter is the caller and duplicates are rejected", async () => {
-  await asAlice(async () => {
-    await db.query(`insert into public.review_reports (review_id, reporter_id, reason) values ($1, $2, 'fake')`, [ctx.review, ALICE]);
-    await rejects(() => db.query(`insert into public.review_reports (review_id, reporter_id, reason) values ($1, $2, 'fake')`, [ctx.review, ALICE]));
-    await rejects(() => db.query(`insert into public.review_reports (review_id, reporter_id, reason) values ($1, $2, 'spam')`, [ctx.review, BOB]));
-  });
+test("review reports are disabled alongside public review writes", async () => {
+  for (const runAs of [asAlice, asBob]) {
+    await runAs(() =>
+      rejects(
+        () => db.query(
+          `insert into public.review_reports (review_id, reporter_id, reason) values ($1, $2, 'fake')`,
+          [ctx.review, runAs === asAlice ? ALICE : BOB],
+        ),
+        /row-level security/,
+      ),
+    );
+  }
+  await asAnon(() =>
+    rejects(() => db.query(`insert into public.review_reports (review_id, reason) values ($1, 'fake')`, [ctx.review])),
+  );
 });
 
 test("inquiries are server-only, de-duplicated, and private to the organization", async () => {
@@ -1198,4 +1228,179 @@ test("gym badges: owner sets mosque / no-music, public listing shows them, stran
     assert.equal(r.has_mosque, false);
     assert.equal(r.no_music, true);
   });
+});
+
+// ---- Member personal data (20261102120000_member_personal_data.sql) ----
+
+async function newPublishedOrg(slug) {
+  const r = await asService(() =>
+    db.query(
+      `insert into public.organizations (type, slug, name_ar, created_by, status)
+       values ('gym', $1, 'نادي اختبار', $2, 'published') returning id`,
+      [slug, ADMIN],
+    ),
+  );
+  return r.rows[0].id;
+}
+
+test("member favorites: private to each member, no writing for someone else", async () => {
+  const org = await newPublishedOrg("member-fav-gym");
+  await asAlice(() => db.query(`insert into public.user_favorites (user_id, organization_id) values ($1, $2)`, [ALICE, org]));
+  await asAlice(() =>
+    rejects(() => db.query(`insert into public.user_favorites (user_id, organization_id) values ($1, $2)`, [ALICE, org])),
+  ); // duplicate
+  await asBob(() =>
+    rejects(
+      () => db.query(`insert into public.user_favorites (user_id, organization_id) values ($1, $2)`, [ALICE, org]),
+      /row-level security/,
+    ),
+  );
+  await asBob(async () => {
+    assert.equal((await db.query(`select * from public.user_favorites where user_id = $1`, [ALICE])).rows.length, 0);
+    assert.equal((await db.query(`delete from public.user_favorites where user_id = $1 returning user_id`, [ALICE])).rows.length, 0);
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select * from public.user_favorites`)).rows.length, 0);
+    await rejects(() => db.query(`insert into public.user_favorites (user_id, organization_id) values ($1, $2)`, [ALICE, org]));
+  });
+  await asAlice(async () => {
+    assert.equal((await db.query(`select * from public.user_favorites`)).rows.length, 1);
+    assert.equal((await db.query(`delete from public.user_favorites where organization_id = $1 returning user_id`, [org])).rows.length, 1);
+  });
+  // Deleting a place removes it from everyone's favorites.
+  await asAlice(() => db.query(`insert into public.user_favorites (user_id, organization_id) values ($1, $2)`, [ALICE, org]));
+  await asService(() => db.query(`delete from public.organizations where id = $1`, [org]));
+  const left = await asService(() => db.query(`select * from public.user_favorites where organization_id = $1`, [org]));
+  assert.equal(left.rows.length, 0);
+});
+
+test("member workout logs: add, edit, delete own only; values are bounded", async () => {
+  await asAlice(async () => {
+    await db.query(`insert into public.user_workout_logs (user_id, workout_date, activity, minutes) values ($1, '2026-11-01', 'حديد', 45)`, [ALICE]);
+    const before = (await db.query(`select updated_at from public.user_workout_logs where user_id = $1 and workout_date = '2026-11-01'`, [ALICE])).rows[0].updated_at;
+    await db.query(`select pg_sleep(0.01)`);
+    await db.query(`update public.user_workout_logs set minutes = 60 where workout_date = '2026-11-01'`);
+    const row = (await db.query(`select minutes, updated_at from public.user_workout_logs where workout_date = '2026-11-01'`)).rows[0];
+    assert.equal(row.minutes, 60);
+    assert.ok(row.updated_at > before, "updated_at should move on update");
+    await rejects(() => db.query(`insert into public.user_workout_logs (user_id, workout_date, minutes) values ($1, '2026-11-02', 2000)`, [ALICE]));
+    await rejects(() => db.query(`insert into public.user_workout_logs (user_id, workout_date, activity) values ($1, '2026-11-03', '')`, [ALICE]));
+    // A member cannot hand their row to someone else.
+    await rejects(
+      () => db.query(`update public.user_workout_logs set user_id = $1 where workout_date = '2026-11-01'`, [BOB]),
+      /row-level security/,
+    );
+  });
+  await asBob(async () => {
+    assert.equal((await db.query(`select * from public.user_workout_logs where user_id = $1`, [ALICE])).rows.length, 0);
+    assert.equal((await db.query(`update public.user_workout_logs set minutes = 1 where user_id = $1 returning user_id`, [ALICE])).rows.length, 0);
+    assert.equal((await db.query(`delete from public.user_workout_logs where user_id = $1 returning user_id`, [ALICE])).rows.length, 0);
+    await rejects(
+      () => db.query(`insert into public.user_workout_logs (user_id, workout_date) values ($1, '2026-11-04')`, [ALICE]),
+      /row-level security/,
+    );
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select * from public.user_workout_logs`)).rows.length, 0);
+  });
+  await asAlice(async () => {
+    assert.equal((await db.query(`delete from public.user_workout_logs where workout_date = '2026-11-01' returning user_id`)).rows.length, 1);
+  });
+});
+
+test("member challenge progress: own rows only, known challenges, progress 0-10", async () => {
+  await asAlice(async () => {
+    await db.query(`insert into public.user_challenge_progress (user_id, week_start, challenge_id, progress) values ($1, '2026-10-26', 'walks', 2)`, [ALICE]);
+    await db.query(`update public.user_challenge_progress set progress = 3 where challenge_id = 'walks'`);
+    assert.equal((await db.query(`select progress from public.user_challenge_progress`)).rows[0].progress, 3);
+    await rejects(() => db.query(`insert into public.user_challenge_progress (user_id, week_start, challenge_id, progress) values ($1, '2026-10-26', 'hack', 1)`, [ALICE]));
+    await rejects(() => db.query(`update public.user_challenge_progress set progress = 11 where challenge_id = 'walks'`));
+  });
+  await asBob(async () => {
+    assert.equal((await db.query(`select * from public.user_challenge_progress`)).rows.length, 0);
+    assert.equal((await db.query(`update public.user_challenge_progress set progress = 0 where user_id = $1 returning user_id`, [ALICE])).rows.length, 0);
+    await rejects(
+      () => db.query(`insert into public.user_challenge_progress (user_id, week_start, challenge_id) values ($1, '2026-10-26', 'water')`, [ALICE]),
+      /row-level security/,
+    );
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select * from public.user_challenge_progress`)).rows.length, 0);
+  });
+});
+
+test("member data is removed with the member's account", async () => {
+  const fk = await db.query(`
+    select c.conrelid::regclass::text as t, c.confdeltype
+    from pg_constraint c
+    where c.contype = 'f' and c.confrelid = 'auth.users'::regclass
+      and c.conrelid in ('public.user_favorites'::regclass, 'public.user_workout_logs'::regclass, 'public.user_challenge_progress'::regclass)`);
+  assert.equal(fk.rows.length, 3);
+  for (const r of fk.rows) assert.equal(r.confdeltype, "c", `${r.t} should cascade when the account is deleted`);
+});
+
+// ---- Member food log, water and muscles (20261103090000_member_food_log.sql) ----
+
+test("member food log: own meals only, valid meal and rating, short note", async () => {
+  await asAlice(async () => {
+    await db.query(`insert into public.user_food_logs (user_id, log_date, meal, note, rating) values ($1, '2026-11-02', 'breakfast', 'بيض وخبز', 'healthy')`, [ALICE]);
+    await db.query(`update public.user_food_logs set rating = 'ok' where meal = 'breakfast'`);
+    assert.equal((await db.query(`select rating from public.user_food_logs`)).rows[0].rating, "ok");
+    await rejects(() => db.query(`insert into public.user_food_logs (user_id, log_date, meal, rating) values ($1, '2026-11-02', 'brunch', 'ok')`, [ALICE]));
+    await rejects(() => db.query(`insert into public.user_food_logs (user_id, log_date, meal, rating) values ($1, '2026-11-02', 'lunch', 'great')`, [ALICE]));
+    await rejects(() => db.query(`insert into public.user_food_logs (user_id, log_date, meal, note, rating) values ($1, '2026-11-02', 'lunch', repeat('x', 121), 'ok')`, [ALICE]));
+    await rejects(() => db.query(`insert into public.user_food_logs (user_id, log_date, meal, rating) values ($1, '2026-11-02', 'breakfast', 'ok')`, [ALICE])); // one row per meal
+  });
+  await asBob(async () => {
+    assert.equal((await db.query(`select * from public.user_food_logs`)).rows.length, 0);
+    assert.equal((await db.query(`update public.user_food_logs set note = 'x' where user_id = $1 returning user_id`, [ALICE])).rows.length, 0);
+    assert.equal((await db.query(`delete from public.user_food_logs where user_id = $1 returning user_id`, [ALICE])).rows.length, 0);
+    await rejects(
+      () => db.query(`insert into public.user_food_logs (user_id, log_date, meal, rating) values ($1, '2026-11-02', 'dinner', 'ok')`, [ALICE]),
+      /row-level security/,
+    );
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select * from public.user_food_logs`)).rows.length, 0);
+  });
+  await asAlice(async () => {
+    assert.equal((await db.query(`delete from public.user_food_logs where meal = 'breakfast' returning user_id`)).rows.length, 1);
+  });
+});
+
+test("member water log: own days only, 0-20 cups", async () => {
+  await asAlice(async () => {
+    await db.query(`insert into public.user_water_logs (user_id, log_date, cups) values ($1, '2026-11-02', 6)`, [ALICE]);
+    await rejects(() => db.query(`update public.user_water_logs set cups = 21`));
+    await rejects(() => db.query(`insert into public.user_water_logs (user_id, log_date, cups) values ($1, '2026-11-03', -1)`, [ALICE]));
+  });
+  await asBob(async () => {
+    assert.equal((await db.query(`select * from public.user_water_logs`)).rows.length, 0);
+    await rejects(
+      () => db.query(`insert into public.user_water_logs (user_id, log_date, cups) values ($1, '2026-11-04', 1)`, [ALICE]),
+      /row-level security/,
+    );
+  });
+  await asAnon(async () => {
+    assert.equal((await db.query(`select * from public.user_water_logs`)).rows.length, 0);
+  });
+});
+
+test("member workout muscles: only known muscle keys are accepted", async () => {
+  await asAlice(async () => {
+    await db.query(`insert into public.user_workout_logs (user_id, workout_date, muscles) values ($1, '2026-11-05', array['chest','triceps'])`, [ALICE]);
+    assert.deepEqual((await db.query(`select muscles from public.user_workout_logs where workout_date = '2026-11-05'`)).rows[0].muscles, ["chest", "triceps"]);
+    await rejects(() => db.query(`update public.user_workout_logs set muscles = array['wings'] where workout_date = '2026-11-05'`));
+    await db.query(`delete from public.user_workout_logs where workout_date = '2026-11-05'`);
+  });
+});
+
+test("food and water rows are removed with the member's account", async () => {
+  const fk = await db.query(`
+    select c.conrelid::regclass::text as t, c.confdeltype
+    from pg_constraint c
+    where c.contype = 'f' and c.confrelid = 'auth.users'::regclass
+      and c.conrelid in ('public.user_food_logs'::regclass, 'public.user_water_logs'::regclass)`);
+  assert.equal(fk.rows.length, 2);
+  for (const r of fk.rows) assert.equal(r.confdeltype, "c", `${r.t} should cascade when the account is deleted`);
 });

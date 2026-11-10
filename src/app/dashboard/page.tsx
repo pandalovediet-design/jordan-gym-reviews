@@ -15,6 +15,8 @@ export default async function Dashboard() {
     .select("organizations(id,name_ar,type,status,city,slug,is_claimed)")
     .eq("user_id", user.id);
   const { data: isAdmin } = await supabase.rpc("is_platform_admin");
+  const { data: managed } = await supabase.from("country_managers").select("country_code").eq("user_id", user.id).limit(1);
+  const isManager = (managed ?? []).length > 0;
   const { data: myClaims } = await supabase.from("claim_requests").select("id,organizations(name_ar)").eq("user_id", user.id).eq("status", "pending");
   const { data: newInq } = await supabase.from("inquiries").select("organization_id").eq("status", "new").limit(1000);
   const newOf = (id: string) => (newInq ?? []).filter((q) => q.organization_id === id).length;
@@ -35,6 +37,7 @@ export default async function Dashboard() {
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             {isAdmin && <Link href="/admin" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/15 px-4 py-2 text-sm font-bold transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">لوحة صاحب المنصة</Link>}
+            {isManager && <Link href="/manager" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-accent/40 px-4 py-2 text-sm font-bold text-accent transition-colors hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">إدارة السوق</Link>}
             <Link href="/account" className="inline-flex min-h-11 items-center justify-center rounded-xl px-4 py-2 text-sm font-bold text-muted transition-colors hover:bg-white/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">حسابي</Link>
             <form action={signout}><button type="submit" className="inline-flex min-h-11 items-center justify-center rounded-xl px-4 py-2 text-sm font-bold text-muted transition-colors hover:bg-white/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">تسجيل الخروج</button></form>
           </div>

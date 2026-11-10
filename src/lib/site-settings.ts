@@ -9,6 +9,7 @@ export const NAV_CATALOG = [
   { href: "/awards", label: "🏆 نادي الشهر" },
   { href: "/exercises", label: "🏋️ التمارين" },
   { href: "/log", label: "🔥 سجل تمريني" },
+  { href: "/food", label: "🍽️ سجل أكلي" },
   { href: "/deals", label: "🎟️ أكواد خصم" },
   { href: "/no-gym", label: "🏠 من غير جيم" },
   { href: "/no-deprivation", label: "🥗 من غير حرمان" },
@@ -60,7 +61,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   heroAccent: "أسعار حقيقية وتواصل مباشر",
   heroSubtitle: "نوادي، مدربين، منشآت ومتاجر رياضية: الأسعار، الدوام، الموقع والتواصل المباشر في مكان واحد.",
   outreachTemplate:
-    "مرحبا 👋 معكم Jordan Gym Reviews، دليل الرياضة بالأردن.\n{name} موجود على المنصة: {page}\nتقدروا تستلموا الصفحة مجاناً وتضيفوا أسعاركم وصوركم وواتساب النادي من هون: {claim}\nأي سؤال احكولي.",
+    "مرحبا 👋 معكم GymJo، دليل الرياضة بالأردن.\n{name} موجود على المنصة: {page}\nتقدروا تستلموا الصفحة مجاناً وتضيفوا أسعاركم وصوركم وواتساب النادي من هون: {claim}\nأي سؤال احكولي.",
 };
 
 const NAV_HREFS = new Set<string>(NAV_CATALOG.map((n) => n.href));

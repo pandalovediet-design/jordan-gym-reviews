@@ -16,6 +16,7 @@ import { BILLING_LABEL, DELIVERY_LABEL, GLOW_LABEL, ORG_TYPE_LABEL, WEEKDAYS, WO
 import type { Tables } from "@/lib/database.types";
 import { themeClass } from "@/lib/themes";
 import { Gallery } from "@/components/Gallery";
+import { OrgSectionNav } from "@/components/OrgSectionNav";
 
 export const revalidate = 120;
 const load = cache(getOrgBySlug);
@@ -49,28 +50,52 @@ type BV = {
 function Services({ items }: { items: Tables<"organization_services">[] }) {
   if (!items.length) return null;
   return (
-    <ul className="space-y-2">{items.map((s) => (
-      <li key={s.id} className={`${card} flex items-start justify-between gap-4`}>
-        <div><p className="font-semibold">{s.name_ar}</p>{s.description_ar && <p className="text-sm text-muted">{s.description_ar}</p>}</div>
-        <p className="shrink-0 text-accent">{jod(s.price_jod)}{s.billing_period && <span className="text-xs text-muted"> {BILLING_LABEL[s.billing_period]}</span>}</p>
+    <ul className="grid gap-3 sm:grid-cols-2">{items.map((s) => (
+      <li key={s.id} className="group relative overflow-hidden rounded-2xl bg-surface p-5 ring-1 ring-white/10 transition duration-200 hover:-translate-y-0.5 hover:ring-accent/60">
+        <div className="absolute inset-y-0 start-0 w-1 bg-accent/70" />
+        <div className="flex h-full items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-bold leading-6">{s.name_ar}</p>
+            {s.description_ar && <p className="mt-1.5 text-sm leading-6 text-muted">{s.description_ar}</p>}
+          </div>
+          <div className="shrink-0 rounded-xl bg-accent/10 px-3 py-2 text-end ring-1 ring-accent/20">
+            <p className="font-black text-accent">{jod(s.price_jod)}</p>
+            {s.billing_period && <p className="mt-0.5 text-[11px] text-muted">{BILLING_LABEL[s.billing_period]}</p>}
+          </div>
+        </div>
       </li>))}</ul>
   );
 }
 function Hours({ items }: { items: Tables<"organization_hours">[] }) {
   if (!items.length) return <p className="text-sm text-muted">الدوام غير محدد.</p>;
   return (
-    <ul className={`${card} space-y-1 text-sm`}>{items.map((h) => (
-      <li key={h.id} className="flex justify-between"><span>{WEEKDAYS[h.weekday]}</span>
-        <span className="text-muted">{h.is_closed ? "مغلق" : `${hhmm(h.opens_at)} – ${hhmm(h.closes_at)}`}</span></li>))}</ul>
+    <ul className="overflow-hidden rounded-2xl bg-surface p-2 ring-1 ring-white/10">{items.map((h) => (
+      <li key={h.id} className="flex items-center justify-between gap-3 rounded-xl px-3 py-3 text-sm even:bg-white/[0.025]">
+        <span className="font-semibold">{WEEKDAYS[h.weekday]}</span>
+        {h.is_closed
+          ? <span className="rounded-full bg-red-500/10 px-3 py-1 text-xs font-bold text-red-300">مغلق</span>
+          : <span className="rounded-full bg-accent/10 px-3 py-1 font-semibold text-accent" dir="ltr">{hhmm(h.opens_at)} – {hhmm(h.closes_at)}</span>}
+      </li>))}</ul>
   );
 }
 function Offers({ items }: { items: Tables<"offers">[] }) {
   if (!items.length) return null;
   return (
     <div className="grid gap-3 sm:grid-cols-2">{items.map((o) => (
-      <div key={o.id} className={card}><h3 className="font-bold text-accent">{o.kind === "course" ? "🎓 " : ""}{o.title_ar}</h3>
-        {o.description_ar && <p className="text-sm">{o.description_ar}</p>}
-        <p className="mt-1 text-xs text-muted">{o.offer_price_jod != null && `${jod(o.offer_price_jod)} · `}{o.discount_percent != null && `خصم ${o.discount_percent}% · `}حتى {dateAr(o.ends_at)}</p></div>))}</div>
+      <article key={o.id} className="relative overflow-hidden rounded-2xl bg-[linear-gradient(125deg,rgba(212,255,0,.13),transparent_65%)] bg-surface p-5 ring-1 ring-accent/25">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <span className="mb-2 inline-flex rounded-full bg-accent/15 px-3 py-1 text-[11px] font-bold text-accent">{o.kind === "course" ? "دورة تدريبية" : "عرض خاص"}</span>
+            <h3 className="text-lg font-black leading-7">{o.title_ar}</h3>
+          </div>
+          {o.discount_percent != null && <span className="shrink-0 rounded-xl bg-accent px-3 py-2 text-sm font-black text-accent-foreground">خصم {o.discount_percent}%</span>}
+        </div>
+        {o.description_ar && <p className="mt-2 text-sm leading-6 text-muted">{o.description_ar}</p>}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-3">
+          {o.offer_price_jod != null ? <p className="text-lg font-black text-accent">{jod(o.offer_price_jod)}</p> : <span />}
+          <p className="text-xs text-muted">ساري حتى {dateAr(o.ends_at)}</p>
+        </div>
+      </article>))}</div>
   );
 }
 function Classes({ items }: { items: Tables<"org_classes">[] }) {
@@ -95,25 +120,29 @@ function Trainers({ items }: { items: TrainerCard[] }) {
   if (!items.length) return null;
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{items.map((t) => (
-      <article key={t.key} className={`${card} flex flex-col overflow-hidden !p-0`}>
-        <div className="relative aspect-[4/3] w-full bg-background/40">
+      <article key={t.key} className="group flex flex-col overflow-hidden rounded-3xl bg-surface ring-1 ring-white/10 transition duration-200 hover:-translate-y-1 hover:ring-accent/50 hover:shadow-xl hover:shadow-black/15">
+        <div className="relative aspect-[5/4] w-full overflow-hidden bg-background/40">
           {t.photo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={publicMediaUrl(t.photo)} alt={t.name} loading="lazy" decoding="async" className="size-full object-cover" />
-          ) : <div className="flex size-full items-center justify-center text-5xl">🏋️</div>}
-          {t.head && <span className="absolute start-3 top-3 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">⭐ المدرب الرئيسي</span>}
-          {t.licensed && <span className="absolute start-3 top-3 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">✓ مرخّص</span>}
+            <img src={publicMediaUrl(t.photo)} alt={t.name} loading="lazy" decoding="async" className="size-full object-cover transition duration-500 group-hover:scale-105" />
+          ) : <div className="flex size-full items-center justify-center bg-[radial-gradient(ellipse_at_75%_20%,rgba(212,255,0,.22),transparent_48%),linear-gradient(135deg,#151a0b,#283313)] text-5xl">🏋️</div>}
+          {(t.head || t.licensed) && (
+            <div className="absolute start-3 top-3 flex flex-col items-start gap-2">
+              {t.head && <span className="rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">⭐ المدرب الرئيسي</span>}
+              {t.licensed && <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-sm">✓ مرخّص</span>}
+            </div>
+          )}
         </div>
-        <div className="flex flex-1 flex-col gap-2 p-4">
+        <div className="flex flex-1 flex-col gap-2.5 p-5">
           {t.role && <span className="w-fit rounded-full bg-accent/15 px-3 py-0.5 text-xs font-bold text-accent">{t.role}</span>}
-          <h3 className="text-lg font-bold">{t.name}</h3>
+          <h3 className="text-xl font-black tracking-tight">{t.name}</h3>
           {t.years != null && <p className="text-sm text-muted">🏅 {t.years} سنة خبرة</p>}
           {(t.education || t.place) && <p className="text-sm text-muted">🎓 {[t.education, t.place].filter(Boolean).join(" — ")}</p>}
           {splitTags(t.specialties).length > 0 && (
             <div className="flex flex-wrap gap-1.5">{splitTags(t.specialties).map((x) => <span key={x} className="rounded-full bg-background/50 px-2.5 py-0.5 text-xs ring-1 ring-white/10">{x}</span>)}</div>)}
           {t.bio && <p className="line-clamp-4 whitespace-pre-line text-sm leading-6">{t.bio}</p>}
-          {t.wa && waNumber(t.wa) && <a href={`https://wa.me/${waNumber(t.wa)}?text=${encodeURIComponent("مرحبا، شفت ملفك على Jordan Gym Reviews وبدي أحجز استشارة")}`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-accent/15 px-4 py-2 text-center text-sm font-bold text-accent ring-1 ring-accent/40">احجز استشارة واتساب</a>}
-          {t.href && <Link href={t.href} className="mt-auto rounded-xl bg-accent px-4 py-2 text-center text-sm font-bold text-accent-foreground">عرض الملف الشخصي</Link>}
+          {t.wa && waNumber(t.wa) && <a href={`https://wa.me/${waNumber(t.wa)}?text=${encodeURIComponent("مرحبا، شفت ملفك على GymJo وبدي أحجز استشارة")}`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-accent/15 px-4 py-2 text-center text-sm font-bold text-accent ring-1 ring-accent/40">احجز استشارة واتساب</a>}
+          {t.href && <Link href={t.href} className="mt-auto inline-flex min-h-11 items-center justify-center rounded-xl bg-accent px-4 py-2.5 text-center text-sm font-black text-accent-foreground transition hover:brightness-105">عرض الملف الشخصي</Link>}
         </div>
       </article>))}</div>
   );
@@ -166,12 +195,13 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   ];
   const multi = views.length > 1;
   const wa = waNumber(org.whatsapp);
-  const msg = (extra = "") => encodeURIComponent(`مرحبا، شفت ${org.name_ar}${extra} على Jordan Gym Reviews وبدي أستفسر.`);
-  const trialMsg = encodeURIComponent(`مرحبا، شفت ${org.name_ar} على Jordan Gym Reviews وبدي أحجز يوم تجريبي.`);
+  const msg = (extra = "") => encodeURIComponent(`مرحبا، شفت ${org.name_ar}${extra} على GymJo وبدي أستفسر.`);
+  const trialMsg = encodeURIComponent(`مرحبا، شفت ${org.name_ar} على GymJo وبدي أحجز يوم تجريبي.`);
   const shareHref = `https://wa.me/?text=${encodeURIComponent(`${org.name_ar} — ${baseUrl()}/g/${org.slug}`)}`;
   const orgVideos = await listVideos({ orgId: org.id, limit: 12 });
   const reviewVideos = orgVideos.filter((x) => x.kind === "review");
   const reelVideos = orgVideos.filter((x) => x.kind === "reel");
+  const { data: posts } = await createPublicClient().from("business_posts").select("id,body,created_at").eq("organization_id", org.id).order("created_at", { ascending: false }).limit(5);
   const category = org.category_id ? (await createPublicClient().from("org_categories").select("name_ar").eq("id", org.category_id).maybeSingle()).data?.name_ar : null;
   const jsonLd = {
     "@context": "https://schema.org",
@@ -243,18 +273,25 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
 
   return (
     <div className={`min-h-[70vh] ${themeClass(org.theme)}`}>
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
+    <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:py-8">
       <PageView orgId={org.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs).replace(/</g, "\\u003c") }} />
       {!multi && womenBanner(views[0])}
-      <div className={glow ? `glow glow-${glow} rounded-2xl bg-surface p-5` : ""}>
-      {media[0] && (
-        <figure className="mb-6 overflow-hidden rounded-3xl border border-white/10 bg-surface shadow-2xl shadow-black/20">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} fetchPriority="high" decoding="async" className="aspect-[4/3] w-full object-cover sm:aspect-[21/9]" />
-        </figure>
-      )}
+      <div className="relative mb-7">
+      <figure className="mb-0 overflow-hidden rounded-[1.75rem] border border-white/10 bg-surface shadow-2xl shadow-black/20">
+        {media[0] ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} fetchPriority="high" decoding="async" className="aspect-[16/9] w-full object-cover sm:aspect-[2.6/1]" />
+        ) : (
+          <div className="relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_80%_15%,rgba(212,255,0,.28),transparent_48%),linear-gradient(125deg,#10140a,#26320b_55%,#10140a)] sm:aspect-[2.6/1]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand-mark.svg" alt="" aria-hidden="true" className="size-28 rounded-3xl opacity-90 shadow-2xl sm:size-36" />
+            <span className="absolute bottom-4 start-5 text-sm font-black tracking-[.2em] text-white/70 sm:bottom-6 sm:start-8 sm:text-base">GYMJO</span>
+          </div>
+        )}
+      </figure>
+      <div className={`relative z-10 mx-2 -mt-12 rounded-3xl border border-white/10 bg-surface p-5 shadow-2xl shadow-black/20 sm:mx-6 sm:-mt-16 sm:p-7 ${glow ? `glow glow-${glow}` : ""}`}>
       {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
       <p className="text-sm text-muted">{category ?? ORG_TYPE_LABEL[org.type]}{isVerified(org) && <span className="text-accent"> · ✓ موثّق</span>}{multi && <span> · {views.length} فروع</span>}</p>
       {coachProfile && (coachProfile.education || coachProfile.experience_years != null) && (
@@ -263,6 +300,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {coachGyms.length > 0 && (
         <p className="mt-1 text-sm">{org.type === "nutritionist" ? "يتعاون مع: " : "يتدرب في: "}{coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
       <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">{org.name_ar}</h1>
+      {org.description_ar && <p className="mt-3 max-w-4xl whitespace-pre-line text-sm leading-7 text-muted sm:text-base">{org.description_ar}</p>}
+      {!multi && <div className="mt-4 flex flex-wrap gap-2">{contactButtons(views[0])}</div>}
       {org.is_claimed === false && (
         <p className="mt-2 rounded-xl bg-white/5 p-3 text-sm text-muted ring-1 ring-white/10">
           بيانات أولية من مصادر عامة، وصاحب النادي لسا ما استلم صفحته. <Link href={`/claim/${org.slug}`} className="font-bold text-accent underline">هذا ناديي؟ استلم صفحتك مجاناً</Link>
@@ -285,6 +324,23 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </div>
       )}
       {!multi && <p className="mt-1 text-muted">{[org.address, org.area, org.city].filter(Boolean).join("، ")}</p>}
+      <div className="mt-5 grid gap-2 border-t border-white/10 pt-4 sm:grid-cols-2">
+        <div className="rounded-xl bg-background/55 p-3">
+          <p className="text-[11px] font-bold text-muted">📍 الموقع</p>
+          <p className="mt-1 line-clamp-2 text-sm font-bold">{[org.area, org.city].filter(Boolean).join("، ") || "الموقع غير محدد"}</p>
+          {orgMaps && <a href={orgMaps} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-xs font-bold text-accent underline">افتح الخريطة</a>}
+        </div>
+        <div className="rounded-xl bg-background/55 p-3">
+          <p className="text-[11px] font-bold text-muted">☎ التواصل</p>
+          <p className="mt-1 text-sm font-bold" dir="ltr">{org.phone || "غير متوفر"}</p>
+          {org.phone && <a href={"tel:" + org.phone} className="mt-1 inline-block text-xs font-bold text-accent underline">اتصل بالنادي</a>}
+        </div>
+      </div>
+      {(org.instagram || org.website) && <div className="mt-3 flex flex-wrap gap-2">
+        {org.instagram && <a href={"https://instagram.com/" + org.instagram.replace(/^@/, "")} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center rounded-full bg-background/60 px-4 text-sm font-bold ring-1 ring-white/10 hover:ring-accent">◎ Instagram</a>}
+        {org.website && <a href={org.website} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center rounded-full bg-background/60 px-4 text-sm font-bold ring-1 ring-white/10 hover:ring-accent">↗ الموقع الإلكتروني</a>}
+      </div>}
+      </div>
       </div>
       {multi && (
         <nav className="mt-3 flex flex-wrap gap-2 text-sm" aria-label="فروع النشاط">
@@ -292,12 +348,35 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </nav>
       )}
 
+      {!multi && <OrgSectionNav items={[
+        ...(media.length > 1 ? [{ href: "#photos", label: "الصور" }] : []),
+        ...(offers.length > 0 ? [{ href: "#offers", label: "العروض" }] : []),
+        ...(services.length > 0 ? [{ href: "#prices", label: "الأسعار والخدمات" }] : []),
+        ...(hours.length > 0 ? [{ href: "#hours", label: "الدوام" }] : []),
+        ...(org.type === "sports_facility" && slots.length > 0 ? [{ href: "#slots", label: "المواعيد" }] : []),
+        ...(classes.length > 0 ? [{ href: "#classes", label: "الحصص" }] : []),
+        ...(showTrainers && allCards.length > 0 ? [{ href: "#trainers", label: "المدربون" }] : []),
+        ...(nutriCards.length > 0 ? [{ href: "#nutrition", label: "التغذية" }] : []),
+        ...(org.type === "store" && products.length > 0 ? [{ href: "#products", label: "المنتجات" }] : []),
+      ]} />}
       <div className="mt-5 flex flex-wrap gap-2 sm:gap-3 [&>a]:min-h-11 [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center [&>a]:text-center">
-        {!multi && contactButtons(views[0])}
         {wa && org.free_trial_note && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${trialMsg}`} className="rounded-xl bg-accent/15 px-5 py-2.5 font-bold text-accent ring-1 ring-accent/50">🎟 {org.free_trial_note}</TrackedLink>}
         <a href={shareHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">شارك على واتساب</a>
-        <a href={`/g/${org.slug}/card`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">🖼 كرت للمنشور</a>
-        <a href={`/g/${org.slug}/card?s=1`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">📱 كرت للستوري</a>
+      </div>
+      <div className="mt-3 grid max-w-md grid-cols-2 gap-2 sm:gap-3" aria-label="كروت جاهزة للمشاركة">
+        {[
+          { href: `/g/${org.slug}/card`, title: "كرت منشور", hint: "مربّع تقريباً · للفيد", shape: "h-10 w-8" },
+          { href: `/g/${org.slug}/card?s=1`, title: "كرت ستوري", hint: "طولي · للستوري والريلز", shape: "h-12 w-7" },
+        ].map((c) => (
+          <a key={c.href} href={c.href} target="_blank" rel="noopener noreferrer"
+            className="flex min-h-16 items-center gap-3 rounded-xl bg-surface p-3 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+            <span aria-hidden className={`${c.shape} shrink-0 rounded-md border-2 border-accent/70 bg-accent/10`} />
+            <span className="min-w-0">
+              <span className="block text-sm font-bold">{c.title}</span>
+              <span className="block text-xs text-muted">{c.hint}</span>
+            </span>
+          </a>
+        ))}
       </div>
       <details className="mt-3 w-fit rounded-xl bg-surface ring-1 ring-white/10 [&[open]]:p-4">
         <summary className="min-h-11 cursor-pointer list-none rounded-xl px-5 py-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent [&::-webkit-details-marker]:hidden">📲 QR للمشاركة</summary>
@@ -311,14 +390,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           </div>
         </div>
       </details>
-      {!multi && (() => {
-        const jumps = [offers.length > 0 && ["#offers", "العروض"], services.length > 0 && ["#prices", "الأسعار"], hours.length > 0 && ["#hours", "الدوام"], media.length > 1 && ["#photos", "الصور"]].filter(Boolean) as [string, string][];
-        return jumps.length > 2 && (
-          <nav aria-label="أقسام الصفحة" className="sticky top-0 z-20 -mx-4 mt-4 flex gap-2 overflow-x-auto border-y border-white/10 bg-background/95 px-4 py-3 text-sm shadow-lg shadow-black/10 backdrop-blur [scrollbar-width:none] sm:-mx-6 sm:px-6">
-            {jumps.map(([h, l]) => <a key={h} href={h} className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-surface px-4 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none">{l}</a>)}
-          </nav>
-        );
-      })()}
+
       {reviewVideos.length > 0 && (
         <section className="mt-6 rounded-2xl bg-accent/10 p-4 ring-1 ring-accent/30">
           <h2 className="mb-1 text-lg font-bold">🎬 مراجعة عبد الكريم</h2>
@@ -327,7 +399,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </section>
       )}
 
-      {media.length > 1 && <section id="photos" className="scroll-mt-20"><Gallery start={1} items={media.map((m) => ({ src: publicMediaUrl(m.storage_path), alt: m.alt_text ?? org.name_ar, caption: m.alt_text }))} /></section>}
+      {media.length > 1 && <section id="photos" className="scroll-mt-48"><Gallery start={1} items={media.map((m) => ({ src: publicMediaUrl(m.storage_path), alt: m.alt_text ?? org.name_ar, caption: m.alt_text }))} /></section>}
 
       {org.video_url && (() => {
         const yt = org.video_url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
@@ -353,7 +425,6 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </div>
       )}
 
-      {org.description_ar && <p className="mt-6 whitespace-pre-line leading-8">{org.description_ar}</p>}
 
       {org.type === "healthy_food" && (
         <>
@@ -368,15 +439,28 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </>
       )}
 
+      {(posts ?? []).length > 0 && (
+        <Section title="آخر الأخبار">
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {(posts ?? []).map((p) => (
+              <li key={p.id} className="rounded-2xl bg-surface p-4 ring-1 ring-white/10">
+                <p className="whitespace-pre-line text-sm leading-7">{p.body}</p>
+                <p className="mt-2 text-xs text-muted">{dateAr(p.created_at)}</p>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
       {!multi ? (
         <>
-          {offers.length > 0 && <div id="offers" className="scroll-mt-20"><Section title="العروض"><Offers items={offers} /></Section></div>}
+          {offers.length > 0 && <div id="offers" className="scroll-mt-48"><Section title="العروض"><Offers items={offers} /></Section></div>}
           <div className="mt-8 grid gap-6 lg:grid-cols-[2fr_1fr]">
-            {services.length > 0 && <section id="prices" className="scroll-mt-20"><h2 className="mb-3 text-xl font-bold">الأسعار والخدمات</h2><Services items={services} /></section>}
-            {hours.length > 0 && <section id="hours" className="scroll-mt-20"><h2 className="mb-3 text-xl font-bold">ساعات الدوام</h2><Hours items={hours} /></section>}
+            {services.length > 0 && <section id="prices" className="scroll-mt-48"><h2 className="mb-3 text-xl font-bold">الأسعار والخدمات</h2><Services items={services} /></section>}
+            {hours.length > 0 && <section id="hours" className="scroll-mt-48"><h2 className="mb-3 text-xl font-bold">ساعات الدوام</h2><Hours items={hours} /></section>}
           </div>
           {org.type === "sports_facility" && slots.length > 0 && (
-            <Section title="المواعيد المتاحة">
+            <div id="slots" className="scroll-mt-48"><Section title="المواعيد المتاحة">
               <div className="space-y-4">{[...new Set(slots.map((x) => x.slot_date))].map((day) => (
                 <div key={day}><h3 className="mb-2 font-bold text-accent">{day === ammanDate(0) ? "اليوم" : dayLabelAr(day)}</h3>
                   <ul className="flex flex-wrap gap-2">{slots.filter((x) => x.slot_date === day).map((x) => {
@@ -388,12 +472,12 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
                         : <span className="block rounded-xl bg-accent/15 px-3 py-1.5 text-sm font-bold text-accent" dir="ltr">{label} · متاح</span>}</li>;
                   })}</ul></div>))}</div>
               <p className="mt-3 text-xs text-muted">اضغط على الوقت المتاح لتحجز عبر واتساب. الحجز بيتأكد من صاحب الملعب.</p>
-            </Section>
+            </Section></div>
           )}
-          {classes.length > 0 && <Section title="جدول الحصص"><Classes items={classes} /></Section>}
-          {showTrainers && allCards.length > 0 && <Section title="المدربون"><Trainers items={allCards} /></Section>}
-          {nutriCards.length > 0 && <Section title="🥗 أخصائيو التغذية الشركاء"><Trainers items={nutriCards} /></Section>}
-          {org.type === "store" && <Section title="المنتجات"><Products items={products} /></Section>}
+          {classes.length > 0 && <div id="classes" className="scroll-mt-48"><Section title="جدول الحصص"><Classes items={classes} /></Section></div>}
+          {showTrainers && allCards.length > 0 && <div id="trainers" className="scroll-mt-48"><Section title="المدربون"><Trainers items={allCards} /></Section></div>}
+          {nutriCards.length > 0 && <div id="nutrition" className="scroll-mt-48"><Section title="🥗 أخصائيو التغذية الشركاء"><Trainers items={nutriCards} /></Section></div>}
+          {org.type === "store" && <div id="products" className="scroll-mt-48"><Section title="المنتجات"><Products items={products} /></Section></div>}
         </>
       ) : (
         <>

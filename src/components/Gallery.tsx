@@ -26,16 +26,16 @@ export function Gallery({ items, start = 0 }: { items: GalleryItem[]; start?: nu
     <>
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         {shown.map((m, k) => (
-          <figure key={m.src} className="min-w-0">
+          <figure key={m.src} className={`min-w-0 ${k === 0 ? "col-span-2" : ""}`}>
             <button
               type="button"
               onClick={(e) => { opener.current = e.currentTarget; setI(Math.max(0, start) + k); }}
-              className="group block min-h-11 w-full overflow-hidden rounded-xl bg-surface ring-1 ring-white/10 outline-none transition hover:ring-accent focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none"
+              className="group relative block min-h-11 w-full overflow-hidden rounded-2xl bg-surface ring-1 ring-white/10 outline-none transition hover:ring-accent focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none"
               aria-label={`عرض الصورة: ${m.alt}`}
               aria-haspopup="dialog"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={m.src} alt={m.alt} loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover transition duration-300 group-hover:scale-[1.03] motion-reduce:transition-none" />
+              <img src={m.src} alt={m.alt} loading="lazy" decoding="async" className={`w-full object-cover transition duration-500 group-hover:scale-[1.03] motion-reduce:transition-none ${k === 0 ? "aspect-[16/9]" : "aspect-[4/3]"}`} />
             </button>
             {m.caption && <figcaption className="mt-2 break-words px-1 text-sm leading-relaxed text-muted">{m.caption}</figcaption>}
           </figure>

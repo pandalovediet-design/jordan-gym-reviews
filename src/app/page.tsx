@@ -3,26 +3,58 @@ import { FlashStrip } from "@/components/FlashStrip";
 import { OrgCard } from "@/components/OrgCard";
 import { TrailCard } from "@/components/TrailCard";
 import { adImageUrl, listLiveAds } from "@/lib/ads";
+import { AdImpressions } from "@/components/AdImpressions";
 import { listActiveOffers, listCities, listHomeSections, listLiveFlash, listPartners, listTrails } from "@/lib/queries";
 import { getSiteSettings } from "@/lib/site-settings";
+import { listExercises } from "@/lib/exercises";
+import { createPublicClient } from "@/lib/supabase/public";
+import { RevealCode } from "@/components/RevealCode";
 
 const TYPE_TILES = [
-  { href: "/search?type=gym", icon: "🏋️", label: "نوادي" },
-  { href: "/search?type=independent_coach", icon: "🧑‍🏫", label: "مدربين" },
-  { href: "/search?type=sports_facility", icon: "⚽", label: "ملاعب" },
-  { href: "/pink", icon: "💗", label: "للنساء" },
-  { href: "/search?type=nutritionist", icon: "🥗", label: "تغذية" },
-  { href: "/search?type=healthy_food", icon: "🍱", label: "أكل صحي" },
-  { href: "/search?type=store", icon: "🛍️", label: "متاجر" },
-  { href: "/search?type=sports_health", icon: "🩺", label: "علاج رياضي" },
+  { href: "/search?type=gym", icon: "🏋️", label: "نوادي", description: "قارن النوادي والأسعار والمرافق." },
+  { href: "/search?type=independent_coach", icon: "🧑‍🏫", label: "مدربين", description: "اعثر على مدرب يناسب هدفك." },
+  { href: "/search?type=sports_facility", icon: "⚽", label: "ملاعب", description: "اكتشف الملاعب والمنشآت الرياضية." },
+  { href: "/pink", icon: "💗", label: "للنساء", description: "مساحة رياضية مخصصة للسيدات." },
+  { href: "/search?type=nutritionist", icon: "🥗", label: "تغذية", description: "مختصون يساعدونك بخطتك الغذائية." },
+  { href: "/search?type=healthy_food", icon: "🍱", label: "أكل صحي", description: "خيارات أكل تدعم أسلوب حياة صحي." },
+  { href: "/search?type=store", icon: "🛍️", label: "متاجر", description: "معدات ومنتجات رياضية." },
+  { href: "/search?type=sports_health", icon: "🩺", label: "علاج رياضي", description: "خدمات العلاج والتأهيل الرياضي." },
 ];
+
+const FEATURE_TILES = [
+  { href: "/now", icon: "⏱️", label: "هسا", description: "اكتشف خيارات رياضية تناسب خطتك اليوم." },
+  { href: "/awards", icon: "🏆", label: "نادي الشهر", description: "تابع الترشيحات واكتشف الأندية المميزة." },
+  { href: "/exercises", icon: "💪", label: "مكتبة التمارين", description: "تعلّم التمارين وطريقة أدائها." },
+  { href: "/log", icon: "🔥", label: "سجل تمريني", description: "سجّل نشاطك وتابع استمراريتك." },
+  { href: "/food", icon: "🍽️", label: "سجل أكلي", description: "سجّل وجباتك بضغطة بدون عدّ سعرات." },
+  { href: "/challenges", icon: "🏆", label: "التحديات", description: "شارك بتحديات أسبوعية وتابع إنجازاتك." },
+  { href: "/deals", icon: "🎟️", label: "أكواد الخصم", description: "وفّر مع عروض الأنشطة الرياضية." },
+  { href: "/no-gym", icon: "🏠", label: "من غير جيم", description: "تمارين وأفكار بدون اشتراك نادي." },
+  { href: "/no-deprivation", icon: "🥗", label: "من غير حرمان", description: "محتوى غذائي متوازن وواقعي." },
+  { href: "/rooh-w-jasad", icon: "🕌", label: "روح وجسد", description: "اهتم بصحتك الجسدية والروحية." },
+  { href: "/reels", icon: "🎬", label: "ريلز رياضية", description: "مقاطع قصيرة وملهمة من عالم الرياضة." },
+  { href: "/market", icon: "🔄", label: "سوق المعدات", description: "اكتشف معدات رياضية للبيع والتبديل." },
+  { href: "/trails", icon: "🥾", label: "المسارات", description: "اكتشف مسارات المشي والأنشطة الخارجية." },
+  { href: "/tools", icon: "🧮", label: "الحاسبات والأدوات", description: "أدوات عملية تساعدك في رحلتك." },
+  { href: "/favorites", icon: "❤️", label: "المفضلة", description: "احفظ الأنشطة وارجع لها بسهولة." },
+];
+
+async function listHomepageCodes() {
+  try {
+    const { data } = await createPublicClient().rpc("list_public_codes", {});
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export const revalidate = 300;
 
 export default async function Home() {
-  // What shows here (blocks, cards per section, hero text) is set by the platform owner in /admin/settings.
+  // Homepage content and visibility are configured by the platform owner in /admin/settings.
   const cfg = await getSiteSettings();
   const show = cfg.home;
-  const [home, offersRaw, ads, flash, partners, trails, cities] = await Promise.all([
+  const [home, offersRaw, ads, flash, partners, trails, cities, exercises, codesRaw] = await Promise.all([
     listHomeSections(cfg.perSection).catch(() => ({ sections: [], pink: { total: 0, items: [] } })),
     listActiveOffers(6).catch(() => []),
     listLiveAds().catch(() => []),
@@ -30,13 +62,14 @@ export default async function Home() {
     listPartners().catch(() => []),
     listTrails().catch(() => []),
     listCities().catch(() => []),
+    listExercises().catch(() => []),
+    listHomepageCodes(),
   ]);
-  // One card per offer title per place (seeded data repeats titles).
+  const codes = codesRaw.slice(0, 3);
   const offers = offersRaw.filter((o, i, a) => a.findIndex((x) => x.title_ar === o.title_ar && x.organizations?.slug === o.organizations?.slug) === i);
   const sorted = [...home.sections].sort((a, b) => b.total - a.total);
   const full = cfg.maxSections > 0 ? sorted.slice(0, cfg.maxSections) : sorted;
-  const fullKeys = new Set(full.map((s) => s.key));
-  const tiles = home.sections.filter((s) => !fullKeys.has(s.key));
+  const tiles = home.sections.filter((s) => !new Set(full.map((item) => item.key)).has(s.key));
   const banner = ads.find((a) => a.placement === "banner");
   const sponsored = ads.filter((a) => a.placement === "sponsored").slice(0, 3);
   return (
@@ -73,10 +106,13 @@ export default async function Home() {
                 <span className="rounded-2xl border border-[#d4ff00]/20 bg-[#d4ff00]/10 p-3 text-2xl">✦</span>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3">
-                <Link href="/search?type=gym" className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-[#d4ff00]/40 hover:bg-[#d4ff00]/10"><span className="mb-6 flex size-11 items-center justify-center rounded-xl bg-[#d4ff00]/10 text-2xl">🏋️</span><span className="block font-extrabold">نوادي رياضية</span><span className="mt-1 block text-xs text-muted">اعرف الأسعار والمرافق</span></Link>
-                <Link href="/search?type=independent_coach" className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-[#d4ff00]/40 hover:bg-[#d4ff00]/10"><span className="mb-6 flex size-11 items-center justify-center rounded-xl bg-[#d4ff00]/10 text-2xl">🧑‍🏫</span><span className="block font-extrabold">مدربين شخصيين</span><span className="mt-1 block text-xs text-muted">خطة تناسب هدفك</span></Link>
-                <Link href="/search?type=sports_facility" className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-orange-300/50 hover:bg-orange-300/10"><span className="mb-6 flex size-11 items-center justify-center rounded-xl bg-orange-400/15 text-2xl">⚽</span><span className="block font-extrabold">ملاعب ومنشآت</span><span className="mt-1 block text-xs text-muted">احجز لعبتك الجاية</span></Link>
-                <Link href="/pink" className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-pink-300/50 hover:bg-pink-300/10"><span className="mb-6 flex size-11 items-center justify-center rounded-xl bg-pink-400/15 text-2xl">💗</span><span className="block font-extrabold">مساحات للنساء</span><span className="mt-1 block text-xs text-muted">خيارات تناسبك</span></Link>
+                {TYPE_TILES.slice(0, 4).map((tile) => (
+                  <Link key={tile.href} href={tile.href} className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-1 hover:border-[#d4ff00]/40 hover:bg-[#d4ff00]/10">
+                    <span className="mb-5 flex size-11 items-center justify-center rounded-xl bg-[#d4ff00]/10 text-2xl">{tile.icon}</span>
+                    <span className="block font-extrabold">{tile.label}</span>
+                    <span className="mt-1 block text-xs text-muted">{tile.description}</span>
+                  </Link>
+                ))}
               </div>
               <Link href="/search" className="mt-3 flex items-center justify-between rounded-2xl border border-[#d4ff00]/20 bg-[#d4ff00]/10 px-4 py-3 text-sm font-bold text-[#d4ff00] transition hover:bg-[#d4ff00]/15"><span>استكشف كل الأنشطة الرياضية</span><span aria-hidden>←</span></Link>
               <div className="mt-4 flex items-center gap-3 rounded-2xl bg-black/20 p-3"><span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-lg">⌖</span><div><p className="text-sm font-bold">منطقتك، ميزانيتك، هدفك</p><p className="mt-0.5 text-xs text-muted">اكتشف خيارات أقرب لإلك بدل البحث العشوائي</p></div></div>
@@ -84,8 +120,100 @@ export default async function Home() {
             <div className="absolute -left-2 top-10 hidden -translate-x-1/4 rounded-2xl border border-white/10 bg-surface/95 px-4 py-3 shadow-xl backdrop-blur sm:block"><p className="text-xs text-muted">قرار أذكى</p><p className="mt-1 text-sm font-extrabold">قارن. اختار. انطلق.</p></div>
           </div>
         </div>
-        {show.tiles && <div className="mx-auto mt-10 max-w-7xl border-t border-white/10 pt-6 sm:mt-14"><div className="mb-4 flex items-center justify-between"><p className="font-extrabold">تصفّح حسب اهتمامك</p><Link href="/sections" className="text-sm text-[#d4ff00] hover:text-white">كل الأقسام ←</Link></div><div className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">{TYPE_TILES.map((t) => <Link key={t.href} href={t.href} className="flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-surface/70 px-4 py-2.5 text-sm transition hover:border-[#d4ff00]/40 hover:bg-[#d4ff00]/10"><span aria-hidden className="text-lg">{t.icon}</span><span className="font-bold">{t.label}</span></Link>)}</div></div>}
+        {show.tiles && (
+          <section className="mx-auto mt-10 max-w-7xl border-t border-white/10 pt-7 sm:mt-14">
+            <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+              <div><p className="text-xs font-extrabold tracking-wider text-accent">GYMJO DIRECTORY</p><h2 className="mt-1 text-xl font-black sm:text-2xl">دليل الأنشطة الرياضية</h2><p className="mt-1 text-sm text-muted">اختار نوع النشاط اللي بتدور عليه.</p></div>
+              <Link href="/directory" className="text-sm font-bold text-accent">كل الدليل ←</Link>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+              {TYPE_TILES.map((tile) => (
+                <Link key={tile.href} href={tile.href} className="group flex min-h-32 flex-col rounded-2xl border border-white/10 bg-surface/80 p-3 transition hover:-translate-y-1 hover:border-accent/50 hover:bg-accent/5 sm:p-4">
+                  <span className="flex size-10 items-center justify-center rounded-xl bg-accent/10 text-xl">{tile.icon}</span>
+                  <span className="mt-3 font-extrabold">{tile.label}</span>
+                  <span className="mt-1 text-xs leading-5 text-muted">{tile.description}</span>
+                  <span className="mt-auto pt-3 text-xs font-bold text-accent">استكشف ←</span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </section>
+
+      <section className="py-12 sm:py-16">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+          <div><p className="text-xs font-extrabold tracking-wider text-accent">MORE THAN A DIRECTORY</p><h2 className="mt-1 text-2xl font-black sm:text-3xl">كل ميزات GymJo قدامك</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">مش بس دليل نوادي؛ أدوات ومحتوى وعروض تساعدك تتمرّن وتتابع تقدمك وتكتشف أشياء جديدة — كل قسم ظاهر هون بدون قوائم مخفية.</p></div>
+          <span className="rounded-full border border-white/10 bg-surface px-3 py-1.5 text-xs font-bold text-muted">{FEATURE_TILES.length} ميزة</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {FEATURE_TILES.map((tile) => (
+            <Link key={tile.href} href={tile.href} className="group relative flex min-h-36 flex-col overflow-hidden rounded-2xl border border-white/10 bg-surface p-4 transition duration-200 hover:-translate-y-1 hover:border-accent/50 hover:shadow-xl hover:shadow-black/10 sm:min-h-40 sm:p-5">
+              <span aria-hidden className="absolute -left-3 -top-4 text-7xl opacity-[0.06] transition group-hover:scale-110">{tile.icon}</span>
+              <span className="relative flex size-11 items-center justify-center rounded-xl bg-accent/10 text-2xl">{tile.icon}</span>
+              <span className="relative mt-3 font-extrabold">{tile.label}</span>
+              <span className="relative mt-1 text-xs leading-5 text-muted">{tile.description}</span>
+              <span className="relative mt-auto pt-3 text-xs font-bold text-accent">افتح القسم ←</span>
+              <span className="absolute bottom-0 right-0 h-1 w-0 bg-accent transition-all duration-300 group-hover:w-full" />
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {exercises.length > 0 && (
+        <section className="mb-12">
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div><p className="text-xs font-extrabold tracking-wider text-accent">LEARN & TRAIN</p><h2 className="mt-1 text-2xl font-black">جرّب مكتبة التمارين</h2><p className="mt-1 text-sm text-muted">شوف أسماء التمارين والعضلات المستهدفة قبل ما تدخل للقسم.</p></div>
+            <Link href="/exercises" className="text-sm font-bold text-accent">كل التمارين ←</Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {exercises.slice(0, 4).map((exercise) => (
+              <Link key={exercise.id} href={`/exercises/${exercise.slug}`} className="rounded-2xl border border-white/10 bg-surface p-4 transition hover:border-accent/50 hover:bg-accent/5">
+                <span className="inline-flex rounded-lg bg-accent/10 px-2.5 py-1 text-xs font-bold text-accent">{exercise.muscle_group}</span>
+                <h3 className="mt-3 font-extrabold">{exercise.name_ar}</h3>
+                {exercise.summary_ar && <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{exercise.summary_ar}</p>}
+                <p className="mt-3 text-xs font-bold text-accent">{exercise.count > 0 ? `${exercise.count} شرح من مدربين` : "شوف تفاصيل التمرين"} ←</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+      {codes.length > 0 && (
+        <section className="mb-12 rounded-3xl border border-[#d4ff00]/20 bg-gradient-to-l from-[#d4ff00]/[0.08] to-surface p-5 sm:p-7">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div><p className="text-xs font-extrabold tracking-wider text-accent">GYMJO EXCLUSIVE</p><h2 className="mt-1 text-2xl font-black">وفّر مع أكواد GymJo</h2><p className="mt-1 text-sm text-muted">خصومات حقيقية من أنشطة ومتاجر مشاركة — اكشف الكود واستخدمه مباشرة.</p></div>
+            <Link href="/deals" className="text-sm font-bold text-accent">كل أكواد الخصم ←</Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {codes.map((code) => (
+              <article key={code.id} className="flex flex-col justify-between gap-4 rounded-2xl border border-white/10 bg-surface p-4">
+                <div><h3 className="font-extrabold">{code.title_ar}</h3>{code.details_ar && <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{code.details_ar}</p>}<p className="mt-2 text-xs text-muted">{code.org_name} · {code.org_city}</p></div>
+                <RevealCode id={code.id} />
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+      {show.offers && offers.length > 0 && (
+        <section className="mb-12">
+          <h2 className="mb-4 text-xl font-bold">عروض ودورات حالية</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {offers.map((o) => (
+              <Link key={o.id} href={`/g/${o.organizations!.slug}`} className="rounded-2xl bg-surface p-5 ring-1 ring-white/10 hover:ring-accent/60">
+                <p className="text-xs text-accent">{o.kind === "course" ? "دورة" : o.discount_percent ? `خصم ${o.discount_percent}%` : "عرض"}</p>
+                <h3 className="mt-1 font-bold">{o.title_ar}</h3>
+                <p className="mt-1 text-sm text-muted">{o.organizations!.name_ar} · {o.organizations!.city}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+      {show.trails && trails.length > 0 && (
+        <section className="mb-12">
+          <div className="mb-4 flex items-baseline justify-between"><h2 className="text-xl font-bold">🥾 مسارات المشي والهايكنق</h2><Link href="/trails" className="text-sm text-accent underline">كل المسارات</Link></div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{trails.slice(0, 6).map((t) => <TrailCard key={t.id} t={t} />)}</div>
+        </section>
+      )}
+      <AdImpressions ids={[...(show.banner && banner ? [banner.id] : []), ...(show.sponsored ? sponsored.map((a) => a.id) : [])]} />
       {show.banner && banner && (
         <a href={`/a/${banner.id}`} rel="sponsored noopener" className="relative mb-10 block overflow-hidden rounded-2xl bg-surface ring-1 ring-white/10">
           {banner.image_path && (
@@ -166,12 +294,6 @@ export default async function Home() {
             </section>
           )}
         </>
-      )}
-      {show.trails && trails.length > 0 && (
-        <section className="mb-12">
-          <div className="mb-4 flex items-baseline justify-between"><h2 className="text-xl font-bold">🥾 مسارات المشي والهايكنق</h2><Link href="/trails" className="text-sm text-accent underline">كل المسارات</Link></div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{trails.slice(0, 6).map((t) => <TrailCard key={t.id} t={t} />)}</div>
-        </section>
       )}
       {show.partners && partners.length > 0 && (
         <section className="mb-12">

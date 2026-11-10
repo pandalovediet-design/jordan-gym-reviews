@@ -1,20 +1,26 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { ImageInput } from "@/components/ImageInput";
-import { ActionForm, field } from "@/components/Form";
+import { ActionForm } from "@/components/Form";
+import { field } from "@/lib/form-styles";
 import { adImageUrl } from "@/lib/ads";
-import { dateAr, jod, msAgo } from "@/lib/format";
+import { ORG_TYPE_LABEL, dateAr, jod, msAgo } from "@/lib/format";
+
+const PLACEMENT: Record<string, string> = { banner: "بانر", sponsored: "ممول", search: "بحث مموّل", category: "قسم برعاية" };
 import { createAd, deleteAd, setAdActive } from "../actions";
 
 export const metadata: Metadata = { title: "الإعلانات", robots: { index: false } };
 
 export default async function AdsAdmin() {
   const { supabase } = await requireUser();
-  const [ads, acc, orgs] = await Promise.all([
+  const [ads, acc, orgs, countries] = await Promise.all([
     supabase.from("ads").select("*").order("created_at", { ascending: false }).limit(200),
     supabase.from("ad_accounting").select("*"),
     supabase.from("organizations").select("id,name_ar").eq("status", "published").order("name_ar").limit(300),
+    supabase.from("countries").select("code,name_ar").order("sort_order"),
   ]);
+  const countryName = (code: string) => (countries.data ?? []).find((c) => c.code === code)?.name_ar ?? code;
+  const ctr = (a: { clicks: number; impressions: number }) => (a.impressions > 0 ? `${((a.clicks / a.impressions) * 100).toFixed(1)}%` : "—");
   const list = ads.data ?? [];
   const accOf = (id: string) => (acc.data ?? []).find((a) => a.ad_id === id);
   const now = msAgo(0);
@@ -34,7 +40,9 @@ export default async function AdsAdmin() {
       <section className={box}><h2 className="mb-3 text-lg font-bold">إضافة إعلان</h2>
         <ActionForm action={createAd} submit="حفظ الإعلان">
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className={lbl}>المكان<select name="placement" className={field}><option value="banner">بانر كبير بأعلى الرئيسية</option><option value="sponsored">كرت «ممول»</option></select></label>
+            <label className={lbl}>المكان<select name="placement" className={field}><option value="banner">بانر كبير بأعلى الرئيسية</option><option value="sponsored">كرت «ممول» بالرئيسية</option><option value="search">بحث مموّل (أعلى نتائج البحث)</option><option value="category">قسم برعاية (أعلى صفحة القسم)</option></select></label>
+            <label className={lbl}>القسم (للقسم برعاية بس)<select name="target_type" defaultValue="" className={field}><option value="">كل الأقسام</option>{Object.entries(ORG_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
+            <label className={lbl}>السوق<select name="country_code" defaultValue="JO" className={field}>{(countries.data ?? []).map((c) => <option key={c.code} value={c.code}>{c.name_ar}</option>)}</select></label>
             <label className={lbl}>العنوان<input name="title" required className={field} /></label>
             <label className={`${lbl} sm:col-span-2`}>وصف قصير<input name="subtitle" className={field} /></label>
             <label className={lbl}>رابط الإعلان (https://...)<input name="link_url" dir="ltr" placeholder="أو اختر نشاط من اليمين" className={field} /></label>
@@ -63,7 +71,8 @@ export default async function AdsAdmin() {
             )}
             <div className="min-w-0 flex-1 space-y-1">
               <p className="font-semibold">{a.title} <span className={`text-xs ${s[1]}`}>{s[0]}</span></p>
-              <p className="text-xs text-muted">{a.placement === "banner" ? "بانر" : "ممول"} · {dateAr(a.starts_at)} ← {dateAr(a.ends_at)} · {a.clicks} نقرة</p>
+              <p className="text-xs text-muted">{PLACEMENT[a.placement] ?? a.placement}{a.target_type ? ` (${ORG_TYPE_LABEL[a.target_type]})` : ""} · {countryName(a.country_code)} · {dateAr(a.starts_at)} ← {dateAr(a.ends_at)}</p>
+              <p className="text-xs"><span className="font-bold tabular-nums">{a.impressions}</span> <span className="text-muted">ظهور ·</span> <span className="font-bold tabular-nums">{a.clicks}</span> <span className="text-muted">نقرة · نسبة النقر</span> <span className="font-bold tabular-nums text-accent">{ctr(a)}</span></p>
               <p className="truncate text-xs text-muted" dir="ltr">{a.link_url}</p>
               {ac && <p className="text-xs text-muted">{[ac.advertiser_name, ac.advertiser_phone, ac.price_jod != null && jod(ac.price_jod)].filter(Boolean).join(" · ")}{ac.notes && ` — ${ac.notes}`}</p>}
             </div>
