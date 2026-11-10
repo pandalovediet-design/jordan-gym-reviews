@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createPublicClient } from "@/lib/supabase/public";
-import { ActionForm, field } from "@/components/Form";
+import { ActionForm } from "@/components/Form";
+import { field } from "@/lib/form-styles";
 import { submitSponsorLead } from "./actions";
 
 export const revalidate = 600;

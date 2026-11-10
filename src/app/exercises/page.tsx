@@ -21,7 +21,7 @@ export default async function Exercises() {
       <p className="mt-2 max-w-xl text-muted">اضغط على العضلة اللي بدك تشتغل عليها، وشوف شرح التمرين من مدربين أردنيين.</p>
       <ExerciseExplorer items={items} />
       <p className="mt-10 rounded-2xl bg-surface p-4 text-sm text-muted ring-1 ring-white/10">
-        مدرب مستقل؟ <Link href="/join" className="text-accent underline">سجّل نشاطك</Link> وأضف شرحك للتمارين من لوحة التحكم، وبيظهر اسمك وزر واتساب عند كل شرح بعد موافقة الإدارة.
+        مدرب مستقل وبدك تضيف شرحك للتمارين؟ <Link href="/join" className="text-accent underline">ابعتلنا</Link> وبنتواصل معك، وبيظهر اسمك وزر واتساب عند كل شرح بعد المراجعة.
       </p>
     </div>
   );

@@ -3,6 +3,7 @@ import { FlashStrip } from "@/components/FlashStrip";
 import { OrgCard } from "@/components/OrgCard";
 import { TrailCard } from "@/components/TrailCard";
 import { adImageUrl, listLiveAds } from "@/lib/ads";
+import { AdImpressions } from "@/components/AdImpressions";
 import { listActiveOffers, listCities, listHomeSections, listLiveFlash, listPartners, listTrails } from "@/lib/queries";
 import { getSiteSettings } from "@/lib/site-settings";
 import { listExercises } from "@/lib/exercises";
@@ -25,6 +26,7 @@ const FEATURE_TILES = [
   { href: "/awards", icon: "🏆", label: "نادي الشهر", description: "تابع الترشيحات واكتشف الأندية المميزة." },
   { href: "/exercises", icon: "💪", label: "مكتبة التمارين", description: "تعلّم التمارين وطريقة أدائها." },
   { href: "/log", icon: "🔥", label: "سجل تمريني", description: "سجّل نشاطك وتابع استمراريتك." },
+  { href: "/food", icon: "🍽️", label: "سجل أكلي", description: "سجّل وجباتك بضغطة بدون عدّ سعرات." },
   { href: "/challenges", icon: "🏆", label: "التحديات", description: "شارك بتحديات أسبوعية وتابع إنجازاتك." },
   { href: "/deals", icon: "🎟️", label: "أكواد الخصم", description: "وفّر مع عروض الأنشطة الرياضية." },
   { href: "/no-gym", icon: "🏠", label: "من غير جيم", description: "تمارين وأفكار بدون اشتراك نادي." },
@@ -211,6 +213,7 @@ export default async function Home() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{trails.slice(0, 6).map((t) => <TrailCard key={t.id} t={t} />)}</div>
         </section>
       )}
+      <AdImpressions ids={[...(show.banner && banner ? [banner.id] : []), ...(show.sponsored ? sponsored.map((a) => a.id) : [])]} />
       {show.banner && banner && (
         <a href={`/a/${banner.id}`} rel="sponsored noopener" className="relative mb-10 block overflow-hidden rounded-2xl bg-surface ring-1 ring-white/10">
           {banner.image_path && (

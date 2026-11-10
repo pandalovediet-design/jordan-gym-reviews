@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import { ActionForm, field } from "@/components/Form";
+import { ActionForm } from "@/components/Form";
+import { field } from "@/lib/form-styles";
 import { domainsEnabled } from "@/lib/vercel-domains";
 import { connectDomain, disconnectDomain, verifyDomainAction } from "../../domain-actions";
 

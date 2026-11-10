@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { field } from "@/components/Form";
+import { field } from "@/lib/form-styles";
 
 type Cat = { id: string; org_type: string; name_ar: string };
 

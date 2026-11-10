@@ -7,7 +7,7 @@
 
 const OWNER_PREFIX = "gymjo:sync-owner:";
 
-export type MemberDataset = "favorites" | "workouts" | "challenges";
+export type MemberDataset = "favorites" | "workouts" | "challenges" | "food";
 
 /** "merge" = upload this device's anonymous data once; "replace" = take the account's data as is. */
 export function claimLocalData(dataset: MemberDataset, userId: string): "merge" | "replace" {
@@ -22,17 +22,18 @@ export function claimLocalData(dataset: MemberDataset, userId: string): "merge" 
 }
 
 /** Local keys that hold a signed-in member's copy of their data. */
-const MEMBER_KEYS = ["jgr:favs", "jgr:log-v1", "gymjo-challenge-progress-v1"];
+const MEMBER_KEYS = ["jgr:favs", "jgr:log-v1", "gymjo-challenge-progress-v1", "gymjo:food-v1", "gymjo:water-v1"];
 
 /** Called on sign-out so the next person on a shared device does not see this account's data. */
 export function clearMemberLocalData() {
   try {
-    const datasets = ["favorites", "workouts", "challenges"] as const;
+    const datasets = ["favorites", "workouts", "challenges", "food"] as const;
     if (!datasets.some((d) => localStorage.getItem(OWNER_PREFIX + d) !== null)) return;
     for (const d of datasets) localStorage.removeItem(OWNER_PREFIX + d);
     for (const key of MEMBER_KEYS) localStorage.removeItem(key);
     window.dispatchEvent(new Event("jgr:favs-change"));
     window.dispatchEvent(new Event("jgr:log-change"));
+    window.dispatchEvent(new Event("gymjo:food-change"));
   } catch {
     // Storage can be blocked; nothing to clear in that case.
   }

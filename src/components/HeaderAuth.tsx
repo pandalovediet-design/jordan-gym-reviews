@@ -48,7 +48,7 @@ export function HeaderAuth() {
   return (
     <>
       <Link href="/login" aria-hidden={state === "checking"} tabIndex={state === "checking" ? -1 : undefined} className={`${base} ring-1 ring-white/20 hover:bg-white/5 hover:text-accent ${hide}`}>دخول</Link>
-      <Link href="/join" aria-hidden={state === "checking"} tabIndex={state === "checking" ? -1 : undefined} className={`${base} bg-accent text-accent-foreground hover:brightness-110 ${hide}`}>سجّل نشاطك</Link>
+      <Link href="/join" aria-hidden={state === "checking"} tabIndex={state === "checking" ? -1 : undefined} className={`${base} bg-accent text-accent-foreground hover:brightness-110 ${hide}`}>أضف ناديك</Link>
     </>
   );
 }

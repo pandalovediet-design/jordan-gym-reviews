@@ -50,6 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/trails` },
     { url: `${base}/tools` },
     { url: `${base}/log` },
+    { url: `${base}/food` },
     ...trails.filter((t) => !t.slug.startsWith("demo-")).map((t) => ({ url: `${base}/trails/${t.slug}`, lastModified: t.updated_at })),
     { url: `${base}/terms` },
     { url: `${base}/privacy` },

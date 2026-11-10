@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
-import { ActionForm, field } from "@/components/Form";
+import { ActionForm } from "@/components/Form";
+import { field } from "@/lib/form-styles";
 import { ImageInput } from "@/components/ImageInput";
 import { MEALS, MEAL_LABEL, mealIcon, mealLabel } from "@/lib/nutrition-meta";
 import { addNutritionItem, addNutritionProduct, deleteNutritionItem, deleteNutritionProduct, setNutritionActive } from "../nutrition-actions";

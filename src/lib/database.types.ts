@@ -46,6 +46,30 @@ export type Database = {
           },
         ]
       }
+      countries: {
+        Row: { code: string; created_at: string; is_active: boolean; market_name: string; name_ar: string; name_en: string; sort_order: number }
+        Insert: { code: string; created_at?: string; is_active?: boolean; market_name: string; name_ar: string; name_en: string; sort_order?: number }
+        Update: { code?: string; created_at?: string; is_active?: boolean; market_name?: string; name_ar?: string; name_en?: string; sort_order?: number }
+        Relationships: []
+      }
+      cities: {
+        Row: { country_code: string; created_at: string; id: string; name_ar: string; name_en: string | null; slug: string; sort_order: number }
+        Insert: { country_code: string; created_at?: string; id?: string; name_ar: string; name_en?: string | null; slug: string; sort_order?: number }
+        Update: { country_code?: string; created_at?: string; id?: string; name_ar?: string; name_en?: string | null; slug?: string; sort_order?: number }
+        Relationships: []
+      }
+      country_managers: {
+        Row: { country_code: string; created_at: string; user_id: string }
+        Insert: { country_code: string; created_at?: string; user_id: string }
+        Update: { country_code?: string; created_at?: string; user_id?: string }
+        Relationships: []
+      }
+      business_posts: {
+        Row: { body: string; created_at: string; id: string; organization_id: string }
+        Insert: { body: string; created_at?: string; id?: string; organization_id: string }
+        Update: { body?: string; created_at?: string; id?: string; organization_id?: string }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -289,6 +313,8 @@ export type Database = {
       ads: {
         Row: {
           clicks: number
+          country_code: string
+          impressions: number
           created_at: string
           ends_at: string
           id: string
@@ -299,11 +325,14 @@ export type Database = {
           placement: string
           starts_at: string
           subtitle: string | null
+          target_type: Database["public"]["Enums"]["org_type"] | null
           title: string
           updated_at: string
         }
         Insert: {
           clicks?: number
+          country_code?: string
+          impressions?: number
           created_at?: string
           ends_at: string
           id?: string
@@ -314,11 +343,14 @@ export type Database = {
           placement: string
           starts_at: string
           subtitle?: string | null
+          target_type?: Database["public"]["Enums"]["org_type"] | null
           title: string
           updated_at?: string
         }
         Update: {
           clicks?: number
+          country_code?: string
+          impressions?: number
           created_at?: string
           ends_at?: string
           id?: string
@@ -329,6 +361,7 @@ export type Database = {
           placement?: string
           starts_at?: string
           subtitle?: string | null
+          target_type?: Database["public"]["Enums"]["org_type"] | null
           title?: string
           updated_at?: string
         }
@@ -1098,6 +1131,8 @@ export type Database = {
           category_id: string | null
           city: string
           created_at: string
+          city_id: string | null
+          country_code: string
           created_by: string
           description_ar: string | null
           id: string
@@ -1142,6 +1177,8 @@ export type Database = {
           area?: string | null
           city?: string
           created_at?: string
+          city_id?: string | null
+          country_code?: string
           created_by: string
           description_ar?: string | null
           id?: string
@@ -1186,6 +1223,8 @@ export type Database = {
           area?: string | null
           city?: string
           created_at?: string
+          city_id?: string | null
+          country_code?: string
           created_by?: string
           description_ar?: string | null
           id?: string
@@ -1554,11 +1593,60 @@ export type Database = {
           },
         ]
       }
+      user_food_logs: {
+        Row: {
+          log_date: string
+          meal: string
+          note: string
+          rating: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          log_date: string
+          meal: string
+          note?: string
+          rating: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          log_date?: string
+          meal?: string
+          note?: string
+          rating?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_water_logs: {
+        Row: {
+          cups: number
+          log_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cups?: number
+          log_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cups?: number
+          log_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_workout_logs: {
         Row: {
           activity: string
           created_at: string
           minutes: number
+          muscles: string[]
           updated_at: string
           user_id: string
           workout_date: string
@@ -1567,6 +1655,7 @@ export type Database = {
           activity?: string
           created_at?: string
           minutes?: number
+          muscles?: string[]
           updated_at?: string
           user_id: string
           workout_date: string
@@ -1575,6 +1664,7 @@ export type Database = {
           activity?: string
           created_at?: string
           minutes?: number
+          muscles?: string[]
           updated_at?: string
           user_id?: string
           workout_date?: string
@@ -1653,6 +1743,10 @@ export type Database = {
         }[]
       }
       admin_stats: { Args: never; Returns: Json }
+      count_ad_impressions: { Args: { p_ids: string[] }; Returns: undefined }
+      is_country_manager: { Args: { p_country: string }; Returns: boolean }
+      list_country_managers: { Args: never; Returns: { user_id: string; email: string; country_code: string; created_at: string }[] }
+      set_country_manager: { Args: { p_email: string; p_country: string; p_on: boolean }; Returns: string }
       admin_top_orgs: {
         Args: { p_days?: number }
         Returns: {
