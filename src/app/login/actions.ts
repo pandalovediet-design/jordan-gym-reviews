@@ -36,7 +36,7 @@ export async function signup(_: AuthState, fd: FormData): Promise<AuthState> {
   const next = safeNext(fd.get("next"));
   const { data, error } = await supabase.auth.signUp({ ...p.data, options: { emailRedirectTo: `${await siteUrl()}/auth/callback?next=${encodeURIComponent(next)}` } });
   if (error) return { error: "تعذّر إنشاء الحساب. تأكد من البيانات أو جرّب بريد ثاني." };
-  await notifyAdmin(`🆕 تسجيل جديد على Jordan Gym Reviews\n${p.data.email}`);
+  await notifyAdmin(`🆕 تسجيل جديد على GYMJO\n${p.data.email}`);
   if (!data.session) return { notice: "أرسلنا لك رابط تأكيد على بريدك. افتحه وبيرجعك هون تلقائياً." };
   redirect(next);
 }

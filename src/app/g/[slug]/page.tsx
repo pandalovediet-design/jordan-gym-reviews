@@ -82,7 +82,7 @@ function Offers({ items }: { items: Tables<"offers">[] }) {
   if (!items.length) return null;
   return (
     <div className="grid gap-3 sm:grid-cols-2">{items.map((o) => (
-      <article key={o.id} className="relative overflow-hidden rounded-2xl bg-[linear-gradient(125deg,rgba(212,255,0,.13),transparent_65%)] bg-surface p-5 ring-1 ring-accent/25">
+      <article key={o.id} className="relative overflow-hidden rounded-2xl bg-[linear-gradient(125deg,rgba(200,245,58,.13),transparent_65%)] bg-surface p-5 ring-1 ring-accent/25">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <span className="mb-2 inline-flex rounded-full bg-accent/15 px-3 py-1 text-[11px] font-bold text-accent">{o.kind === "course" ? "دورة تدريبية" : "عرض خاص"}</span>
@@ -125,7 +125,7 @@ function Trainers({ items }: { items: TrainerCard[] }) {
           {t.photo ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={publicMediaUrl(t.photo)} alt={t.name} loading="lazy" decoding="async" className="size-full object-cover transition duration-500 group-hover:scale-105" />
-          ) : <div className="flex size-full items-center justify-center bg-[radial-gradient(ellipse_at_75%_20%,rgba(212,255,0,.22),transparent_48%),linear-gradient(135deg,#151a0b,#283313)] text-5xl">🏋️</div>}
+          ) : <div className="flex size-full items-center justify-center bg-[radial-gradient(ellipse_at_75%_20%,rgba(200,245,58,.22),transparent_48%),linear-gradient(135deg,#0b1a08,#283313)] text-5xl">🏋️</div>}
           {(t.head || t.licensed) && (
             <div className="absolute start-3 top-3 flex flex-col items-start gap-2">
               {t.head && <span className="rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">⭐ المدرب الرئيسي</span>}
@@ -141,7 +141,7 @@ function Trainers({ items }: { items: TrainerCard[] }) {
           {splitTags(t.specialties).length > 0 && (
             <div className="flex flex-wrap gap-1.5">{splitTags(t.specialties).map((x) => <span key={x} className="rounded-full bg-background/50 px-2.5 py-0.5 text-xs ring-1 ring-white/10">{x}</span>)}</div>)}
           {t.bio && <p className="line-clamp-4 whitespace-pre-line text-sm leading-6">{t.bio}</p>}
-          {t.wa && waNumber(t.wa) && <a href={`https://wa.me/${waNumber(t.wa)}?text=${encodeURIComponent("مرحبا، شفت ملفك على GymJo وبدي أحجز استشارة")}`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-accent/15 px-4 py-2 text-center text-sm font-bold text-accent ring-1 ring-accent/40">احجز استشارة واتساب</a>}
+          {t.wa && waNumber(t.wa) && <a href={`https://wa.me/${waNumber(t.wa)}?text=${encodeURIComponent("مرحبا، شفت ملفك على GYMJO وبدي أحجز استشارة")}`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-accent/15 px-4 py-2 text-center text-sm font-bold text-accent ring-1 ring-accent/40">احجز استشارة واتساب</a>}
           {t.href && <Link href={t.href} className="mt-auto inline-flex min-h-11 items-center justify-center rounded-xl bg-accent px-4 py-2.5 text-center text-sm font-black text-accent-foreground transition hover:brightness-105">عرض الملف الشخصي</Link>}
         </div>
       </article>))}</div>
@@ -195,8 +195,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   ];
   const multi = views.length > 1;
   const wa = waNumber(org.whatsapp);
-  const msg = (extra = "") => encodeURIComponent(`مرحبا، شفت ${org.name_ar}${extra} على GymJo وبدي أستفسر.`);
-  const trialMsg = encodeURIComponent(`مرحبا، شفت ${org.name_ar} على GymJo وبدي أحجز يوم تجريبي.`);
+  const msg = (extra = "") => encodeURIComponent(`مرحبا، شفت ${org.name_ar}${extra} على GYMJO وبدي أستفسر.`);
+  const trialMsg = encodeURIComponent(`مرحبا، شفت ${org.name_ar} على GYMJO وبدي أحجز يوم تجريبي.`);
   const shareHref = `https://wa.me/?text=${encodeURIComponent(`${org.name_ar} — ${baseUrl()}/g/${org.slug}`)}`;
   const orgVideos = await listVideos({ orgId: org.id, limit: 12 });
   const reviewVideos = orgVideos.filter((x) => x.kind === "review");
@@ -284,9 +284,9 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} fetchPriority="high" decoding="async" className="aspect-[16/9] w-full object-cover sm:aspect-[2.6/1]" />
         ) : (
-          <div className="relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_80%_15%,rgba(212,255,0,.28),transparent_48%),linear-gradient(125deg,#10140a,#26320b_55%,#10140a)] sm:aspect-[2.6/1]">
+          <div className="relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_80%_15%,rgba(200,245,58,.28),transparent_48%),linear-gradient(125deg,#10140a,#26320b_55%,#10140a)] sm:aspect-[2.6/1]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand-mark.svg" alt="" aria-hidden="true" className="size-28 rounded-3xl opacity-90 shadow-2xl sm:size-36" />
+            <img src="/brand/icon-512.png" alt="" aria-hidden="true" className="size-28 rounded-3xl opacity-90 shadow-2xl sm:size-36" />
             <span className="absolute bottom-4 start-5 text-sm font-black tracking-[.2em] text-white/70 sm:bottom-6 sm:start-8 sm:text-base">GYMJO</span>
           </div>
         )}

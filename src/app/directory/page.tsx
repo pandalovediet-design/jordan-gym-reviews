@@ -26,9 +26,8 @@ export default async function DirectoryIndex() {
   const rows = await Promise.all(types.map(async (t) => ({ t, cities: await listCities(t).catch(() => []) })));
   return (
     <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10">
-      <header className="relative isolate overflow-hidden rounded-3xl border border-white/10 bg-[radial-gradient(ellipse_at_10%_0%,rgba(212,255,0,.13),transparent_48%),linear-gradient(135deg,var(--surface),var(--background))] p-5 sm:p-8">
+      <header className="relative isolate overflow-hidden rounded-3xl border border-white/10 bg-[radial-gradient(ellipse_at_10%_0%,rgba(200,245,58,.13),transparent_48%),linear-gradient(135deg,var(--surface),var(--background))] p-5 sm:p-8">
         <div className="relative">
-          <p className="mb-2 text-sm font-bold text-accent">GYMJO DIRECTORY</p>
           <h1 className="text-2xl font-black tracking-tight sm:text-4xl">دليل الرياضة في الأردن</h1>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-muted sm:text-base">كل الخيارات الرياضية بمكان واحد. اختار نوع النشاط، وبعدها مدينتك لتوصل للمكان المناسب إلك.</p>
           <Link href="/search" className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-extrabold text-accent-foreground transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">ابحث بكل الأنشطة <span aria-hidden>←</span></Link>

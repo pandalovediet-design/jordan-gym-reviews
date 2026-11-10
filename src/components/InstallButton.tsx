@@ -75,10 +75,10 @@ export function InstallButton({ className = "" }: { className?: string }) {
         disabled={busy}
         aria-expanded={tip}
         aria-controls="install-app-help"
-        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-accent/15 px-4 py-2 text-sm font-bold text-accent ring-1 ring-accent/40 transition-colors hover:bg-accent/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98] disabled:cursor-wait disabled:opacity-60 motion-reduce:transform-none motion-reduce:transition-none"
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-accent/15 px-3 py-2 text-sm font-bold text-accent ring-1 ring-accent/40 sm:px-4 transition-colors hover:bg-accent/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98] disabled:cursor-wait disabled:opacity-60 motion-reduce:transform-none motion-reduce:transition-none"
       >
         <span aria-hidden="true">📲</span>
-        {busy ? "جارٍ فتح التثبيت…" : ready ? "ثبّت التطبيق" : "طريقة تثبيت التطبيق"}
+        <span className="sr-only sm:not-sr-only">{busy ? "جارٍ فتح التثبيت…" : ready ? "ثبّت التطبيق" : "ثبّت التطبيق"}</span>
       </button>
       {(tip || message) && (
         <span

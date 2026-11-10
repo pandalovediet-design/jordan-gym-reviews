@@ -16,7 +16,6 @@ function LoginForm() {
   return (
     <section className="mx-auto max-w-md px-4 py-10 sm:py-16">
       <div className="mb-6 rounded-3xl border border-white/10 bg-surface/70 p-5 shadow-xl shadow-black/10 sm:p-7">
-        <p className="mb-2 text-xs font-bold tracking-wide text-accent">JORDAN GYM REVIEWS</p>
         <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">{mode === "login" ? "دخول الأنشطة" : "إنشاء حساب نشاط"}</h1>
         <p className="mt-2 text-sm leading-6 text-muted">{mode === "login" ? "أهلاً بعودتك، سجّل دخولك لإدارة نشاطك." : "أنشئ حسابك وابدأ بإدارة صفحة نشاطك."}</p>
       </div>

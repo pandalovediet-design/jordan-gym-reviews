@@ -5,7 +5,7 @@ import { field } from "@/lib/form-styles";
 import { requestAddPlace } from "./actions";
 
 export const metadata: Metadata = {
-  title: "أضف ناديك إلى GymJo مجاناً",
+  title: "أضف ناديك إلى GYMJO مجاناً",
   description: "عندك نادي أو مسبح أو ملعب أو متجر مكمّلات في الأردن؟ أنشئ حسابك وأدِر صفحتك بنفسك، أو ابعتلنا اسمه ورقمك ونضيفه للدليل مجاناً.",
   alternates: { canonical: "/join" },
 };
@@ -21,7 +21,7 @@ const SIGNUP = "/login?mode=signup&next=%2Fdashboard%2Fnew";
 export default function Join() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-extrabold">أضف ناديك إلى <span className="text-accent">GymJo</span></h1>
+      <h1 className="text-3xl font-extrabold">أضف ناديك إلى <span className="wordmark text-accent">GYM<b>JO</b></span></h1>
       <p className="mt-3 text-lg text-muted">الناس بتدور على نادي أو مسبح أو ملعب قريب منها. خلّيهم يلاقوك.</p>
       <p className="mt-4 rounded-xl bg-accent/15 px-4 py-3 font-bold text-accent ring-1 ring-accent/40">الإضافة مجانية. صفحتك بإيدك: لوحة تحكم بتعدّل منها بياناتك وبتشوف مين زارك.</p>
 

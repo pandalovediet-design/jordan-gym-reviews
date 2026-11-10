@@ -132,7 +132,7 @@ export function QuranAudioProvider({ children }: { children: ReactNode }) {
     const a = s.ayahs[s.idx];
     if (!a) return;
     const rec = RECITERS.find((r) => r.id === s.reciter)?.name ?? "";
-    navigator.mediaSession.metadata = new MediaMetadata({ title: `${nameIn(surahsRef.current, s.surah)} — آية ${a.numberInSurah}`, artist: rec, album: "Jordan Gym Reviews — روح وجسد", artwork: [{ src: "/logo-mark.png", sizes: "512x512", type: "image/png" }] });
+    navigator.mediaSession.metadata = new MediaMetadata({ title: `${nameIn(surahsRef.current, s.surah)} — آية ${a.numberInSurah}`, artist: rec, album: "GYMJO — روح وجسد", artwork: [{ src: "/logo-mark.png", sizes: "512x512", type: "image/png" }] });
   };
 
   const playAt = (i: number) => {
@@ -241,7 +241,7 @@ export function QuranMiniBar() {
   return (
     <>
       <div className="h-20 print:hidden" aria-hidden />
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-surface/95 px-4 py-2 backdrop-blur print:hidden">
+      <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t md:bottom-0 md:z-50 border-white/10 bg-surface/95 px-4 py-2 backdrop-blur print:hidden">
         <div className="mx-auto flex max-w-2xl items-center gap-3">
           <Link href="/rooh-w-jasad" className="min-w-0 flex-1 text-sm">
             <span className="block truncate font-bold">🎧 {nameOf(curSurah)}{a ? ` — آية ${ar(a.numberInSurah)}` : ""}</span>

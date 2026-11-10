@@ -15,7 +15,7 @@ function Report({ r, sex, goal, f, activity, innerRef }: { r: CalcOk; sex: Sex; 
       <div style={{ display: "flex", alignItems: "center", gap: 14, borderBottom: "3px solid #10b981", paddingBottom: 16 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo-mark.png" alt="" width={64} height={64} style={{ borderRadius: 32, objectFit: "cover" }} />
-        <div><div style={{ fontSize: 24, fontWeight: 900 }}>Jordan Gym Reviews</div><div style={{ fontSize: 13, color: "#5b6b66" }}>من غير حرمان — تقرير السعرات والماكروز</div></div>
+        <div><div style={{ fontSize: 24, fontWeight: 900 }}>GYMJO</div><div style={{ fontSize: 13, color: "#5b6b66" }}>من غير حرمان — تقرير السعرات والماكروز</div></div>
       </div>
       <div style={{ marginTop: 18, fontSize: 14, color: "#33443f" }}>{sex === "m" ? "ذكر" : "أنثى"} · {f.age} سنة · {f.height} سم · {f.weight} كغ · {act}</div>
       <div style={{ marginTop: 16, background: "#10b981", color: "#04201a", borderRadius: 16, padding: 22, textAlign: "center" }}>

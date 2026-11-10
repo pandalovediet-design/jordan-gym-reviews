@@ -58,7 +58,7 @@ export default async function Market({ searchParams }: PageProps<"/market">) {
                 {l.description_ar && <p className="text-sm text-muted">{l.description_ar}</p>}
                 {o && <p className="text-xs text-muted"><Link href={`/g/${o.slug}`} className="text-accent hover:underline">{o.name_ar}</Link> · {o.city}</p>}
                 <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-                  {wa && <a href={`https://wa.me/${wa}?text=${encodeURIComponent(`مرحبا، شفت إعلانك «${l.title_ar}» بسوق المعدات على Jordan Gym Reviews`)}`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-green-600 px-4 py-2 text-sm font-bold text-white">واتساب</a>}
+                  {wa && <a href={`https://wa.me/${wa}?text=${encodeURIComponent(`مرحبا، شفت إعلانك «${l.title_ar}» بسوق المعدات على GYMJO`)}`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-green-600 px-4 py-2 text-sm font-bold text-white">واتساب</a>}
                   <ReportListing id={l.id} />
                 </div>
               </div>

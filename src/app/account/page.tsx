@@ -22,6 +22,8 @@ const spaces = [
 
 export default async function Account() {
   const { user, supabase } = await requireUser();
+  const { count: unreadCount } = await supabase.from("notifications").select("id", { count: "exact", head: true }).is("read_at", null);
+  const unread = unreadCount ?? 0;
   const today = ammanToday();
   const since = addDays(today, -190);
   const [workouts, meals] = await Promise.all([
@@ -37,23 +39,22 @@ export default async function Account() {
   const showMap = !workouts.error && !meals.error;
   const displayName = typeof user.user_metadata?.full_name === "string" && user.user_metadata.full_name.trim()
     ? user.user_metadata.full_name.trim()
-    : "عضو GymJo";
+    : "عضو GYMJO";
   const initial = displayName.slice(0, 1);
   const joined = new Intl.DateTimeFormat("ar-JO", { month: "long", year: "numeric" }).format(new Date(user.created_at));
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-7 sm:px-6 sm:py-10">
-      <section className="relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(ellipse_at_15%_10%,rgba(212,255,0,.18),transparent_45%),linear-gradient(135deg,#20291b,#11160f)] p-5 shadow-2xl shadow-black/20 sm:p-8">
-        <div aria-hidden className="absolute -end-12 -top-16 -z-10 size-56 rounded-full border-[32px] border-[#d4ff00]/5" />
-        <p className="text-xs font-black tracking-[.2em] text-[#d4ff00]">GYMJO MEMBER SPACE</p>
+      <section className="relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(ellipse_at_15%_10%,rgba(200,245,58,.18),transparent_45%),linear-gradient(135deg,#20291b,#11160f)] p-5 shadow-2xl shadow-black/20 sm:p-8">
+        <div aria-hidden className="absolute -end-12 -top-16 -z-10 size-56 rounded-full border-[32px] border-[#c8f53a]/5" />
         <div className="mt-5 flex flex-col gap-5 sm:flex-row sm:items-center">
-          <div className="flex size-20 shrink-0 items-center justify-center rounded-[1.7rem] border border-[#d4ff00]/30 bg-[#d4ff00]/15 text-4xl font-black text-[#eaff8c] shadow-lg shadow-black/20">{initial}</div>
+          <div className="flex size-20 shrink-0 items-center justify-center rounded-[1.7rem] border border-[#c8f53a]/30 bg-[#c8f53a]/15 text-4xl font-black text-[#eaff8c] shadow-lg shadow-black/20">{initial}</div>
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl font-black sm:text-3xl">أهلاً، {displayName}</h1>
             <p className="mt-1 break-all text-sm text-white/65" dir="ltr">{user.email}</p>
             <p className="mt-2 text-xs text-white/50">عضو من {joined}</p>
           </div>
-          <Link href="/search" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-[#d4ff00] px-5 font-black text-[#151a0b] transition hover:-translate-y-0.5">اكتشف ناديك القادم ←</Link>
+          <Link href="/search" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-[#c8f53a] px-5 font-black text-[#0b1a08] transition hover:-translate-y-0.5">اكتشف ناديك القادم ←</Link>
         </div>
       </section>
 
@@ -71,7 +72,7 @@ export default async function Account() {
 
       <section className="mt-9">
         <div className="mb-4 flex items-end justify-between gap-3">
-          <div><p className="text-xs font-black tracking-widest text-accent">YOUR GYMJO</p><h2 className="mt-1 text-2xl font-black">مساحتك الرياضية</h2><p className="mt-1 text-sm text-muted">كل ما تحتاجه لمتابعة رحلتك الرياضية بمكان واحد.</p></div>
+          <div><h2 className="mt-1 text-2xl font-black">مساحتك الرياضية</h2><p className="mt-1 text-sm text-muted">كل ما تحتاجه لمتابعة رحلتك الرياضية بمكان واحد.</p></div>
           <Link href="/sections" className="text-sm font-bold text-accent">كل الأقسام ←</Link>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -89,9 +90,13 @@ export default async function Account() {
         </div>
       </section>
 
-      <section className="mt-9"><MemberProfileForm initialName={displayName === "عضو GymJo" ? "" : displayName} /></section>
+      <section className="mt-9"><MemberProfileForm initialName={displayName === "عضو GYMJO" ? "" : displayName} /></section>
 
       <section className="mt-9 grid gap-3 sm:grid-cols-2">
+        <Link href="/notifications" className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-surface p-5 transition hover:border-accent/40 sm:col-span-2">
+          <div><span className="text-xl">🔔</span><h2 className="mt-2 font-bold">الإشعارات</h2><p className="mt-1 text-sm text-muted">منشورات وعروض الأماكن اللي بالمفضلة.</p></div>
+          {unread > 0 && <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-accent px-3 py-1 text-sm font-black tabular-nums text-accent-foreground">{unread}</span>}
+        </Link>
         <Link href="/dashboard" className="rounded-2xl border border-accent/30 bg-surface p-5 transition hover:border-accent/60 sm:col-span-2">
           <span className="text-xl">🏋️</span><h2 className="mt-2 font-bold">صاحب نادي أو نشاط رياضي؟</h2><p className="mt-1 text-sm text-muted">سجّل ناديك أو أدِر صفحته: الأسعار، الدوام، الصور، العروض والإحصائيات.</p>
         </Link>

@@ -1,61 +1,55 @@
-# Jordan Gym Reviews — Brand Identity 2026
+# GYM — الهوية البصرية 2026 (سوق الأردن: GYMJO)
 
-## Brand platform
-**Purpose:** Make it easier for people in Jordan to find the right place to train.
-**Promise:** Discover confidently. Choose your next move.
-**Arabic tagline:** اكتشف مكانك. وابدأ خطوتك.
-**English tagline:** Find Your Fit.
-**Personality:** energetic, clear, inclusive, credible, locally aware, digital-first.
+## المنصة
+- **العلامة الأم:** GYM. كل سوق = GYM + رمز الدولة: GYMJO، GYMSA، GYMEG. نفس الهوية بكل الأسواق، والمحتوى محلي.
+- **الوعد:** دليلك الرياضي: اكتشف، قارن، وتواصل مباشرة.
+- **الشعار اللفظي:** عربي «دليلك الرياضي في الأردن» (بيتغيّر اسم الدولة لكل سوق). إنجليزي: FIND · EXPLORE · TRAIN.
+- **الشخصية:** قوي، واثق، محلي، واضح، بدون مبالغة.
 
-## Visual concept
-A forward-moving geometric symbol built from three ascending forms. It represents progress, discovery, and the variety of sports destinations on one platform. It is intentionally not a shield, medical cross, or generic checkmark.
+## الشعار
+- **الماسكوت:** الباندا العضلي مع العلم (الرسمة الأصلية المعتمدة). هو وجه العلامة.
+- **الكلمة:** `GYM` أبيض + رمز الدولة بالليموني (`JO`)، بخط Alexandria وزن 800، تباعد حروف ‎-0.02em، دايماً من اليسار لليمين.
+- **الاستعمالات:**
+  - الهيدر والفوتر: رأس الباندا (مربع بزوايا دائرية) + الكلمة.
+  - أيقونة التطبيق والـfavicon: رأس الباندا لحاله (`public/brand/icon-*.png`، `maskable-512.png`).
+  - الهيرو وصور المشاركة: الباندا كامل (`public/brand/panda.webp`).
+  - صورة المشاركة الافتراضية: `public/og-default.png` (1200×630).
+- **ممنوع:** تمديد الرسمة، تغيير ألوانها، حطها على خلفية فاتحة أو صورة مزدحمة، أو قصّها بحيث ينقطع نص.
+- **سوق جديد:** نفس الباندا والكلمة، بيتغيّر رمز الدولة بس. لو بدنا علم الدولة ورا الباندا، بتنرسم نسخة لكل سوق بنفس الستايل.
 
-## Color palette — Momentum
-| Token | HEX | Use |
+## الألوان — Forest Night (مأخوذة من الرسمة)
+| الاسم | HEX | الاستعمال |
 |---|---|---|
-| Midnight Charcoal | #10130F | Main brand background |
-| Training Surface | #1B2119 | Cards and navigation |
-| Momentum Lime | #D4FF00 | Primary actions, highlights, active states |
-| Lime Shade | #A8CC18 | Secondary brand accent and gradients |
-| Chalk White | #F4F7EF | Main text |
-| Track Mist | #A7B2A0 | Secondary text |
-| Olive Border | #343E2B | Dividers and component borders |
+| Forest Night | #04130C | خلفية المنصة |
+| Deep Moss | #0C2016 | الكروت والهيدر |
+| Moss Line | #1D3626 | الحدود والفواصل |
+| Power Lime | #C8F53A | الأزرار الأساسية، الروابط، الحالة النشطة، رمز الدولة |
+| Lime Shade | #9FD41F | تدرجات ولمسات ثانوية |
+| Chalk | #F3F8F2 | النص الأساسي |
+| Sage | #9DB3A4 | النص الثانوي |
+| Flag Red | #CE1126 | خط العلم بس (مش للأزرار ولا للتنبيهات) |
+| Flag Green | #007A3D | خط العلم بس |
 
-Use lime as a deliberate accent rather than flooding every surface. Keep text readable and never rely on color alone to communicate status. Ads and sponsorships must remain clearly labeled.
+- الليموني للفعل الأساسي الواحد بكل شاشة، مش لتلوين كل إشي.
+- **خط العلم** (`.flag-rule`): شريط رفيع بألوان العلم، بينحط مرة وحدة بكل سطح كتوقيع للعلامة (الفوتر، صورة المشاركة، المطبوعات).
+- الوضع الفاتح موجود كخيار للمستخدم، والداكن هو الأساس.
 
-## Typography
-- Arabic: Cairo, weights 400–800.
-- Latin: Inter, with system sans-serif fallback.
-- Headings: short, bold, high contrast. Body copy: comfortable line-height and concise labels.
-- Use tabular numerals for prices, ratings and analytics.
+## الخطوط
+- **العناوين والكلمة:** Alexandria (عربي ولاتيني، متغيّر الوزن).
+- **نص القراءة:** Cairo (400–800).
+- العناوين: قصيرة، وزن 800–900. النص: ارتفاع سطر مريح. الأرقام بالجداول والأسعار `tabular-nums`.
 
-## Logo system
-- Primary: geometric forward-motion mark + Jordan Gym Reviews wordmark.
-- Secondary: wordmark on light or dark backgrounds.
-- App icon: mark-only, centered with generous padding.
-- Clear space: at least one quarter of the mark's width around it.
-- Minimum digital mark size: 24 px.
-- Never skew, recolor individual parts, add shadows to the SVG, or place it over busy imagery without contrast.
+## الواجهة
+- RTL أولاً وموبايل أولاً. مسافات بمضاعفات 8px.
+- الكروت: Deep Moss، حدود خفيفة، زوايا 16px وما فوق.
+- الزر الأساسي: ليموني بنص غامق. الثانوي: إطار.
+- أهداف اللمس 44px على الأقل، وإطار تركيز ظاهر، واحترام تقليل الحركة.
+- المدفوع دايماً معلّم: «إعلان» أو «مموّل» أو «برعاية».
 
-## Product UI
-- RTL-first and mobile-first. Use an 8 px spacing rhythm.
-- Cards: charcoal surfaces, restrained olive borders, consistent 16 px corners.
-- Primary buttons: lime fill with dark text; secondary actions use outlined surfaces.
-- Ratings show numeric score and review count alongside stars.
-- Paid placements must remain explicitly labeled إعلان or ممول.
-- Keep touch targets at least 44 px; show visible keyboard focus; respect reduced-motion preferences.
+## الصور
+صور حقيقية من نوادي وملاعب الأردن، إضاءة طبيعية، ناس عاديين مش عارضين. بدون وعود تحوّل جسم مبالغ فيها.
 
-## Photography
-Show real-feeling Jordanian gyms, coaches, group classes and everyday athletes with diverse experience levels. Favor documentary energy, natural skin tones and clear environments. Avoid unrealistic body transformations and stock-photo clichés.
-
-## Iconography
-Rounded geometric line icons, consistent 1.75–2 px stroke, simple silhouettes. Use the same icon family across categories, filters, dashboard and mobile navigation.
-
-## Applications
-Social posts: charcoal background, one strong Arabic headline, lime CTA and authentic local imagery.
-QR posters: high-contrast QR, short URL fallback and “زورونا ع جوردان جيم”.
-Partner pages: use the mark and lime accent; label sponsorships clearly.
-Dashboard: charcoal navigation, lime for the next key action, muted neutrals for secondary metrics.
-
-## Accessibility
-Maintain strong contrast, pair colors with labels/icons, include visible focus states, and preserve reduced-motion support.
+## وين الأشياء بالكود
+- الألوان والخطوط: `src/app/globals.css` (متغيّرات `:root`).
+- الهيدر والفوتر: `src/components/SiteHeader.tsx`.
+- الأيقونات والـmanifest: `src/app/layout.tsx`، `src/app/manifest.ts`، `public/brand/`.
