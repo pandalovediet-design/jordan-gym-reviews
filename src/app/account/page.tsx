@@ -92,6 +92,9 @@ export default async function Account() {
       <section className="mt-9"><MemberProfileForm initialName={displayName === "عضو GymJo" ? "" : displayName} /></section>
 
       <section className="mt-9 grid gap-3 sm:grid-cols-2">
+        <Link href="/dashboard" className="rounded-2xl border border-accent/30 bg-surface p-5 transition hover:border-accent/60 sm:col-span-2">
+          <span className="text-xl">🏋️</span><h2 className="mt-2 font-bold">صاحب نادي أو نشاط رياضي؟</h2><p className="mt-1 text-sm text-muted">سجّل ناديك أو أدِر صفحته: الأسعار، الدوام، الصور، العروض والإحصائيات.</p>
+        </Link>
         <Link href="/account/export" className="rounded-2xl border border-white/10 bg-surface p-5 transition hover:border-accent/40">
           <span className="text-xl">📦</span><h2 className="mt-2 font-bold">تنزيل بيانات الحساب</h2><p className="mt-1 text-sm text-muted">احتفظ بنسخة من البيانات المرتبطة بحسابك.</p>
         </Link>
