@@ -64,6 +64,12 @@ export type Database = {
         Update: { country_code?: string; created_at?: string; user_id?: string }
         Relationships: []
       }
+      business_posts: {
+        Row: { body: string; created_at: string; id: string; organization_id: string }
+        Insert: { body: string; created_at?: string; id?: string; organization_id: string }
+        Update: { body?: string; created_at?: string; id?: string; organization_id?: string }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -319,6 +325,7 @@ export type Database = {
           placement: string
           starts_at: string
           subtitle: string | null
+          target_type: Database["public"]["Enums"]["org_type"] | null
           title: string
           updated_at: string
         }
@@ -336,6 +343,7 @@ export type Database = {
           placement: string
           starts_at: string
           subtitle?: string | null
+          target_type?: Database["public"]["Enums"]["org_type"] | null
           title: string
           updated_at?: string
         }
@@ -353,6 +361,7 @@ export type Database = {
           placement?: string
           starts_at?: string
           subtitle?: string | null
+          target_type?: Database["public"]["Enums"]["org_type"] | null
           title?: string
           updated_at?: string
         }

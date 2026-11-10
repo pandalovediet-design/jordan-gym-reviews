@@ -41,6 +41,7 @@ test("the migration is safe to run twice", async () => {
   const dir = new URL("../migrations/", import.meta.url);
   await db.exec(readFileSync(new URL("20261110090000_markets_foundation.sql", dir), "utf8"));
   await db.exec(readFileSync(new URL("20261110120000_markets_admin_ads.sql", dir), "utf8"));
+  await db.exec(readFileSync(new URL("20261110150000_posts_ad_placements.sql", dir), "utf8"));
 });
 
 test("the public sees only active markets and their cities", async () => {
@@ -139,4 +140,31 @@ test("ad impressions: visitors can only add one view to live ads", async () => {
   });
   const r = await db.query(`select title, impressions from public.ads where id = any($1::uuid[]) order by title`, [[ctx.live, ctx.ended]]);
   assert.deepEqual(r.rows.map((x) => x.impressions).sort(), [0, 1]);
+});
+
+test("posts: only the place's team posts, the public reads published places, and spam is capped", async () => {
+  await asUser(SA_MANAGER, async () => {
+    await assert.rejects(() => db.query(`insert into public.business_posts (organization_id, body) values ($1, 'مش ناديي')`, [ctx.gym]));
+  });
+  await asUser(OWNER, async () => {
+    for (let i = 0; i < 5; i++) await db.query(`insert into public.business_posts (organization_id, body) values ($1, $2)`, [ctx.gym, `تحديث ${i}`]);
+    await assert.rejects(() => db.query(`insert into public.business_posts (organization_id, body) values ($1, 'السادس')`, [ctx.gym]));
+  });
+  await asAnon(async () => {
+    const r = await db.query(`select count(*)::int as n from public.business_posts where organization_id = $1`, [ctx.gym]);
+    assert.equal(r.rows[0].n, 5);
+    await assert.rejects(() => db.query(`insert into public.business_posts (organization_id, body) values ($1, 'زائر')`, [ctx.gym]));
+  });
+  await db.query(`update public.organizations set status = 'suspended' where id = $1`, [ctx.gym]);
+  await asAnon(async () => {
+    const r = await db.query(`select count(*)::int as n from public.business_posts where organization_id = $1`, [ctx.gym]);
+    assert.equal(r.rows[0].n, 0);
+  });
+});
+
+test("ads accept the new placements and nothing else", async () => {
+  await asUser(ADMIN, async () => {
+    await db.query(`insert into public.ads (placement, target_type, title, link_url, starts_at, ends_at) values ('category', 'gym', 'راعي النوادي', 'https://example.com', now(), now() + interval '1 day'), ('search', null, 'بحث مموّل', 'https://example.com', now(), now() + interval '1 day')`);
+    await assert.rejects(() => db.query(`insert into public.ads (placement, title, link_url, starts_at, ends_at) values ('popup', 'x y', 'https://example.com', now(), now() + interval '1 day')`));
+  });
 });
