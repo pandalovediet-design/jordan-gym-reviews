@@ -8,6 +8,7 @@ export function DashTabs({ id, showMembers, newInquiries = 0 }: { id: string; sh
   const tabs = [
     { href: `/dashboard/${id}/overview`, label: "نظرة عامة" },
     { href: `/dashboard/${id}`, label: "✏️ تعديل صفحتي" },
+    { href: `/dashboard/${id}/posts`, label: "📣 المنشورات" },
     { href: `/dashboard/${id}/inquiries`, label: "الاستفسارات", count: newInquiries },
     { href: `/dashboard/${id}/stats`, label: "الإحصائيات" },
     { href: `/dashboard/${id}/growth`, label: "🚀 أدوات النمو" },

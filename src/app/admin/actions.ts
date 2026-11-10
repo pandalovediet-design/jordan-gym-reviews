@@ -173,7 +173,9 @@ import type { FormState } from "@/app/dashboard/actions";
 
 const IMG_EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 const adSchema = z.object({
-  placement: z.enum(["banner", "sponsored"]),
+  placement: z.enum(["banner", "sponsored", "search", "category"]),
+  target_type: z.enum(["gym", "independent_coach", "sports_facility", "store", "nutritionist", "healthy_food", "sports_health"]).or(z.literal("")).optional().transform((v) => v || null),
+  country_code: z.string().regex(/^[A-Z]{2}$/).default("JO"),
   title: z.string().trim().min(2, "اكتب عنوان الإعلان").max(120),
   subtitle: z.string().trim().max(200).optional().transform((v) => v || null),
   link_url: z.string().trim().max(500).optional().transform((v) => v || null),
@@ -211,7 +213,7 @@ export async function createAd(_: FormState, fd: FormData): Promise<FormState> {
     if (upErr) return { error: "تعذّر رفع الصورة" };
   }
   const { data: ad, error } = await supabase.from("ads").insert({
-    placement: d.placement, title: d.title, subtitle: d.subtitle, link_url: link, image_path,
+    placement: d.placement, target_type: d.placement === "category" ? d.target_type : null, country_code: d.country_code, title: d.title, subtitle: d.subtitle, link_url: link, image_path,
     organization_id: d.organization_id, starts_at: start.toISOString(), ends_at: end.toISOString(),
   }).select("id").single();
   if (error || !ad) {
@@ -221,6 +223,7 @@ export async function createAd(_: FormState, fd: FormData): Promise<FormState> {
   await supabase.from("ad_accounting").insert({ ad_id: ad.id, advertiser_name: d.advertiser_name, advertiser_phone: d.advertiser_phone, price_jod: d.price_jod, notes: d.notes });
   revalidatePath("/admin/ads");
   revalidatePath("/");
+  revalidatePath("/directory", "layout");
   return { ok: "تم حفظ الإعلان" };
 }
 

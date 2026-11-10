@@ -201,6 +201,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   const orgVideos = await listVideos({ orgId: org.id, limit: 12 });
   const reviewVideos = orgVideos.filter((x) => x.kind === "review");
   const reelVideos = orgVideos.filter((x) => x.kind === "reel");
+  const { data: posts } = await createPublicClient().from("business_posts").select("id,body,created_at").eq("organization_id", org.id).order("created_at", { ascending: false }).limit(5);
   const category = org.category_id ? (await createPublicClient().from("org_categories").select("name_ar").eq("id", org.category_id).maybeSingle()).data?.name_ar : null;
   const jsonLd = {
     "@context": "https://schema.org",
@@ -436,6 +437,19 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           )}
           <Section title="قائمة الوجبات"><Menu items={menu} /></Section>
         </>
+      )}
+
+      {(posts ?? []).length > 0 && (
+        <Section title="آخر الأخبار">
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {(posts ?? []).map((p) => (
+              <li key={p.id} className="rounded-2xl bg-surface p-4 ring-1 ring-white/10">
+                <p className="whitespace-pre-line text-sm leading-7">{p.body}</p>
+                <p className="mt-2 text-xs text-muted">{dateAr(p.created_at)}</p>
+              </li>
+            ))}
+          </ul>
+        </Section>
       )}
 
       {!multi ? (
