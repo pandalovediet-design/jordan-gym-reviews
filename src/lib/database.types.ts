@@ -70,6 +70,14 @@ export type Database = {
         Update: { body?: string; created_at?: string; id?: string; organization_id?: string }
         Relationships: []
       }
+      notifications: {
+        Row: { body: string; created_at: string; id: string; kind: string; organization_id: string; read_at: string | null; user_id: string }
+        Insert: { body: string; created_at?: string; id?: string; kind: string; organization_id: string; read_at?: string | null; user_id: string }
+        Update: { body?: string; created_at?: string; id?: string; kind?: string; organization_id?: string; read_at?: string | null; user_id?: string }
+        Relationships: [
+          { foreignKeyName: "notifications_organization_id_fkey"; columns: ["organization_id"]; isOneToOne: false; referencedRelation: "organizations"; referencedColumns: ["id"] },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -1743,6 +1751,7 @@ export type Database = {
         }[]
       }
       admin_stats: { Args: never; Returns: Json }
+      mark_notifications_read: { Args: never; Returns: undefined }
       count_ad_impressions: { Args: { p_ids: string[] }; Returns: undefined }
       is_country_manager: { Args: { p_country: string }; Returns: boolean }
       list_country_managers: { Args: never; Returns: { user_id: string; email: string; country_code: string; created_at: string }[] }

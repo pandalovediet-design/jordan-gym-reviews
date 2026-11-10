@@ -22,6 +22,8 @@ const spaces = [
 
 export default async function Account() {
   const { user, supabase } = await requireUser();
+  const { count: unreadCount } = await supabase.from("notifications").select("id", { count: "exact", head: true }).is("read_at", null);
+  const unread = unreadCount ?? 0;
   const today = ammanToday();
   const since = addDays(today, -190);
   const [workouts, meals] = await Promise.all([
@@ -92,6 +94,10 @@ export default async function Account() {
       <section className="mt-9"><MemberProfileForm initialName={displayName === "عضو GymJo" ? "" : displayName} /></section>
 
       <section className="mt-9 grid gap-3 sm:grid-cols-2">
+        <Link href="/notifications" className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-surface p-5 transition hover:border-accent/40 sm:col-span-2">
+          <div><span className="text-xl">🔔</span><h2 className="mt-2 font-bold">الإشعارات</h2><p className="mt-1 text-sm text-muted">منشورات وعروض الأماكن اللي بالمفضلة.</p></div>
+          {unread > 0 && <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-accent px-3 py-1 text-sm font-black tabular-nums text-accent-foreground">{unread}</span>}
+        </Link>
         <Link href="/dashboard" className="rounded-2xl border border-accent/30 bg-surface p-5 transition hover:border-accent/60 sm:col-span-2">
           <span className="text-xl">🏋️</span><h2 className="mt-2 font-bold">صاحب نادي أو نشاط رياضي؟</h2><p className="mt-1 text-sm text-muted">سجّل ناديك أو أدِر صفحته: الأسعار، الدوام، الصور، العروض والإحصائيات.</p>
         </Link>
