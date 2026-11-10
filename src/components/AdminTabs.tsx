@@ -41,7 +41,7 @@ const GROUPS = [
       { href: "/admin/market", label: "سوق المعدات" },
     ],
   },
-  { label: "⚙️ الإعدادات", tabs: [{ href: "/admin/settings", label: "إعدادات الموقع" }] },
+  { label: "⚙️ الإعدادات", tabs: [{ href: "/admin/settings", label: "إعدادات الموقع" }, { href: "/admin/markets", label: "🌍 الدول والمدن" }] },
 ];
 
 const matches = (path: string, href: string) => path === href || (href !== "/admin" && path.startsWith(href + "/"));

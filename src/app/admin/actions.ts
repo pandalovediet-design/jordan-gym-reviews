@@ -174,6 +174,7 @@ import type { FormState } from "@/app/dashboard/actions";
 const IMG_EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 const adSchema = z.object({
   placement: z.enum(["banner", "sponsored"]),
+  country_code: z.string().regex(/^[A-Z]{2}$/).default("JO"),
   title: z.string().trim().min(2, "اكتب عنوان الإعلان").max(120),
   subtitle: z.string().trim().max(200).optional().transform((v) => v || null),
   link_url: z.string().trim().max(500).optional().transform((v) => v || null),
@@ -211,7 +212,7 @@ export async function createAd(_: FormState, fd: FormData): Promise<FormState> {
     if (upErr) return { error: "تعذّر رفع الصورة" };
   }
   const { data: ad, error } = await supabase.from("ads").insert({
-    placement: d.placement, title: d.title, subtitle: d.subtitle, link_url: link, image_path,
+    placement: d.placement, country_code: d.country_code, title: d.title, subtitle: d.subtitle, link_url: link, image_path,
     organization_id: d.organization_id, starts_at: start.toISOString(), ends_at: end.toISOString(),
   }).select("id").single();
   if (error || !ad) {

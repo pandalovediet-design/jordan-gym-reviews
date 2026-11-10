@@ -1,4 +1,5 @@
 import { createPublicClient } from "@/lib/supabase/public";
+import { MARKET } from "@/lib/market";
 
 export type LiveAd = { id: string; placement: string; title: string; subtitle: string | null; image_path: string | null; link_url: string };
 
@@ -6,6 +7,7 @@ export async function listLiveAds(): Promise<LiveAd[]> {
   const { data } = await createPublicClient()
     .from("ads")
     .select("id,placement,title,subtitle,image_path,link_url")
+    .eq("country_code", MARKET)
     .order("created_at", { ascending: false })
     .limit(20);
   return data ?? [];

@@ -40,6 +40,7 @@ before(async () => {
 test("the migration is safe to run twice", async () => {
   const dir = new URL("../migrations/", import.meta.url);
   await db.exec(readFileSync(new URL("20261110090000_markets_foundation.sql", dir), "utf8"));
+  await db.exec(readFileSync(new URL("20261110120000_markets_admin_ads.sql", dir), "utf8"));
 });
 
 test("the public sees only active markets and their cities", async () => {
@@ -104,4 +105,38 @@ test("a country manager cannot grant the verified badge, move markets, or make t
   const r = await db.query(`select verified_at, country_code from public.organizations where id = $1`, [ctx.gym]);
   assert.equal(r.rows[0].verified_at, null);
   assert.equal(r.rows[0].country_code, "JO");
+});
+
+test("only the platform admin appoints country managers, by e-mail", async () => {
+  await asUser(OWNER, async () => {
+    await assert.rejects(() => db.query(`select public.set_country_manager('owner@test.invalid', 'JO', true)`));
+    await assert.rejects(() => db.query(`select * from public.list_country_managers()`));
+  });
+  await asUser(ADMIN, async () => {
+    const miss = await db.query(`select public.set_country_manager('nobody@test.invalid', 'JO', true) as r`);
+    assert.equal(miss.rows[0].r, "no_user");
+    const ok = await db.query(`select public.set_country_manager('OWNER@test.invalid', 'EG', true) as r`);
+    assert.equal(ok.rows[0].r, "ok");
+    const list = await db.query(`select email, country_code from public.list_country_managers() where country_code = 'EG'`);
+    assert.deepEqual(list.rows, [{ email: "owner@test.invalid", country_code: "EG" }]);
+    await db.query(`select public.set_country_manager('owner@test.invalid', 'EG', false)`);
+  });
+});
+
+test("ad impressions: visitors can only add one view to live ads", async () => {
+  await asUser(ADMIN, async () => {
+    const r = await db.query(
+      `insert into public.ads (placement, title, link_url, starts_at, ends_at) values
+         ('banner', 'إعلان شغّال', 'https://example.com', now() - interval '1 day', now() + interval '1 day'),
+         ('banner', 'إعلان منتهي', 'https://example.com', now() - interval '3 day', now() - interval '1 day')
+       returning id, country_code`);
+    ctx.live = r.rows[0].id; ctx.ended = r.rows[1].id;
+    assert.equal(r.rows[0].country_code, "JO");
+  });
+  await asAnon(async () => {
+    await db.query(`select public.count_ad_impressions($1::uuid[])`, [[ctx.live, ctx.live, ctx.ended]]);
+    await assert.rejects(() => db.query(`update public.ads set impressions = 999 where id = $1 returning id`, [ctx.live]).then((x) => { if (x.affectedRows === 0) throw new Error("blocked"); }));
+  });
+  const r = await db.query(`select title, impressions from public.ads where id = any($1::uuid[]) order by title`, [[ctx.live, ctx.ended]]);
+  assert.deepEqual(r.rows.map((x) => x.impressions).sort(), [0, 1]);
 });
