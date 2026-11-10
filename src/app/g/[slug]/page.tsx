@@ -264,7 +264,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
     return (
       <>
         {n && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${n}?text=${msg(multi ? ` (${v.name})` : "")}`} className={`${actionClass} bg-accent font-bold text-accent-foreground`}>واتساب</TrackedLink>}
-        {v.phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${v.phone}`} className={`${actionClass} bg-surface ring-1 ring-white/10`}>اتصال</TrackedLink>}
+        {v.phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${v.phone}`} className={`${actionClass} ${n ? "bg-surface ring-1 ring-white/10" : "bg-accent font-bold text-accent-foreground"}`}>اتصال</TrackedLink>}
         {v.mapsHref && <a href={v.mapsHref} target="_blank" rel="noopener noreferrer" className={`${actionClass} bg-surface ring-1 ring-white/10`}>الموقع على الخريطة</a>}
       </>
     );
@@ -284,10 +284,9 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} fetchPriority="high" decoding="async" className="aspect-[16/9] w-full object-cover sm:aspect-[2.6/1]" />
         ) : (
-          <div className="relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_80%_15%,rgba(200,245,58,.28),transparent_48%),linear-gradient(125deg,#10140a,#26320b_55%,#10140a)] sm:aspect-[2.6/1]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/icon-512.png" alt="" aria-hidden="true" className="size-28 rounded-3xl opacity-90 shadow-2xl sm:size-36" />
-            <span className="absolute bottom-4 start-5 text-sm font-black tracking-[.2em] text-white/70 sm:bottom-6 sm:start-8 sm:text-base">GYMJO</span>
+          <div className="relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_80%_10%,rgba(200,245,58,.35),transparent_55%),linear-gradient(125deg,#04130c,#0f2a1b_55%,#04130c)] sm:aspect-[2.6/1]">
+            <span aria-hidden className="flex size-24 items-center justify-center rounded-full bg-[#c8f53a] font-display text-5xl font-black text-[#0b1a08] ring-8 ring-[#c8f53a]/20 sm:size-32 sm:text-6xl">{org.name_ar.trim().charAt(0).toUpperCase()}</span>
+            <span className="absolute bottom-4 start-5 text-xs font-bold text-white/60 sm:bottom-6 sm:start-8">لسا ما في صور لهذا المكان</span>
           </div>
         )}
       </figure>
@@ -301,7 +300,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         <p className="mt-1 text-sm">{org.type === "nutritionist" ? "يتعاون مع: " : "يتدرب في: "}{coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
       <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">{org.name_ar}</h1>
       {org.description_ar && <p className="mt-3 max-w-4xl whitespace-pre-line text-sm leading-7 text-muted sm:text-base">{org.description_ar}</p>}
-      {!multi && <div className="mt-4 flex flex-wrap gap-2">{contactButtons(views[0])}</div>}
+      {!multi && <div className="mt-4 hidden flex-wrap gap-2 md:flex">{contactButtons(views[0])}</div>}
       {org.is_claimed === false && (
         <p className="mt-2 rounded-xl bg-white/5 p-3 text-sm text-muted ring-1 ring-white/10">
           بيانات أولية من مصادر عامة، وصاحب النادي لسا ما استلم صفحته. <Link href={`/claim/${org.slug}`} className="font-bold text-accent underline">هذا ناديي؟ استلم صفحتك مجاناً</Link>
@@ -361,35 +360,20 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       ]} />}
       <div className="mt-5 flex flex-wrap gap-2 sm:gap-3 [&>a]:min-h-11 [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center [&>a]:text-center">
         {wa && org.free_trial_note && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${trialMsg}`} className="rounded-xl bg-accent/15 px-5 py-2.5 font-bold text-accent ring-1 ring-accent/50">🎟 {org.free_trial_note}</TrackedLink>}
-        <a href={shareHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">شارك على واتساب</a>
       </div>
-      <div className="mt-3 grid max-w-md grid-cols-2 gap-2 sm:gap-3" aria-label="كروت جاهزة للمشاركة">
-        {[
-          { href: `/g/${org.slug}/card`, title: "كرت منشور", hint: "مربّع تقريباً · للفيد", shape: "h-10 w-8" },
-          { href: `/g/${org.slug}/card?s=1`, title: "كرت ستوري", hint: "طولي · للستوري والريلز", shape: "h-12 w-7" },
-        ].map((c) => (
-          <a key={c.href} href={c.href} target="_blank" rel="noopener noreferrer"
-            className="flex min-h-16 items-center gap-3 rounded-xl bg-surface p-3 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-            <span aria-hidden className={`${c.shape} shrink-0 rounded-md border-2 border-accent/70 bg-accent/10`} />
-            <span className="min-w-0">
-              <span className="block text-sm font-bold">{c.title}</span>
-              <span className="block text-xs text-muted">{c.hint}</span>
-            </span>
-          </a>
-        ))}
-      </div>
-      <details className="mt-3 w-fit rounded-xl bg-surface ring-1 ring-white/10 [&[open]]:p-4">
-        <summary className="min-h-11 cursor-pointer list-none rounded-xl px-5 py-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent [&::-webkit-details-marker]:hidden">📲 QR للمشاركة</summary>
-        <div className="mt-3 flex flex-col items-center gap-3">
+      <h2 className="mt-8 text-lg font-extrabold">شارك الصفحة</h2>
+      <div className="mt-3 grid max-w-md grid-cols-2 gap-2 sm:gap-3">
+        <a href={shareHref} target="_blank" rel="noopener noreferrer" className="col-span-2 inline-flex min-h-12 items-center justify-center rounded-xl bg-surface px-5 font-bold ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">ابعتها على واتساب</a>
+        <a href={`/g/${org.slug}/card`} target="_blank" rel="noopener noreferrer" className="col-span-2 flex items-center gap-4 rounded-xl bg-surface p-3 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/g/${org.slug}/qr`} alt={`رمز QR لصفحة ${org.name_ar}`} width={208} height={208} loading="lazy" className="size-52 rounded-xl bg-white p-1" />
-          <p className="max-w-52 text-center text-xs text-muted">امسحه بالكاميرا بيفتح صفحة {org.name_ar}.</p>
-          <div className="flex gap-2 text-sm">
-            <a href={`/g/${org.slug}/qr?format=png&download=1`} className="rounded-lg bg-accent px-4 py-2 font-bold text-accent-foreground">تنزيل PNG</a>
-            <a href={`/g/${org.slug}/qr?download=1`} className="rounded-lg bg-white/10 px-4 py-2">SVG</a>
-          </div>
-        </div>
-      </details>
+          <img src={`/g/${org.slug}/card`} alt={`كرت ${org.name_ar} مع رمز QR`} width={108} height={135} loading="lazy" className="h-[135px] w-[108px] shrink-0 rounded-lg object-cover ring-1 ring-white/10" />
+          <span className="min-w-0">
+            <span className="block font-bold">كرت النادي مع QR</span>
+            <span className="mt-1 block text-sm leading-6 text-muted">صورة وحدة جاهزة للستوري والمنشور والطباعة. اللي بيمسح الرمز بيفتح الصفحة.</span>
+          </span>
+        </a>
+        <a href={`/g/${org.slug}/card?download=1`} className="col-span-2 inline-flex min-h-12 items-center justify-center rounded-xl bg-accent px-5 font-bold text-accent-foreground transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">نزّل الكرت</a>
+      </div>
 
       {reviewVideos.length > 0 && (
         <section className="mt-6 rounded-2xl bg-accent/10 p-4 ring-1 ring-accent/30">
@@ -519,10 +503,9 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       {!multi && (waNumber(views[0].whatsapp) || views[0].phone || views[0].mapsHref) && (
         <>
           {/* Phone: contact actions always within thumb reach. */}
-          <div className="h-20 md:hidden" aria-hidden />
           <nav aria-label="تواصل سريع" className="fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-white/10 bg-background/95 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur md:hidden">
             {waNumber(views[0].whatsapp) && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${waNumber(views[0].whatsapp)}?text=${msg("")}`} className="flex-1 rounded-xl bg-accent py-3 text-center font-bold text-accent-foreground">واتساب</TrackedLink>}
-            {views[0].phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${views[0].phone}`} className="flex-1 rounded-xl bg-surface py-3 text-center font-bold ring-1 ring-white/10">اتصال</TrackedLink>}
+            {views[0].phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${views[0].phone}`} className={`flex-1 rounded-xl py-3 text-center font-bold ${waNumber(views[0].whatsapp) ? "bg-surface ring-1 ring-white/10" : "bg-accent text-accent-foreground"}`}>اتصال</TrackedLink>}
             {views[0].mapsHref && <a href={views[0].mapsHref} target="_blank" rel="noopener noreferrer" className="flex-1 rounded-xl bg-surface py-3 text-center font-bold ring-1 ring-white/10">الموقع</a>}
           </nav>
         </>

@@ -64,7 +64,8 @@ export default async function Overview({ params }: PageProps<"/dashboard/[id]/ov
             <p className="mt-1 text-sm text-muted">نزّل رمز QR واطبعه عند المدخل أو حطه على الكاونتر — الزبون بمسحه وبوصل مباشرة لصفحتك على GYMJO.</p>
             <p className="mt-2 text-sm font-extrabold text-accent">زورونا ع جوردان جيم</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <a href={`/g/${org.slug}/qr?format=png&download=1`} className="inline-flex min-h-10 items-center justify-center rounded-xl bg-accent px-4 py-2 text-sm font-bold text-accent-foreground">تنزيل QR — PNG</a>
+              <a href={`/g/${org.slug}/card?download=1`} className="inline-flex min-h-10 items-center justify-center rounded-xl bg-accent px-4 py-2 text-sm font-bold text-accent-foreground">نزّل كرت النادي مع QR</a>
+              <a href={`/g/${org.slug}/qr?format=png&download=1`} className="inline-flex min-h-10 items-center justify-center rounded-xl px-4 py-2 text-sm font-bold ring-1 ring-white/15">QR لحاله — PNG</a>
               <a href={`/g/${org.slug}/qr?format=svg&download=1`} className="inline-flex min-h-10 items-center justify-center rounded-xl border border-white/15 px-4 py-2 text-sm font-bold hover:border-accent">تنزيل للطباعة — SVG</a>
               <Link href={`/g/${org.slug}/qr`} target="_blank" className="inline-flex min-h-10 items-center justify-center rounded-xl border border-white/15 px-4 py-2 text-sm font-bold hover:border-accent">معاينة الرمز</Link>
             </div>
