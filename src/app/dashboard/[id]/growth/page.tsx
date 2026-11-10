@@ -53,7 +53,7 @@ export default async function Growth({ params }: PageProps<"/dashboard/[id]/grow
 
       <section className={box}>
         <h2 className="text-lg font-bold">🎟️ أكواد خصم لزوار المنصة</h2>
-        <p className="mb-3 mt-1 text-sm text-muted">اعمل كود خصم خاص بزوار Jordan Gym Reviews. بنعرضه بصفحة «أكواد خصم» وبنعدّلك كم واحد جاب الكود. الخصم بتطبقه إنت عند الاشتراك أو الشراء.</p>
+        <p className="mb-3 mt-1 text-sm text-muted">اعمل كود خصم خاص بزوار GYMJO. بنعرضه بصفحة «أكواد خصم» وبنعدّلك كم واحد جاب الكود. الخصم بتطبقه إنت عند الاشتراك أو الشراء.</p>
         <ul className="mb-4 space-y-2">
           {(codes ?? []).map((c) => (
             <li key={c.id} className={`flex flex-wrap items-center justify-between gap-2 rounded-xl bg-background p-3 ${c.is_active ? "" : "opacity-60"}`}>

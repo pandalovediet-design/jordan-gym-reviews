@@ -7,7 +7,7 @@ import { dateAr } from "@/lib/format";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "أكواد خصم الأندية والمتاجر الرياضية بالأردن",
-  description: "أكواد خصم حصرية لزوار Jordan Gym Reviews من أندية ومتاجر ومدربين. جيب الكود واستخدمه مباشرة عند النشاط.",
+  description: "أكواد خصم حصرية لزوار GYMJO من أندية ومتاجر ومدربين. جيب الكود واستخدمه مباشرة عند النشاط.",
   alternates: { canonical: "/deals" },
 };
 

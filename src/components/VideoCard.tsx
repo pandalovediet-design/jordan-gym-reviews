@@ -58,7 +58,7 @@ export function VideoCard({ v, showOrg = true }: { v: VideoItem; showOrg?: boole
       {v.title_ar && <p className="text-sm font-semibold">{v.title_ar}</p>}
       {showOrg && v.org && <p className="text-xs text-muted"><a href={`/g/${v.org.slug}`} className="rounded-sm text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">{v.org.name_ar}</a> · {v.org.city}</p>}
       <div className="flex flex-wrap items-center gap-2">
-        {wa && v.org && <TrackedLink orgId={v.org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${encodeURIComponent("مرحبا، شفت فيديو لكم على Jordan Gym Reviews")}`} className="inline-flex min-h-11 items-center rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">واتساب</TrackedLink>}
+        {wa && v.org && <TrackedLink orgId={v.org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${encodeURIComponent("مرحبا، شفت فيديو لكم على GYMJO")}`} className="inline-flex min-h-11 items-center rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">واتساب</TrackedLink>}
         <a href={v.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-lg bg-white/10 px-3 py-2 text-xs hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">افتح الفيديو ↗</a>
         <Report id={v.id} />
       </div>

@@ -16,7 +16,7 @@ export async function GET() {
     listSitemapEntries().catch(() => ({ orgs: [] as { slug: string }[], products: [] })),
   ]);
   const lines = [
-    "# Jordan Gym Reviews",
+    "# GYMJO",
     "",
     "> دليل عربي للأندية الرياضية والمدربين والمتاجر الرياضية وأخصائيي التغذية في الأردن: الأسعار، ساعات الدوام، الموقع، وطرق التواصل (واتساب/هاتف)، مع دليل تمارين بشرح من مدربين أردنيين.",
     "",

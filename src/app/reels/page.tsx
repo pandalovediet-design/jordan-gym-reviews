@@ -6,7 +6,7 @@ import { listVideos } from "@/lib/videos";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "ريلز رياضية — مراجعات ومدربين بالأردن",
-  description: "فيديوهات قصيرة لأندية ومدربين وملاعب بالأردن، ومراجعات Jordan Gym Reviews.",
+  description: "فيديوهات قصيرة لأندية ومدربين وملاعب بالأردن، ومراجعات GYMJO.",
   alternates: { canonical: "/reels" },
 };
 const TYPES: [string, string][] = [["", "الكل"], ["gym", "نوادي"], ["independent_coach", "مدربين"], ["sports_facility", "ملاعب"], ["nutritionist", "تغذية"], ["store", "متاجر"]];

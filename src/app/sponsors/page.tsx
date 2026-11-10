@@ -6,7 +6,7 @@ import { submitSponsorLead } from "./actions";
 
 export const revalidate = 600;
 export const metadata: Metadata = {
-  title: "ملف الرعاة — أعلن مع Jordan Gym Reviews",
+  title: "ملف الرعاة — أعلن مع GYMJO",
   description: "وصّل علامتك لمحبي الرياضة في الأردن: أرقام المنصة الحية وأماكن الإعلان والرعاية.",
   alternates: { canonical: "/sponsors" },
 };
@@ -32,7 +32,7 @@ export default async function Sponsors() {
     <div className="mx-auto max-w-3xl space-y-8 px-4 py-8">
       <header>
         <h1 className="text-3xl font-extrabold">🤝 ملف الرعاة</h1>
-        <p className="mt-2 text-muted">Jordan Gym Reviews دليل عربي للأندية والمدربين والملاعب والمتاجر الرياضية بالأردن. جمهورنا ناس بدهم يشتركوا ويشتروا ويتدرّبوا، وإنت بتوصلهم بنفس لحظة القرار.</p>
+        <p className="mt-2 text-muted">GYMJO دليل عربي للأندية والمدربين والملاعب والمتاجر الرياضية بالأردن. جمهورنا ناس بدهم يشتركوا ويشتروا ويتدرّبوا، وإنت بتوصلهم بنفس لحظة القرار.</p>
       </header>
       <section>
         <h2 className="mb-3 text-xl font-bold">أرقام المنصة (حيّة)</h2>

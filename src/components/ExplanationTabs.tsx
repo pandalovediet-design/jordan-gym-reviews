@@ -53,7 +53,7 @@ export function ExplanationTabs({ items, exName }: { items: Explanation[]; exNam
             ))}
           </ol>
           {t.mistake && <p className="rounded-xl bg-red-500/10 p-3 text-sm text-red-200 ring-1 ring-red-400/30">⚠️ <b>خطأ شائع:</b> {t.mistake}</p>}
-          {t.coach.wa && <TrackedLink orgId={t.coach.id} event="whatsapp_click" external href={`https://wa.me/${t.coach.wa}?text=${encodeURIComponent(`مرحبا كابتن، شفت شرحك لتمرين ${exName} على Jordan Gym Reviews`)}`} className="inline-block rounded-xl bg-green-600 px-5 py-2 text-sm font-bold text-white">احكي مع الكابتن على واتساب</TrackedLink>}
+          {t.coach.wa && <TrackedLink orgId={t.coach.id} event="whatsapp_click" external href={`https://wa.me/${t.coach.wa}?text=${encodeURIComponent(`مرحبا كابتن، شفت شرحك لتمرين ${exName} على GYMJO`)}`} className="inline-block rounded-xl bg-green-600 px-5 py-2 text-sm font-bold text-white">احكي مع الكابتن على واتساب</TrackedLink>}
         </div>
       </div>
     </div>

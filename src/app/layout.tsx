@@ -1,11 +1,12 @@
 import { baseUrl } from "@/lib/base-url";
 import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/cairo";
-import "@fontsource-variable/sora";
+import "@fontsource-variable/alexandria";
 import "./globals.css";
 import { SiteHeader, SiteFooter } from "@/components/SiteHeader";
 import { JsonLd } from "@/lib/jsonld";
 import { PwaRegister } from "@/components/PwaRegister";
+import { BottomBar } from "@/components/SiteTabs";
 import { QuranAudioProvider, QuranMiniBar } from "@/components/QuranAudio";
 
 export const viewport: Viewport = { themeColor: "#04130c" };
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <main className="flex-1">{children}</main>
           <SiteFooter />
           <QuranMiniBar />
+          <BottomBar />
         </QuranAudioProvider>
         <PwaRegister />
       </body>

@@ -47,7 +47,6 @@ export default async function Account() {
     <main className="mx-auto max-w-5xl px-4 py-7 sm:px-6 sm:py-10">
       <section className="relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(ellipse_at_15%_10%,rgba(200,245,58,.18),transparent_45%),linear-gradient(135deg,#20291b,#11160f)] p-5 shadow-2xl shadow-black/20 sm:p-8">
         <div aria-hidden className="absolute -end-12 -top-16 -z-10 size-56 rounded-full border-[32px] border-[#c8f53a]/5" />
-        <p className="text-xs font-black tracking-[.2em] text-[#c8f53a]">GYMJO MEMBER SPACE</p>
         <div className="mt-5 flex flex-col gap-5 sm:flex-row sm:items-center">
           <div className="flex size-20 shrink-0 items-center justify-center rounded-[1.7rem] border border-[#c8f53a]/30 bg-[#c8f53a]/15 text-4xl font-black text-[#eaff8c] shadow-lg shadow-black/20">{initial}</div>
           <div className="min-w-0 flex-1">
@@ -73,7 +72,7 @@ export default async function Account() {
 
       <section className="mt-9">
         <div className="mb-4 flex items-end justify-between gap-3">
-          <div><p className="text-xs font-black tracking-widest text-accent">YOUR GYMJO</p><h2 className="mt-1 text-2xl font-black">مساحتك الرياضية</h2><p className="mt-1 text-sm text-muted">كل ما تحتاجه لمتابعة رحلتك الرياضية بمكان واحد.</p></div>
+          <div><h2 className="mt-1 text-2xl font-black">مساحتك الرياضية</h2><p className="mt-1 text-sm text-muted">كل ما تحتاجه لمتابعة رحلتك الرياضية بمكان واحد.</p></div>
           <Link href="/sections" className="text-sm font-bold text-accent">كل الأقسام ←</Link>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

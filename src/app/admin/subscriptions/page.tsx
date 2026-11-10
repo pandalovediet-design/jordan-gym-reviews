@@ -48,7 +48,7 @@ export default async function Subscriptions({ searchParams }: PageProps<"/admin/
 
       <ul className="space-y-3">{shown.map(({ o, mine, end, state }) => {
         const wa = waNumber(o.whatsapp);
-        const msg = `مرحبا، اشتراك ${o.name_ar} على Jordan Gym Reviews ${state === "expired" ? "انتهى" : `بنتهي بتاريخ ${end ? dateAr(end) : ""}`}. بتحب نجدده؟`;
+        const msg = `مرحبا، اشتراك ${o.name_ar} على GYMJO ${state === "expired" ? "انتهى" : `بنتهي بتاريخ ${end ? dateAr(end) : ""}`}. بتحب نجدده؟`;
         return (
           <li key={o.id} className={box}>
             <div className="flex flex-wrap items-center justify-between gap-2">

@@ -73,7 +73,6 @@ export default function Sections() {
       <header className="relative mb-9 overflow-hidden rounded-3xl border border-white/10 bg-surface p-6 sm:p-9">
         <div aria-hidden="true" className="pointer-events-none absolute -left-12 -top-16 h-48 w-48 rounded-full bg-accent/10 blur-3xl" />
         <div className="relative">
-          <p className="mb-3 text-xs font-extrabold tracking-[0.2em] text-accent">GYMJO · YOUR FITNESS GUIDE</p>
           <h1 className="max-w-2xl text-3xl font-black leading-tight sm:text-4xl">كل رحلتك الرياضية، <span className="text-accent">بمكان واحد.</span></h1>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-muted sm:text-base">
             دليل النوادي والأنشطة الرياضية في الأردن، بالإضافة إلى أدوات ومحتوى وعروض تساعدك تلاقي اللي بناسبك.

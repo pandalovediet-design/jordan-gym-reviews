@@ -20,7 +20,7 @@ export async function notifyAdmin(text: string): Promise<void> {
     tasks.push(fetch("https://api.resend.com/emails", {
       method: "POST", signal: signal(),
       headers: { "content-type": "application/json", authorization: `Bearer ${resend}` },
-      body: JSON.stringify({ from: "Jordan Gym Reviews <onboarding@resend.dev>", to: [to], subject: text.split("\n")[0], text }),
+      body: JSON.stringify({ from: "GYMJO <onboarding@resend.dev>", to: [to], subject: text.split("\n")[0], text }),
     }));
   }
   await Promise.allSettled(tasks);

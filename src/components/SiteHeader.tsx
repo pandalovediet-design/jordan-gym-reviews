@@ -6,12 +6,13 @@ import { SiteTabs, type NavLink } from "@/components/SiteTabs";
 import { NAV_CATALOG } from "@/lib/site-settings";
 
 export async function SiteHeader() {
-  // Keep every main service directly visible in the navigation; /sections remains the full directory.
-  const tabs: NavLink[] = [...NAV_CATALOG.map((n) => ({ ...n })), { href: "/sections", label: "☰ كل الأقسام" }];
+  // The header carries the destinations people use most; «كل الأقسام» holds the rest.
+  const MAIN = ["/search", "/pink", "/now", "/deals", "/exercises"];
+  const tabs: NavLink[] = [{ href: "/directory", label: "الدليل" }, ...NAV_CATALOG.filter((n) => MAIN.includes(n.href)).map((n) => ({ href: n.href, label: n.label.replace(/^[^\p{L}]+/u, "").trim() })), { href: "/sections", label: "كل الأقسام" }];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-background/90 shadow-lg shadow-black/5 backdrop-blur-xl print:hidden">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-3 py-3 sm:px-5 sm:py-3.5">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-background/90 backdrop-blur-xl print:hidden">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-3 py-2.5 sm:px-5">
         <Link
           href="/"
           aria-label="GYMJO — الصفحة الرئيسية"
@@ -21,16 +22,15 @@ export async function SiteHeader() {
           <img src="/brand/mark-96.png" alt="" width={44} height={44} className="size-10 shrink-0 rounded-2xl object-cover ring-1 ring-accent/40 shadow-lg shadow-black/40 transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:transform-none sm:size-11" />
           <span className="flex min-w-0 flex-col items-start gap-1">
             <span className="wordmark text-xl sm:text-2xl">GYM<b>JO</b></span>
-            <span className="hidden text-[11px] font-semibold leading-none text-muted sm:block">دليلك الرياضي في الأردن</span>
           </span>
         </Link>
+        <SiteTabs links={tabs} />
         <div className="flex shrink-0 items-center gap-1.5 text-sm sm:gap-2">
-          <ThemeToggle />
+          <span className="hidden sm:inline-flex"><ThemeToggle /></span>
           <HeaderAuth />
           <InstallButton />
         </div>
       </div>
-      <SiteTabs links={tabs} />
     </header>
   );
 }

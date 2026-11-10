@@ -17,6 +17,6 @@ export function orgFaq(a: {
   if (a.womenAccess === "women_only") out.push({ q: `هل ${a.name} خاص بالنساء؟`, a: `نعم، ${a.name} مصنّف ${WOMEN_LABEL.women_only} (خاص بالنساء).` });
   else if (a.womenAccess === "women_hours") out.push({ q: `هل في أوقات نسائية في ${a.name}؟`, a: `نعم${a.womenNote ? `: ${a.womenNote}` : ""}.` });
   const contact = [a.whatsapp ? "واتساب" : null, a.phone ? `الهاتف ${a.phone}` : null].filter(Boolean);
-  if (contact.length) out.push({ q: `كيف أتواصل مع ${a.name}؟`, a: `تقدر تتواصل معهم عبر ${contact.join(" أو ")} من صفحتهم على Jordan Gym Reviews.` });
+  if (contact.length) out.push({ q: `كيف أتواصل مع ${a.name}؟`, a: `تقدر تتواصل معهم عبر ${contact.join(" أو ")} من صفحتهم على GYMJO.` });
   return out;
 }
