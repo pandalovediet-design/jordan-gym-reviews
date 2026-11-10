@@ -364,32 +364,16 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       <h2 className="mt-8 text-lg font-extrabold">شارك الصفحة</h2>
       <div className="mt-3 grid max-w-md grid-cols-2 gap-2 sm:gap-3">
         <a href={shareHref} target="_blank" rel="noopener noreferrer" className="col-span-2 inline-flex min-h-12 items-center justify-center rounded-xl bg-surface px-5 font-bold ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">ابعتها على واتساب</a>
-        {[
-          { href: `/g/${org.slug}/card`, title: "كرت منشور", hint: "مربّع تقريباً · للفيد", shape: "h-10 w-8" },
-          { href: `/g/${org.slug}/card?s=1`, title: "كرت ستوري", hint: "طولي · للستوري والريلز", shape: "h-12 w-7" },
-        ].map((c) => (
-          <a key={c.href} href={c.href} target="_blank" rel="noopener noreferrer"
-            className="flex min-h-16 items-center gap-3 rounded-xl bg-surface p-3 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-            <span aria-hidden className={`${c.shape} shrink-0 rounded-md border-2 border-accent/70 bg-accent/10`} />
-            <span className="min-w-0">
-              <span className="block text-sm font-bold">{c.title}</span>
-              <span className="block text-xs text-muted">{c.hint}</span>
-            </span>
-          </a>
-        ))}
-      </div>
-      <details className="mt-2 w-full max-w-md rounded-xl bg-surface ring-1 ring-white/10 [&[open]]:p-4">
-        <summary className="min-h-11 cursor-pointer list-none rounded-xl px-5 py-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent [&::-webkit-details-marker]:hidden">📲 QR للمشاركة</summary>
-        <div className="mt-3 flex flex-col items-center gap-3">
+        <a href={`/g/${org.slug}/card`} target="_blank" rel="noopener noreferrer" className="col-span-2 flex items-center gap-4 rounded-xl bg-surface p-3 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/g/${org.slug}/qr`} alt={`رمز QR لصفحة ${org.name_ar}`} width={208} height={208} loading="lazy" className="size-52 rounded-xl bg-white p-1" />
-          <p className="max-w-52 text-center text-xs text-muted">امسحه بالكاميرا بيفتح صفحة {org.name_ar}.</p>
-          <div className="flex gap-2 text-sm">
-            <a href={`/g/${org.slug}/qr?format=png&download=1`} className="rounded-lg bg-accent px-4 py-2 font-bold text-accent-foreground">تنزيل PNG</a>
-            <a href={`/g/${org.slug}/qr?download=1`} className="rounded-lg bg-white/10 px-4 py-2">SVG</a>
-          </div>
-        </div>
-      </details>
+          <img src={`/g/${org.slug}/card`} alt={`كرت ${org.name_ar} مع رمز QR`} width={108} height={135} loading="lazy" className="h-[135px] w-[108px] shrink-0 rounded-lg object-cover ring-1 ring-white/10" />
+          <span className="min-w-0">
+            <span className="block font-bold">كرت النادي مع QR</span>
+            <span className="mt-1 block text-sm leading-6 text-muted">صورة وحدة جاهزة للستوري والمنشور والطباعة. اللي بيمسح الرمز بيفتح الصفحة.</span>
+          </span>
+        </a>
+        <a href={`/g/${org.slug}/card?download=1`} className="col-span-2 inline-flex min-h-12 items-center justify-center rounded-xl bg-accent px-5 font-bold text-accent-foreground transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">نزّل الكرت</a>
+      </div>
 
       {reviewVideos.length > 0 && (
         <section className="mt-6 rounded-2xl bg-accent/10 p-4 ring-1 ring-accent/30">

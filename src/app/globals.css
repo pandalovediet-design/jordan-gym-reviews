@@ -33,17 +33,18 @@ html { color-scheme: dark; scroll-behavior: smooth; }
 /* User-selectable light mode; dark remains the default. */
 html[data-theme="light"] {
   color-scheme: light;
-  --background: #f5f7f2;
+  /* Light: chalk paper, forest ink, and the flag green doing the work lime does in the dark. */
+  --background: #f2f6f0;
   --surface: #ffffff;
-  --foreground: #172016;
-  --muted: #64705f;
-  --accent: #4d7200;
+  --foreground: #06180f;
+  --muted: #56675b;
+  --accent: #0a7a3d;
   --accent-foreground: #ffffff;
-  --brand-blue: #4d7200;
-  --brand-cyan: #4d7200;
-  --brand-border: #dbe3d3;
-  --brand-lime: #4d7200;
-  --brand-lime-soft: #709a1b;
+  --brand-blue: #0a7a3d;
+  --brand-cyan: #0a7a3d;
+  --brand-border: #d5e1d7;
+  --brand-lime: #0a7a3d;
+  --brand-lime-soft: #12994f;
 }
 html[data-theme="light"] body { background: var(--background); color: var(--foreground); }
 html[data-theme="light"] .border-white\/10 { border-color: rgb(23 32 22 / 12%) !important; }

@@ -1,9 +1,10 @@
+/* eslint-disable @next/next/no-img-element -- this file renders an image with satori, not a page */
 import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
-import { ORG_TYPE_LABEL, isVerified, publicMediaUrl } from "@/lib/format";
-import { GLOW_NAME, type GlowColor } from "@/lib/format";
+import { ORG_TYPE_LABEL, publicMediaUrl } from "@/lib/format";
+import { type GlowColor } from "@/lib/format";
 import { baseUrl } from "@/lib/base-url";
 
 const GLOW: Record<GlowColor, { a: string; b: string; glow: string }> = {
@@ -14,7 +15,7 @@ const GLOW: Record<GlowColor, { a: string; b: string; glow: string }> = {
 };
 
 /** First club photo as a JPEG data URI sized for the card (satori can't read WebP, so everything is converted). Returns null on any failure. */
-export async function loadCardPhoto(storagePath: string | null | undefined, story: boolean): Promise<string | null> {
+export async function loadCardPhoto(storagePath: string | null | undefined): Promise<string | null> {
   if (!storagePath) return null;
   try {
     const file = storagePath.split("/").pop() ?? "";
@@ -25,7 +26,7 @@ export async function loadCardPhoto(storagePath: string | null | undefined, stor
       if (!res.ok) return null;
       buf = Buffer.from(await res.arrayBuffer());
     }
-    const out = await sharp(buf).rotate().resize(940, story ? 800 : 380, { fit: "cover", position: "attention" }).jpeg({ quality: 82 }).toBuffer();
+    const out = await sharp(buf).rotate().resize(952, 300, { fit: "cover", position: "attention" }).jpeg({ quality: 82 }).toBuffer();
     return `data:image/jpeg;base64,${out.toString("base64")}`;
   } catch {
     return null;
@@ -40,8 +41,8 @@ export type CardOrg = {
   verified_at: string | null; women_access: string | null; has_kids_area: boolean | null; kids_friendly: boolean | null; has_mosque: boolean | null; free_trial_note: string | null;
 };
 
-/** Shareable club card image: feed 1080x1350 or story 1080x1920. */
-export async function renderCard(o: CardOrg, story: boolean) {
+/** The one shareable card of a place (1080x1350): name, area and a QR that opens its page. Works as a post, a story and a print. */
+export async function renderCard(o: CardOrg, qr: string, download = false) {
   const [a4, a8, l4, l8, logo] = await Promise.all([
     font("tajawal-arabic-400-normal.woff"), font("tajawal-arabic-800-normal.woff"),
     font("tajawal-latin-400-normal.woff"), font("tajawal-latin-800-normal.woff"),
@@ -49,7 +50,7 @@ export async function renderCard(o: CardOrg, story: boolean) {
   ]);
   const logoSrc = `data:image/png;base64,${logo.toString("base64")}`;
 
-  const W = 1080, H = story ? 1920 : 1350;
+  const W = 1080, H = 1350;
   const chips: string[] = [];
   if (o.women_access === "women_only") chips.push("نسائي");
   else if (o.women_access === "women_hours") chips.push("أوقات نسائية");
@@ -79,6 +80,14 @@ export async function renderCard(o: CardOrg, story: boolean) {
         </div>
       );
     }
+    // A line with no Arabic letters (an English name) reads left to right: keep its word order.
+    if (!/[\u0600-\u06FF]/.test(t)) {
+      return (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+          {lines.map((l, i) => <div key={i} style={{ display: "flex", whiteSpace: "nowrap", fontSize: size, fontWeight: weight, color, lineHeight: lh }}>{l.join(" ")}</div>)}
+        </div>
+      );
+    }
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
         {lines.map((l, i) => (
@@ -91,84 +100,55 @@ export async function renderCard(o: CardOrg, story: boolean) {
 
   const whereParts = [o.area, o.city].filter(Boolean) as string[];
   const gl = o.glow ? GLOW[o.glow] : null;
-
-  const photoH = story ? 900 : 520;
   const title = o.name_ar ?? "";
   const typeLabel = ORG_TYPE_LABEL[o.type as keyof typeof ORG_TYPE_LABEL] ?? "نادي رياضي";
-  const location = whereParts.join(" • ");
-  const url = `${host}/g/${o.slug}`;
-  const photoFrame = o.photo ? (
-    <div style={{ display: "flex", padding: gl ? 9 : 0, borderRadius: story ? 48 : 36, background: gl ? `linear-gradient(135deg, ${gl.a}, ${gl.b}, ${gl.a})` : "#25483c", boxShadow: gl ? `0 0 70px 18px ${gl.glow}` : "0 18px 55px rgba(0,0,0,.32)" }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={o.photo} width={story ? 900 : 940} height={photoH} alt="" style={{ borderRadius: story ? 40 : 30, objectFit: "cover" }} />
-    </div>
-  ) : (
-    <div style={{ display: "flex", height: story ? 760 : 460, borderRadius: 42, background: "radial-gradient(circle at 20% 20%, #477b52 0%, #174638 48%, #0a2922 100%)", border: "2px solid rgba(182,242,58,.3)", alignItems: "center", justifyContent: "center" }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={logoSrc} width={story ? 260 : 210} height={story ? 260 : 210} alt="" style={{ opacity: .9 }} />
-    </div>
-  );
-  const brand = (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexDirection: "row-reverse" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={logoSrc} width={story ? 76 : 68} height={story ? 76 : 68} alt="" style={{ borderRadius: 50 }} />
-        <div style={{ display: "flex", fontSize: story ? 42 : 38, fontWeight: 800 }}>Gym<span style={{ color: "#b6f23a", marginLeft: 10 }}>Jo</span></div>
-      </div>
-      <div style={{ display: "flex", flexDirection: "row-reverse", gap: 10 }}>
-        {isVerified(o) && <div style={{ display: "flex", background: "#b6f23a", padding: "7px 22px 11px", borderRadius: 40 }}><R t="موثّق" size={30} weight={800} color="#07211c" nowrap /></div>}
-        {gl && <div style={{ display: "flex", background: `linear-gradient(135deg, ${gl.a}, ${gl.b})`, padding: "7px 22px 11px", borderRadius: 40 }}><R t={`عضو ${GLOW_NAME[o.glow as GlowColor]}`} size={28} weight={800} color="#2a1a00" nowrap /></div>}
-      </div>
-    </div>
-  );
-  const details = (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: story ? 18 : 14 }}>
-      <div style={{ display: "flex", padding: "7px 28px 12px", borderRadius: 40, background: "rgba(182,242,58,.13)", border: "2px solid #b6f23a" }}>
-        <R t={typeLabel} size={story ? 34 : 30} weight={800} color="#b6f23a" nowrap />
-      </div>
-      <R t={title} size={story ? (title.length > 32 ? 66 : 82) : (title.length > 32 ? 58 : 70)} weight={800} lh={1.2} maxW={story ? 900 : 920} />
-      {location && <R t={location} size={story ? 38 : 34} color="#c9ddd4" maxW={900} />}
-      {o.min_price_jod != null && (
-        <div style={{ display: "flex", flexDirection: "row-reverse", alignItems: "baseline", gap: 14, padding: "5px 28px 14px", borderRadius: 26, background: "rgba(182,242,58,.12)" }}>
-          <R t="يبدأ الاشتراك من" size={story ? 30 : 26} color="#c9ddd4" nowrap />
-          <div style={{ display: "flex", fontSize: story ? 76 : 64, fontWeight: 800, color: "#b6f23a" }}>{Number(o.min_price_jod).toFixed(0)}</div>
-          <R t="د.أ" size={story ? 36 : 32} weight={800} nowrap />
-        </div>
-      )}
-      {chips.length > 0 && <div style={{ display: "flex", flexDirection: "row-reverse", flexWrap: "wrap", gap: 10 }}>
-        {chips.slice(0, story ? 5 : 4).map((c) => <div key={c} style={{ display: "flex", padding: "6px 20px 10px", borderRadius: 30, background: "rgba(255,255,255,.11)" }}><R t={c} size={story ? 28 : 25} nowrap /></div>)}
-      </div>}
-    </div>
-  );
-  const cta = (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 12 }}>
-      <div style={{ display: "flex", justifyContent: "center", background: "#b6f23a", color: "#07211c", borderRadius: 24, padding: story ? "20px 24px" : "16px 20px" }}>
-        <R t={story ? "اكتشف النادي على GYMJO" : "اكتشف النادي"} size={story ? 42 : 36} weight={800} color="#07211c" nowrap />
-      </div>
-      <div style={{ display: "flex", justifyContent: "center", fontSize: story ? 28 : 25, color: "#c9ddd4", fontWeight: 700 }}>{url}</div>
-    </div>
-  );
+  const INK = "#04130c", LIME = "#c8f53a", CHALK = "#f3f8f2", SAGE = "#9db3a4";
+  const inner = W - 128;
+  const qrBox = o.photo ? 400 : 520;
+  const price = o.min_price_jod != null ? `الاشتراك من ${Number(o.min_price_jod)} دينار` : null;
 
   return new ImageResponse(
-    story ? (
-      <div style={{ width: W, height: H, display: "flex", flexDirection: "column", padding: "58px 72px 62px", gap: 30, background: "radial-gradient(circle at 85% 12%, #1c5a47 0%, rgba(28,90,71,0) 42%), linear-gradient(160deg,#0d2f28 0%,#07211c 78%)", color: "#eef6f2", fontFamily: "Taj, TajL" }}>
-        {brand}
-        {photoFrame}
-        <div style={{ display: "flex", flex: 1, flexDirection: "column", justifyContent: "center", gap: 20 }}>{details}</div>
-        {cta}
-        <div style={{ display: "flex", justifyContent: "center", color: "#78968a", fontSize: 23 }}>دليلك لاكتشاف الرياضة في الأردن</div>
-      </div>
-    ) : (
-      <div style={{ width: W, height: H, display: "flex", flexDirection: "column", background: "#08251e", color: "#eef6f2", fontFamily: "Taj, TajL" }}>
-        <div style={{ display: "flex", padding: "38px 58px 26px", alignItems: "center", justifyContent: "space-between", flexDirection: "row-reverse" }}>
-          {brand}
+    (
+      <div style={{ width: W, height: H, display: "flex", flexDirection: "column", background: `radial-gradient(circle at 12% 0%, rgba(200,245,58,.20), transparent 42%), radial-gradient(circle at 100% 100%, rgba(0,122,61,.30), transparent 45%), ${INK}`, color: CHALK, fontFamily: "Taj, TajL", padding: "56px 64px 52px" }}>
+        {/* brand row */}
+        <div style={{ display: "flex", flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", width: inner }}>
+          <div style={{ display: "flex", flexDirection: "row-reverse", alignItems: "center", gap: 18 }}>
+            <img src={logoSrc} width={84} height={84} alt="" style={{ borderRadius: 24, border: `2px solid ${LIME}` }} />
+            <div style={{ display: "flex", fontSize: 50, fontWeight: 800, letterSpacing: -1 }}><span style={{ color: CHALK }}>GYM</span><span style={{ color: LIME }}>JO</span></div>
+          </div>
+          <R t="زورونا على جيم جو" size={32} weight={800} color={LIME} nowrap />
         </div>
-        <div style={{ display: "flex", padding: "0 58px" }}>{photoFrame}</div>
-        <div style={{ display: "flex", flex: 1, flexDirection: "column", justifyContent: "space-between", padding: "30px 64px 34px", background: "linear-gradient(160deg,#103d30 0%,#071f19 100%)" }}>
-          {details}
-          {cta}
+        <div style={{ display: "flex", width: inner, height: 5, marginTop: 28, borderRadius: 5, background: `linear-gradient(90deg, #111 0 30%, ${CHALK} 30% 60%, #007a3d 60% 88%, #ce1126 88% 100%)` }} />
+
+        {/* the place */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", width: inner, marginTop: 34, gap: 6 }}>
+          <R t={typeLabel} size={32} weight={800} color={LIME} nowrap />
+          <R t={title} size={title.length > 26 ? 60 : 74} weight={800} lh={1.2} maxW={inner} />
+          {whereParts.length > 0 && <R t={whereParts.join(" ، ")} size={36} color={SAGE} nowrap />}
         </div>
-        {gl && <div style={{ display: "flex", height: 9, background: `linear-gradient(90deg, ${gl.a}, ${gl.b}, ${gl.a})` }} />}
+
+        {o.photo && <img src={o.photo} width={inner} height={300} alt="" style={{ marginTop: 28, borderRadius: 32, objectFit: "cover" }} />}
+
+        {/* the code */}
+        <div style={{ display: "flex", flex: 1, flexDirection: "column", alignItems: "center", justifyContent: "center", width: inner, gap: 22 }}>
+          <div style={{ display: "flex", position: "relative", alignItems: "center", justifyContent: "center", width: qrBox, height: qrBox, borderRadius: 40, background: "#ffffff", border: `6px solid ${gl ? gl.a : LIME}` }}>
+            <img src={qr} width={qrBox - 44} height={qrBox - 44} alt="" />
+            <img src={logoSrc} width={qrBox * 0.2} height={qrBox * 0.2} alt="" style={{ position: "absolute", borderRadius: 22, border: "6px solid #ffffff" }} />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", height: 74, padding: "0 44px", borderRadius: 74, background: LIME }}>
+            <R t={price ? `امسح الرمز، ${price}` : "امسح الرمز وشوف الأسعار والدوام"} size={34} weight={800} color="#0b1a08" nowrap />
+          </div>
+        </div>
+
+        {/* footer */}
+        <div style={{ display: "flex", flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", width: inner }}>
+          <div style={{ display: "flex", flexDirection: "row-reverse", gap: 12 }}>
+            {(chips.length ? chips.slice(0, 3) : ["أسعار", "دوام", "موقع"]).map((c) => (
+              <div key={c} style={{ display: "flex", alignItems: "center", height: 52, padding: "0 22px", borderRadius: 52, border: "2px solid rgba(243,248,242,.22)" }}><R t={c} size={26} weight={800} nowrap /></div>
+            ))}
+          </div>
+          <div style={{ display: "flex", fontSize: 26, color: SAGE }}>{host}</div>
+        </div>
       </div>
     ),
     {
@@ -179,7 +159,7 @@ export async function renderCard(o: CardOrg, story: boolean) {
         { name: "TajL", data: l4, weight: 400, style: "normal" },
         { name: "TajL", data: l8, weight: 800, style: "normal" },
       ],
-      headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" },
+      headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400", ...(download ? { "Content-Disposition": `attachment; filename="gymjo-${o.slug}.png"` } : {}) },
     },
   );
 }
