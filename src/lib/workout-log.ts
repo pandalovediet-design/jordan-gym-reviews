@@ -1,5 +1,7 @@
 /** Pure helpers for the workout log (dates are Amman calendar days, "YYYY-MM-DD"). */
-export type Entry = { kind: string; min: number };
+import { isMuscle, type Muscle } from "@/lib/exercise-meta";
+
+export type Entry = { kind: string; min: number; muscles?: Muscle[] };
 export type Log = Record<string, Entry>;
 export type Settings = { goal: number };
 
@@ -20,8 +22,9 @@ export function sanitize(raw: unknown): Log {
   if (!raw || typeof raw !== "object") return out;
   for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(k) || !v || typeof v !== "object") continue;
-    const e = v as { kind?: unknown; min?: unknown };
-    out[k] = { kind: typeof e.kind === "string" ? e.kind.slice(0, 40) : "تمرين", min: typeof e.min === "number" && e.min > 0 && e.min < 1000 ? Math.round(e.min) : 0 };
+    const e = v as { kind?: unknown; min?: unknown; muscles?: unknown };
+    const muscles = Array.isArray(e.muscles) ? [...new Set(e.muscles.filter((m): m is Muscle => typeof m === "string" && isMuscle(m)))] : [];
+    out[k] = { kind: typeof e.kind === "string" ? e.kind.slice(0, 40) : "تمرين", min: typeof e.min === "number" && e.min > 0 && e.min < 1000 ? Math.round(e.min) : 0, ...(muscles.length ? { muscles } : {}) };
   }
   return out;
 }
@@ -42,3 +45,11 @@ export function bestStreak(log: Log): number {
 export const weekStart = (today: string) => addDays(today, -dow(today));
 export const daysThisWeek = (log: Log, today: string) => { const s = weekStart(today); return Array.from({ length: 7 }, (_, i) => addDays(s, i)).filter((d) => d <= today && log[d]).length; };
 export const monthCount = (log: Log, today: string) => Object.keys(log).filter((d) => d.slice(0, 7) === today.slice(0, 7)).length;
+
+/** Muscles trained in the week (Sunday start) that contains today. */
+export function musclesThisWeek(log: Log, today: string): Muscle[] {
+  const s = weekStart(today);
+  const out = new Set<Muscle>();
+  for (let i = 0; i < 7; i++) for (const m of log[addDays(s, i)]?.muscles ?? []) out.add(m);
+  return [...out];
+}

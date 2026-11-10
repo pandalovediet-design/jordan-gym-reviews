@@ -798,3 +798,25 @@ export async function setTheme(id: string, _: FormState, fd: FormData): Promise<
   revalidatePath(`/g/${org.slug}`);
   return { ok: "تم تغيير ألوان صفحتك" };
 }
+
+// ---------------------------------------------------------------- posts (short updates on the public page)
+export async function addPost(id: string, _: FormState, fd: FormData): Promise<FormState> {
+  const body = String(fd.get("body") ?? "").trim();
+  if (body.length < 2) return { error: "اكتب المنشور" };
+  if (body.length > 1000) return { error: "المنشور أطول من 1000 حرف" };
+  const { supabase } = await requireUser();
+  const { data: org } = await supabase.from("organizations").select("slug").eq("id", id).maybeSingle();
+  const { error } = await supabase.from("business_posts").insert({ organization_id: id, body });
+  if (error) return { error: error.message.includes("too many") ? "وصلت حد اليوم (5 منشورات). جرّب بكرة." : "تعذّر النشر" };
+  revalidatePath(`/dashboard/${id}/posts`);
+  if (org) revalidatePath(`/g/${org.slug}`);
+  return { ok: "انتشر المنشور على صفحتك" };
+}
+
+export async function deletePost(id: string, postId: string): Promise<void> {
+  const { supabase } = await requireUser();
+  const { data: org } = await supabase.from("organizations").select("slug").eq("id", id).maybeSingle();
+  await supabase.from("business_posts").delete().eq("id", postId).eq("organization_id", id);
+  revalidatePath(`/dashboard/${id}/posts`);
+  if (org) revalidatePath(`/g/${org.slug}`);
+}

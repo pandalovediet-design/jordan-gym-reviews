@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SponsoredSlot } from "@/components/SponsoredSlot";
 import { notFound } from "next/navigation";
 import { DirectoryView } from "@/components/DirectoryView";
 import { isOrgType, listCities, searchOrgs } from "@/lib/queries";
@@ -23,5 +24,5 @@ export default async function Page({ params }: PageProps<"/directory/[type]/[cit
   const c = decodeURIComponent(city);
   const [{ items, total }, cities] = await Promise.all([searchOrgs({ type, city: c, page: 1 }), listCities(type)]);
   if (total === 0) notFound(); // never index empty landing pages
-  return <DirectoryView type={type} city={c} items={items} total={total} cities={cities} />;
+  return (<><SponsoredSlot placement="category" type={type} className="mx-auto max-w-7xl px-4 pt-6 sm:px-6" /><DirectoryView type={type} city={c} items={items} total={total} cities={cities} /></>);
 }

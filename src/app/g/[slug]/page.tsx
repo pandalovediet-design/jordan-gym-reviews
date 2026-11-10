@@ -201,6 +201,7 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   const orgVideos = await listVideos({ orgId: org.id, limit: 12 });
   const reviewVideos = orgVideos.filter((x) => x.kind === "review");
   const reelVideos = orgVideos.filter((x) => x.kind === "reel");
+  const { data: posts } = await createPublicClient().from("business_posts").select("id,body,created_at").eq("organization_id", org.id).order("created_at", { ascending: false }).limit(5);
   const category = org.category_id ? (await createPublicClient().from("org_categories").select("name_ar").eq("id", org.category_id).maybeSingle()).data?.name_ar : null;
   const jsonLd = {
     "@context": "https://schema.org",
@@ -323,6 +324,22 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         </div>
       )}
       {!multi && <p className="mt-1 text-muted">{[org.address, org.area, org.city].filter(Boolean).join("، ")}</p>}
+      <div className="mt-5 grid gap-2 border-t border-white/10 pt-4 sm:grid-cols-2">
+        <div className="rounded-xl bg-background/55 p-3">
+          <p className="text-[11px] font-bold text-muted">📍 الموقع</p>
+          <p className="mt-1 line-clamp-2 text-sm font-bold">{[org.area, org.city].filter(Boolean).join("، ") || "الموقع غير محدد"}</p>
+          {orgMaps && <a href={orgMaps} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-xs font-bold text-accent underline">افتح الخريطة</a>}
+        </div>
+        <div className="rounded-xl bg-background/55 p-3">
+          <p className="text-[11px] font-bold text-muted">☎ التواصل</p>
+          <p className="mt-1 text-sm font-bold" dir="ltr">{org.phone || "غير متوفر"}</p>
+          {org.phone && <a href={"tel:" + org.phone} className="mt-1 inline-block text-xs font-bold text-accent underline">اتصل بالنادي</a>}
+        </div>
+      </div>
+      {(org.instagram || org.website) && <div className="mt-3 flex flex-wrap gap-2">
+        {org.instagram && <a href={"https://instagram.com/" + org.instagram.replace(/^@/, "")} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center rounded-full bg-background/60 px-4 text-sm font-bold ring-1 ring-white/10 hover:ring-accent">◎ Instagram</a>}
+        {org.website && <a href={org.website} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center rounded-full bg-background/60 px-4 text-sm font-bold ring-1 ring-white/10 hover:ring-accent">↗ الموقع الإلكتروني</a>}
+      </div>}
       </div>
       </div>
       {multi && (
@@ -345,8 +362,21 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       <div className="mt-5 flex flex-wrap gap-2 sm:gap-3 [&>a]:min-h-11 [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center [&>a]:text-center">
         {wa && org.free_trial_note && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${trialMsg}`} className="rounded-xl bg-accent/15 px-5 py-2.5 font-bold text-accent ring-1 ring-accent/50">🎟 {org.free_trial_note}</TrackedLink>}
         <a href={shareHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">شارك على واتساب</a>
-        <a href={`/g/${org.slug}/card`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">🖼 كرت للمنشور</a>
-        <a href={`/g/${org.slug}/card?s=1`} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">📱 كرت للستوري</a>
+      </div>
+      <div className="mt-3 grid max-w-md grid-cols-2 gap-2 sm:gap-3" aria-label="كروت جاهزة للمشاركة">
+        {[
+          { href: `/g/${org.slug}/card`, title: "كرت منشور", hint: "مربّع تقريباً · للفيد", shape: "h-10 w-8" },
+          { href: `/g/${org.slug}/card?s=1`, title: "كرت ستوري", hint: "طولي · للستوري والريلز", shape: "h-12 w-7" },
+        ].map((c) => (
+          <a key={c.href} href={c.href} target="_blank" rel="noopener noreferrer"
+            className="flex min-h-16 items-center gap-3 rounded-xl bg-surface p-3 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+            <span aria-hidden className={`${c.shape} shrink-0 rounded-md border-2 border-accent/70 bg-accent/10`} />
+            <span className="min-w-0">
+              <span className="block text-sm font-bold">{c.title}</span>
+              <span className="block text-xs text-muted">{c.hint}</span>
+            </span>
+          </a>
+        ))}
       </div>
       <details className="mt-3 w-fit rounded-xl bg-surface ring-1 ring-white/10 [&[open]]:p-4">
         <summary className="min-h-11 cursor-pointer list-none rounded-xl px-5 py-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent [&::-webkit-details-marker]:hidden">📲 QR للمشاركة</summary>
@@ -407,6 +437,19 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           )}
           <Section title="قائمة الوجبات"><Menu items={menu} /></Section>
         </>
+      )}
+
+      {(posts ?? []).length > 0 && (
+        <Section title="آخر الأخبار">
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {(posts ?? []).map((p) => (
+              <li key={p.id} className="rounded-2xl bg-surface p-4 ring-1 ring-white/10">
+                <p className="whitespace-pre-line text-sm leading-7">{p.body}</p>
+                <p className="mt-2 text-xs text-muted">{dateAr(p.created_at)}</p>
+              </li>
+            ))}
+          </ul>
+        </Section>
       )}
 
       {!multi ? (

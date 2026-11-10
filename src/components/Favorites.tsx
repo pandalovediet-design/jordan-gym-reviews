@@ -1,5 +1,6 @@
 "use client";
 import { useSyncExternalStore } from "react";
+import { setAccountFavorite } from "@/app/favorites/actions";
 
 const KEY = "jgr:favs";
 const EVT = "jgr:favs-change";
@@ -25,19 +26,30 @@ function subscribe(cb: () => void) {
   window.addEventListener(EVT, cb);
   return () => { window.removeEventListener("storage", cb); window.removeEventListener(EVT, cb); };
 }
+export function replaceFavs(slugs: string[]) {
+  try {
+    const next = [...new Set(slugs)].slice(0, 100);
+    localStorage.setItem(KEY, JSON.stringify(next));
+    cache = { raw: JSON.stringify(next), list: next };
+    window.dispatchEvent(new Event(EVT));
+  } catch { /* Keep the UI available if storage is blocked. */ }
+}
 export function useFavs() {
   return useSyncExternalStore(subscribe, read, () => EMPTY);
 }
-export function toggleFav(slug: string) {
+/** Toggles locally and returns whether the place is now saved. */
+export function toggleFav(slug: string): boolean {
+  const cur = read();
+  const saved = !cur.includes(slug);
   try {
-    const cur = read();
-    const next = cur.includes(slug) ? cur.filter((s) => s !== slug) : [slug, ...cur].slice(0, 100);
+    const next = saved ? [slug, ...cur].slice(0, 100) : cur.filter((s) => s !== slug);
     localStorage.setItem(KEY, JSON.stringify(next));
     cache = { raw: JSON.stringify(next), list: next };
     window.dispatchEvent(new Event(EVT));
   } catch {
     // Storage can be unavailable in private browsing; the rest of the page remains usable.
   }
+  return saved;
 }
 
 export function FavButton({ slug, className = "" }: { slug: string; className?: string }) {
@@ -48,7 +60,7 @@ export function FavButton({ slug, className = "" }: { slug: string; className?: 
       aria-label={on ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}
       aria-pressed={on}
       title={on ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}
-      onClick={() => toggleFav(slug)}
+      onClick={() => { const saved = toggleFav(slug); setAccountFavorite(slug, saved).catch(() => { /* Local favorites remain saved if sync is unavailable. */ }); }}
       className={`absolute left-2 top-2 z-10 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-white/15 bg-black/60 text-lg leading-none shadow-lg shadow-black/20 backdrop-blur transition-transform hover:scale-105 hover:bg-black/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-95 motion-reduce:transform-none motion-reduce:transition-none ${className}`}
     >
       <span aria-hidden="true">{on ? "❤️" : "🤍"}</span>

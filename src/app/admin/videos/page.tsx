@@ -3,7 +3,8 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { dateAr } from "@/lib/format";
 import { PLATFORM_LABEL, type Platform } from "@/lib/video";
-import { ActionForm, field } from "@/components/Form";
+import { ActionForm } from "@/components/Form";
+import { field } from "@/lib/form-styles";
 import { addReviewVideo, adminDeleteVideo, clearVideoReports, setVideoStatus } from "../actions";
 
 export const metadata: Metadata = { title: "الفيديو", robots: { index: false } };

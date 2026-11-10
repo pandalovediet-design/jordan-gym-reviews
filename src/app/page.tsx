@@ -3,6 +3,7 @@ import { FlashStrip } from "@/components/FlashStrip";
 import { OrgCard } from "@/components/OrgCard";
 import { TrailCard } from "@/components/TrailCard";
 import { adImageUrl, listLiveAds } from "@/lib/ads";
+import { AdImpressions } from "@/components/AdImpressions";
 import { listActiveOffers, listCities, listHomeSections, listLiveFlash, listPartners, listTrails } from "@/lib/queries";
 import { getSiteSettings } from "@/lib/site-settings";
 import { listExercises } from "@/lib/exercises";
@@ -25,6 +26,8 @@ const FEATURE_TILES = [
   { href: "/awards", icon: "🏆", label: "نادي الشهر", description: "تابع الترشيحات واكتشف الأندية المميزة." },
   { href: "/exercises", icon: "💪", label: "مكتبة التمارين", description: "تعلّم التمارين وطريقة أدائها." },
   { href: "/log", icon: "🔥", label: "سجل تمريني", description: "سجّل نشاطك وتابع استمراريتك." },
+  { href: "/food", icon: "🍽️", label: "سجل أكلي", description: "سجّل وجباتك بضغطة بدون عدّ سعرات." },
+  { href: "/challenges", icon: "🏆", label: "التحديات", description: "شارك بتحديات أسبوعية وتابع إنجازاتك." },
   { href: "/deals", icon: "🎟️", label: "أكواد الخصم", description: "وفّر مع عروض الأنشطة الرياضية." },
   { href: "/no-gym", icon: "🏠", label: "من غير جيم", description: "تمارين وأفكار بدون اشتراك نادي." },
   { href: "/no-deprivation", icon: "🥗", label: "من غير حرمان", description: "محتوى غذائي متوازن وواقعي." },
@@ -143,7 +146,7 @@ export default async function Home() {
           <span className="rounded-full border border-white/10 bg-surface px-3 py-1.5 text-xs font-bold text-muted">{FEATURE_TILES.length} ميزة</span>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {FEATURE_TILES.map((tile, index) => (
+          {FEATURE_TILES.map((tile) => (
             <Link key={tile.href} href={tile.href} className="group relative flex min-h-36 flex-col overflow-hidden rounded-2xl border border-white/10 bg-surface p-4 transition duration-200 hover:-translate-y-1 hover:border-accent/50 hover:shadow-xl hover:shadow-black/10 sm:min-h-40 sm:p-5">
               <span aria-hidden className="absolute -left-3 -top-4 text-7xl opacity-[0.06] transition group-hover:scale-110">{tile.icon}</span>
               <span className="relative flex size-11 items-center justify-center rounded-xl bg-accent/10 text-2xl">{tile.icon}</span>
@@ -210,6 +213,7 @@ export default async function Home() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{trails.slice(0, 6).map((t) => <TrailCard key={t.id} t={t} />)}</div>
         </section>
       )}
+      <AdImpressions ids={[...(show.banner && banner ? [banner.id] : []), ...(show.sponsored ? sponsored.map((a) => a.id) : [])]} />
       {show.banner && banner && (
         <a href={`/a/${banner.id}`} rel="sponsored noopener" className="relative mb-10 block overflow-hidden rounded-2xl bg-surface ring-1 ring-white/10">
           {banner.image_path && (

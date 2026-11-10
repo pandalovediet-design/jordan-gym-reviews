@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { dateAr } from "@/lib/format";
-import { ActionForm, field } from "@/components/Form";
+import { ActionForm } from "@/components/Form";
+import { field } from "@/lib/form-styles";
 import { LEVEL_LABEL, MUSCLES, MUSCLE_LABEL, type Muscle } from "@/lib/exercise-meta";
 import { addExercise, adminDeleteExplanation, setExerciseActive, setExplanationStatus } from "../actions";
 

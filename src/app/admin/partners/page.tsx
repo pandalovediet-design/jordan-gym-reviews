@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { ImageInput } from "@/components/ImageInput";
-import { ActionForm, field } from "@/components/Form";
+import { ActionForm } from "@/components/Form";
+import { field } from "@/lib/form-styles";
 import { adImageUrl } from "@/lib/ads";
 import { dateAr } from "@/lib/format";
 import { addPartner, deletePartner, setPartnerActive } from "../more-actions";

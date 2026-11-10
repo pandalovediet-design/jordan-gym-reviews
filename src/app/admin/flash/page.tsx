@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
-import { ActionForm, field } from "@/components/Form";
+import { ActionForm } from "@/components/Form";
+import { field } from "@/lib/form-styles";
 import { dateAr, msAgo } from "@/lib/format";
 import { createFlashSlot, deleteFlashSlot, renewFlashSlot } from "../more-actions";
 
