@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function NowLocate({ type, label = "📍 حدّد موقعي" }: { type?: string; label?: string }) {
+export function NowLocate({ type, label = "حدّد موقعي" }: { type?: string; label?: string }) {
   const router = useRouter();
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
@@ -46,9 +46,9 @@ export function NowLocate({ type, label = "📍 حدّد موقعي" }: { type?:
         onClick={go}
         disabled={loading}
         aria-busy={loading}
-        className="min-h-11 rounded-xl bg-accent px-6 py-3 font-bold text-accent-foreground transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 motion-reduce:transition-none"
+        className="min-h-12 rounded-full bg-accent px-6 font-semibold text-accent-foreground disabled:cursor-wait disabled:opacity-60"
       >
-        {loading ? "⏳ جاري تحديد الموقع…" : label}
+        {loading ? "جاري تحديد الموقع…" : label}
       </button>
       {msg && <span className="text-sm text-muted" role="status" aria-live="polite">{msg}</span>}
     </div>
