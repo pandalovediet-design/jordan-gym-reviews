@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ActionForm } from "@/components/Form";
 import { field } from "@/lib/form-styles";
 import { requestAddPlace } from "./actions";
+import { PageHead, btn } from "@/components/PageHead";
 
 export const metadata: Metadata = {
   title: "أضف ناديك إلى GYMJO مجاناً",
@@ -12,29 +13,25 @@ export const metadata: Metadata = {
 
 const KINDS = ["نادي رياضي", "نادي نسائي", "مسبح", "فنون قتالية", "كروس فت / ستوديو", "ملعب أو منشأة", "متجر مكمّلات", "مدرب أو أخصائي تغذية", "غير ذلك"];
 const STEPS = [
-  ["👤", "أنشئ حسابك", "بالإيميل وكلمة سر، دقيقة وحدة."],
-  ["✏️", "عبّي صفحتك", "الأسعار، الدوام، الصور، الموقع، العروض وزر واتساب."],
-  ["✅", "بنراجع وبننشر", "بنتأكد من البيانات، وبعدها بتظهر صفحتك بالدليل وعلى غوغل."],
+  ["أنشئ حسابك", "بالإيميل وكلمة سر، دقيقة وحدة."],
+  ["عبّي صفحتك", "الأسعار، الدوام، الصور، الموقع، العروض وزر واتساب."],
+  ["بنراجع وبننشر", "بنتأكد من البيانات، وبعدها بتظهر صفحتك بالدليل وعلى غوغل."],
 ];
 const SIGNUP = "/login?mode=signup&next=%2Fdashboard%2Fnew";
 
 export default function Join() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-extrabold">أضف ناديك إلى <span className="wordmark text-accent">GYM<b>JO</b></span></h1>
-      <p className="mt-3 text-lg text-muted">الناس بتدور على نادي أو مسبح أو ملعب قريب منها. خلّيهم يلاقوك.</p>
-      <p className="mt-4 rounded-xl bg-accent/15 px-4 py-3 font-bold text-accent ring-1 ring-accent/40">الإضافة مجانية. صفحتك بإيدك: لوحة تحكم بتعدّل منها بياناتك وبتشوف مين زارك.</p>
+      <PageHead title="أضف ناديك مجاناً" note="الناس بتدوّر على نادي أو مسبح أو ملعب قريب منها. صفحتك بإيدك: بتعدّل بياناتك وبتشوف مين زارك.">
+        <Link href={SIGNUP} className={btn.primary}>أنشئ حساب وسجّل ناديك</Link>
+        <Link href="/login?next=%2Fdashboard" className={btn.ghost}>عندي حساب</Link>
+      </PageHead>
 
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Link href={SIGNUP} className="inline-flex min-h-12 items-center justify-center rounded-xl bg-accent px-6 font-extrabold text-accent-foreground transition hover:brightness-110">أنشئ حساب وسجّل ناديك</Link>
-        <Link href="/login?next=%2Fdashboard" className="inline-flex min-h-12 items-center justify-center rounded-xl px-6 font-bold ring-1 ring-white/15 transition hover:ring-accent/60">عندي حساب</Link>
-      </div>
-
-      <ol className="mt-8 grid gap-3 sm:grid-cols-3">
-        {STEPS.map(([icon, title, text], i) => (
-          <li key={title} className="rounded-2xl bg-surface p-5 ring-1 ring-white/10">
-            <p className="text-2xl" aria-hidden>{icon}</p>
-            <h2 className="mt-1 font-bold">{i + 1}. {title}</h2>
+      <ol className="grid gap-3 sm:grid-cols-3">
+        {STEPS.map(([title, text], i) => (
+          <li key={title} className="rounded-2xl bg-surface p-5 ring-1 ring-line">
+            <p className="font-display text-4xl font-extrabold text-muted" aria-hidden>{i + 1}</p>
+            <h2 className="mt-1 text-xl font-bold">{title}</h2>
             <p className="mt-1 text-sm leading-6 text-muted">{text}</p>
           </li>
         ))}
@@ -60,7 +57,7 @@ export default function Join() {
         </ActionForm>
       </section>
 
-      <p className="mt-6 text-sm text-muted">مكانك موجود أصلاً بالدليل؟ افتح صفحته واضغط «استلم صفحتك» لتصير تديرها إنت. ولو في معلومة غلط، اضغط «🚩 الإبلاغ عن الإعلان».</p>
+      <p className="mt-6 text-sm text-muted">مكانك موجود أصلاً بالدليل؟ افتح صفحته واضغط «استلم صفحتك» لتصير تديرها إنت. ولو في معلومة غلط، اضغط «الإبلاغ عن الإعلان».</p>
       <p className="mt-2 text-sm text-muted">بدك تعلن أو ترعى قسم؟ <Link href="/sponsors" className="text-accent underline">صفحة الرعاة</Link>.</p>
     </div>
   );

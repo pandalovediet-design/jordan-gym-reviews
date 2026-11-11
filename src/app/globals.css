@@ -81,6 +81,7 @@ h1, h2, h3 { text-wrap: balance; }
 /* Solid accent buttons are ink + lime on paper and lime + ink on dark surfaces. */
 .bg-accent { background-color: var(--cta) !important; color: var(--cta-foreground) !important; }
 .hover\:bg-accent:hover, .group:hover .group-hover\:bg-accent { background-color: var(--cta) !important; color: var(--cta-foreground) !important; }
+.has-\[\:checked\]\:bg-accent:has(:checked) { background-color: var(--cta) !important; color: var(--cta-foreground) !important; }
 
 /* Older pages still use cyan/blue utility names; map them onto the accent. */
 .text-cyan-200, .text-cyan-100 { color: var(--accent) !important; }

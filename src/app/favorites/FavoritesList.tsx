@@ -67,14 +67,14 @@ export function FavoritesList() {
   if (shown.length === 0) {
     return (
       <div className="rounded-2xl bg-surface p-8 text-center">
-        <p className="text-muted">ما أضفت أي نشاط للمفضلة بعد. اضغط على القلب 🤍 على أي بطاقة.</p>
-        <Link href="/directory" className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-accent px-5 font-bold text-accent-foreground">تصفّح الأماكن</Link>
+        <p className="text-muted">ما أضفت أي نشاط للمفضلة بعد. اضغط على القلب على أي كرت وبتلاقيه هون.</p>
+        <Link href="/directory" className="mt-4 inline-flex min-h-12 items-center rounded-full bg-accent px-6 font-semibold text-accent-foreground">تصفّح الأماكن</Link>
       </div>
     );
   }
   return (
     <>
-      {synced && <p className="mb-3 text-xs text-muted">🔒 مفضلتك محفوظة بحسابك وبتظهر على كل أجهزتك.</p>}
+      {synced && <p className="mb-3 text-xs text-muted">مفضلتك محفوظة بحسابك وبتظهر على كل أجهزتك.</p>}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{shown.map((o) => <OrgCard key={o.id} org={o} />)}</div>
     </>
   );

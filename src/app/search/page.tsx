@@ -7,6 +7,7 @@ import { CityAreaPicker } from "@/components/CityAreaPicker";
 import { OrgCard } from "@/components/OrgCard";
 import { PAGE_SIZE, listCategories, searchOrgs, searchProducts } from "@/lib/queries";
 import { ORG_TYPE_LABEL } from "@/lib/format";
+import { PageHead, btn } from "@/components/PageHead";
 
 export const metadata: Metadata = { title: "البحث" };
 
@@ -47,29 +48,34 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
     return `/search?${u}`;
   };
   const activeFilters = mode === "products" ? 0 : [type, city, area, category, women, maxPrice, trial, mosque, quiet, kidsArea, kids, transport, access].filter(Boolean).length + (near ? 1 : 0);
-  const field = "min-h-11 w-full rounded-xl bg-surface px-3 py-2.5 ring-1 ring-white/10 outline-none transition focus-visible:ring-2 focus-visible:ring-cyan-300";
+  const field = "min-h-12 w-full rounded-xl bg-surface px-3 ring-1 ring-line outline-none";
+  const check = `${field} flex cursor-pointer items-center gap-2.5 text-sm has-[:checked]:ring-2 has-[:checked]:ring-foreground`;
+  const title = q ? `نتائج «${q}»` : mode === "products" ? "المنتجات الرياضية" : "دوّر بالدليل";
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
-      <SponsoredSlot placement="search" className="mb-5" />
-      <div className="mb-7 rounded-3xl border border-white/10 bg-[radial-gradient(ellipse_at_10%_0%,rgba(54,120,246,.16),transparent_45%),linear-gradient(135deg,rgba(255,255,255,.035),transparent)] p-4 sm:p-7"><div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="mb-2 text-xs font-bold tracking-wider text-cyan-200">اكتشف خياراتك</p><h1 className="text-2xl font-black sm:text-3xl">{q ? `نتائج البحث عن «${q}»` : mode === "products" ? "السوق الرياضي" : "دليل الأنشطة الرياضية"}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">قارن الأماكن والخدمات حسب المدينة والسعر والمرافق، واختار الأنسب لهدفك.</p></div><Link href="/sections" className="rounded-full border border-white/10 bg-surface px-4 py-2 text-sm font-bold transition hover:border-cyan-300/40">تصفّح الأقسام ←</Link></div><form className="mb-0">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
+      <SponsoredSlot placement="search" className="mb-6" />
+      <PageHead title={title} />
+      <form className="mb-8">
         {near && mode === "orgs" && <><input type="hidden" name="lat" value={near.lat} /><input type="hidden" name="lng" value={near.lng} /></>}
         <div className="flex gap-2">
-          <input name="q" aria-label="كلمات البحث" defaultValue={q} placeholder="ابحث..." className={`${field} min-w-0 flex-1`} />
-          <button className="min-h-11 shrink-0 rounded-xl bg-accent px-5 font-bold text-accent-foreground transition hover:brightness-110 sm:px-6">بحث</button>
+          <input name="q" aria-label="كلمات البحث" defaultValue={q} placeholder="اسم نادي، منطقة، أو رياضة" className={`${field} min-w-0 flex-1 text-base`} />
+          <button className="min-h-12 shrink-0 rounded-xl bg-accent px-6 font-display text-lg font-bold text-accent-foreground">دوّر</button>
         </div>
-        <label className="mt-3 block text-sm font-semibold text-muted">نوع النتائج
-          <select name="in" aria-label="نوع النتائج" defaultValue={mode} className={`${field} mt-1`}>
-            <option value="orgs">الأنشطة والأماكن</option><option value="products">المنتجات الرياضية</option>
-          </select>
-        </label>
-        {mode === "orgs" && <details open={activeFilters > 0} className="mt-3 rounded-2xl bg-surface/60 ring-1 ring-white/10">
-          <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 px-4 py-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">
-            <span>⚙️ الفلاتر</span>
-            {activeFilters > 0 && <span className="rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground">{activeFilters}</span>}
+        {/* What to search in: two radio pills instead of a dropdown. */}
+        <div className="mt-3 flex gap-2 text-sm">
+          {([["orgs", "الأماكن"], ["products", "المنتجات"]] as const).map(([value, label]) => (
+            <label key={value} className="inline-flex min-h-10 cursor-pointer items-center rounded-full px-4 font-semibold ring-1 ring-line has-[:checked]:bg-accent has-[:checked]:text-accent-foreground has-[:checked]:ring-0">
+              <input type="radio" name="in" value={value} defaultChecked={mode === value} className="sr-only" />{label}
+            </label>
+          ))}
+        </div>
+        {mode === "orgs" && <details open={activeFilters > 0} className="mt-4 rounded-2xl bg-surface ring-1 ring-line">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 text-sm font-semibold [&::-webkit-details-marker]:hidden">
+            <span className="flex items-center gap-2">الفلاتر{activeFilters > 0 && <span className="rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground tabular-nums">{activeFilters}</span>}</span>
+            {activeFilters > 0 && <Link href={q ? `/search?q=${encodeURIComponent(q)}` : "/search"} className="text-xs font-normal text-muted underline underline-offset-4 hover:text-foreground">مسح الكل</Link>}
           </summary>
-          {activeFilters > 0 && <div className="px-4 pb-3"><Link href={q ? `/search?q=${encodeURIComponent(q)}` : "/search"} className="rounded-lg py-1 text-xs text-muted underline underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300">مسح الفلاتر</Link></div>}
-          <div className="grid gap-2 p-3 pt-0 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid gap-2 border-t border-line p-3 sm:grid-cols-3 lg:grid-cols-4 [&_select]:bg-background [&_input:not([type=checkbox])]:bg-background">
             <select name="type" aria-label="نوع النشاط" defaultValue={type} className={field}>
               <option value="">كل الأنواع</option>
               {Object.entries(ORG_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -80,28 +86,38 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
             </select>
             <select name="women" aria-label="خيارات الوصول النسائي" defaultValue={women} className={field}>
               <option value="">للجميع</option>
-              <option value="only">💗 Pink Zone فقط</option>
+              <option value="only">Pink Zone فقط</option>
               <option value="any">يشمل أوقات نسائية</option>
             </select>
             <CityAreaPicker defaultCity={city} defaultArea={area} allowAll labels={false} />
             <input name="max" aria-label="أقصى سعر شهري بالدينار الأردني" type="number" min="1" step="1" defaultValue={maxPrice || ""} placeholder="أقصى سعر شهري (د.أ)" className={field} />
-            <label className={`${field} flex items-center gap-2` }><input type="checkbox" name="trial" value="1" defaultChecked={trial} /> 🎟 يوم تجريبي مجاني</label>
-            <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="mosque" value="1" defaultChecked={mosque} /> 🕌 فيه مصلى</label>
-            <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="quiet" value="1" defaultChecked={quiet} /> 🔇 بدون موسيقى</label>
-            <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="kidsarea" value="1" defaultChecked={kidsArea} /> 🧒 Kids Area</label>
-            <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="kids" value="1" defaultChecked={kids} /> 👶 مهيّأ للأطفال (5–12)</label>
-            <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="transport" value="1" defaultChecked={transport} /> 🚌 مواصلات للأطفال</label>
-            <label className={`${field} flex items-center gap-2`}><input type="checkbox" name="access" value="1" defaultChecked={access} /> ♿ مهيّأ لذوي الاحتياجات</label>
-            <button className="rounded-xl bg-accent px-6 py-2.5 font-bold text-accent-foreground">تطبيق</button>
+            <label className={check}><input type="checkbox" name="trial" value="1" defaultChecked={trial} /> يوم تجريبي مجاني</label>
+            <label className={check}><input type="checkbox" name="mosque" value="1" defaultChecked={mosque} /> فيه مصلى</label>
+            <label className={check}><input type="checkbox" name="quiet" value="1" defaultChecked={quiet} /> بدون موسيقى</label>
+            <label className={check}><input type="checkbox" name="kidsarea" value="1" defaultChecked={kidsArea} /> Kids Area</label>
+            <label className={check}><input type="checkbox" name="kids" value="1" defaultChecked={kids} /> مهيّأ للأطفال (5–12)</label>
+            <label className={check}><input type="checkbox" name="transport" value="1" defaultChecked={transport} /> مواصلات للأطفال</label>
+            <label className={check}><input type="checkbox" name="access" value="1" defaultChecked={access} /> مهيّأ لذوي الاحتياجات</label>
+            <button className="min-h-12 rounded-xl bg-accent px-6 font-semibold text-accent-foreground sm:col-span-3 lg:col-span-4">طبّق الفلاتر</button>
           </div>
         </details>}
-      </form></div>
+      </form>
 
-      {mode === "orgs" && <div className="mb-4 flex flex-wrap items-center gap-3"><NearMeButton active={!!near} />{near && <span className="text-sm text-muted">مرتبة من الأقرب للأبعد (الأنشطة اللي حدّدت موقعها فقط)</span>}</div>}
-
-      {error && <p className="rounded-2xl bg-surface p-6 text-center">تعذّر تحميل النتائج حالياً، جرّب مرة ثانية بعد قليل.</p>}
-      {!error && total === 0 && <div className="rounded-3xl border border-dashed border-white/15 bg-surface/50 px-6 py-14 text-center"><span className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-blue-400/10 text-3xl">⌕</span><h2 className="text-xl font-extrabold">ما لقينا نتائج مطابقة</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">جرّب تغيّر كلمة البحث أو توسّع خيارات المدينة والسعر، ويمكن تلاقي المكان المناسب.</p><Link href="/search" className="mt-5 inline-flex rounded-xl bg-accent px-5 py-3 font-bold text-accent-foreground">عرض كل الأنشطة</Link></div>}
-      {!error && <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><p className="text-lg font-extrabold">{total} <span className="text-sm font-normal text-muted">نتيجة مطابقة</span></p><p className="text-xs text-muted">الصفحة {page}{pages > 1 ? ` من ${pages}` : ""}</p></div>}
+      {error && <p role="alert" className="rounded-2xl bg-surface p-6 text-center ring-1 ring-line">ما قدرنا نحمّل النتائج. جرّب كمان شوي.</p>}
+      {!error && total === 0 && (
+        <div className="rounded-2xl bg-surface px-6 py-12 text-center ring-1 ring-line">
+          <h2 className="text-2xl font-bold">ما لقينا إشي مطابق</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">غيّر كلمة البحث، أو خفّف الفلاتر (المدينة والسعر).</p>
+          <Link href="/search" className={`${btn.primary} mt-5`}>عرض كل الأماكن</Link>
+        </div>
+      )}
+      {!error && total > 0 && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <p><span className="font-display text-2xl font-bold tabular-nums">{total.toLocaleString("en")}</span> <span className="text-sm text-muted">نتيجة{pages > 1 ? `، صفحة ${page} من ${pages}` : ""}</span></p>
+          {mode === "orgs" && <NearMeButton active={!!near} />}
+        </div>
+      )}
+      {near && mode === "orgs" && total > 0 && <p className="mb-4 text-sm text-muted">مرتبة من الأقرب للأبعد (الأماكن اللي موقعها محدد بس).</p>}
 
       {orgs && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{orgs.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>}
       {prods && (
@@ -112,9 +128,9 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
 
       {pages > 1 && (
         <nav className="mt-8 flex items-center justify-center gap-3 text-sm">
-          {page > 1 && <Link href={href(page - 1)} className="rounded-lg bg-surface px-4 py-2">السابق</Link>}
-          <span className="text-muted">{page} / {pages}</span>
-          {page < pages && <Link href={href(page + 1)} className="rounded-lg bg-surface px-4 py-2">التالي</Link>}
+          {page > 1 && <Link href={href(page - 1)} className={btn.ghost}>السابق</Link>}
+          <span className="text-muted tabular-nums">{page} / {pages}</span>
+          {page < pages && <Link href={href(page + 1)} className={btn.primary}>التالي</Link>}
         </nav>
       )}
     </div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { OrgCard } from "@/components/OrgCard";
 import { ORG_TYPE_PLURAL } from "@/lib/format";
 import type { Enums } from "@/lib/database.types";
+import { PageHead, btn } from "@/components/PageHead";
 
 type Org = Parameters<typeof OrgCard>[0]["org"] & { id: string };
 
@@ -10,51 +11,42 @@ export function DirectoryView({ type, city, items, total, cities }: {
 }) {
   const title = city ? `${ORG_TYPE_PLURAL[type]} في ${city}` : `${ORG_TYPE_PLURAL[type]} في الأردن`;
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8 sm:py-10">
+    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
       <nav aria-label="مسار التنقل" className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
-        <Link href="/" className="rounded-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">الرئيسية</Link>
+        <Link href="/directory" className="hover:text-foreground">الدليل</Link>
         <span aria-hidden="true">/</span>
-        <Link href={`/directory/${type}`} className="rounded-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">{ORG_TYPE_PLURAL[type]}</Link>
+        <Link href={`/directory/${type}`} className="hover:text-foreground">{ORG_TYPE_PLURAL[type]}</Link>
         {city && <><span aria-hidden="true">/</span><span aria-current="page" className="text-foreground">{city}</span></>}
       </nav>
-
-      <header className="rounded-2xl border border-white/10 bg-surface/70 p-5 sm:p-6">
-        <h1 className="text-2xl font-extrabold sm:text-3xl">{title}</h1>
-        <p className="mt-2 text-sm leading-6 text-muted">تصفّح الأنشطة وقارن الأسعار والدوام والموقع وطرق التواصل المباشر.</p>
-        <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1.5 text-sm font-semibold text-accent" aria-live="polite">
-          <span aria-hidden="true" className="h-2 w-2 rounded-full bg-current" />
-          {total.toLocaleString("ar-JO")} {total === 1 ? "نتيجة" : "نتيجة متاحة"}
-        </p>
-      </header>
+      <PageHead title={title} note={<><span className="font-display text-xl font-bold text-foreground tabular-nums">{total.toLocaleString("en")}</span> مكان، مع الأسعار والدوام والتواصل المباشر.</>} />
 
       {cities.length > 0 && (
-        <nav aria-label="تصفية حسب المدينة" className="mt-5">
-          <p className="mb-2 text-sm font-semibold text-muted">{city ? "مدن أخرى" : "تصفّح حسب المدينة"}</p>
-          <div className="flex gap-2 overflow-x-auto pb-2 text-sm sm:flex-wrap sm:overflow-visible">
-            {cities.map((c) => {
-              const active = c.city === city;
-              return (
-                <Link key={c.city} href={`/directory/${type}/${encodeURIComponent(c.city)}`}
-                  aria-current={active ? "page" : undefined}
-                  className={`inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${active ? "bg-accent text-accent-foreground ring-accent" : "bg-surface ring-white/10 hover:ring-accent"}`}>
-                  {c.city}<span className={active ? "opacity-80" : "text-muted"}>{c.n.toLocaleString("ar-JO")}</span>
-                </Link>
-              );
-            })}
-          </div>
+        <nav aria-label="تصفية حسب المدينة" className="-mx-4 mb-6 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+          {city && <Link href={`/directory/${type}`} className={btn.chip}>كل المدن</Link>}
+          {cities.map((c) => {
+            const active = c.city === city;
+            return (
+              <Link key={c.city} href={`/directory/${type}/${encodeURIComponent(c.city)}`} aria-current={active ? "page" : undefined} className={active ? btn.chipOn : btn.chip}>
+                {c.city}<span className={`font-normal tabular-nums ${active ? "opacity-80" : "text-muted"}`}>{c.n.toLocaleString("en")}</span>
+              </Link>
+            );
+          })}
         </nav>
       )}
 
       {items.length > 0 ? (
-        <section aria-label="نتائج الدليل" className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <section aria-label="نتائج الدليل" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((o) => <OrgCard key={o.id} org={o} />)}
         </section>
       ) : (
-        <section className="mt-6 rounded-2xl border border-dashed border-white/15 px-5 py-10 text-center" aria-live="polite">
-          <p className="text-lg font-bold">ما لقينا نتائج في هذا القسم حاليًا</p>
-          <p className="mt-2 text-sm text-muted">جرّب مدينة ثانية أو ارجع للدليل الكامل لاستكشاف الخيارات المتاحة.</p>
-          <Link href={`/directory/${type}`} className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-accent px-5 py-2 text-sm font-bold text-accent-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">عرض الدليل الكامل</Link>
+        <section className="rounded-2xl bg-surface px-5 py-10 text-center ring-1 ring-line" aria-live="polite">
+          <p className="font-display text-xl font-bold">ما في أماكن بهالقسم لسا</p>
+          <p className="mt-2 text-sm text-muted">جرّب مدينة ثانية، أو ارجع للدليل كله.</p>
+          <Link href="/directory" className={`${btn.primary} mt-5`}>كل الدليل</Link>
         </section>
+      )}
+      {total > items.length && items.length > 0 && (
+        <p className="mt-8 text-center"><Link href={`/search?type=${type}${city ? `&city=${encodeURIComponent(city)}` : ""}&page=2`} className={btn.ghost}>باقي الأماكن ({(total - items.length).toLocaleString("en")})</Link></p>
       )}
     </main>
   );

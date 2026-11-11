@@ -37,8 +37,8 @@ export function NearMeButton({ active }: { active: boolean }) {
   };
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <button type="button" onClick={go} disabled={loading} aria-busy={loading} className={`rounded-xl px-4 py-2 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-wait disabled:opacity-60 ${active ? "bg-accent text-accent-foreground" : "bg-surface ring-1 ring-white/10 hover:ring-accent/60"}`}>
-        {loading ? "⏳ جاري تحديد الموقع..." : active ? "📍 إلغاء «قريب مني»" : "📍 قريب مني"}
+      <button type="button" onClick={go} disabled={loading} aria-busy={loading} className={`inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold transition-colors disabled:cursor-wait disabled:opacity-60 ${active ? "bg-accent text-accent-foreground" : "bg-surface ring-1 ring-line hover:ring-foreground"}`}>
+        {loading ? "جاري تحديد الموقع..." : active ? "إلغاء «قريب مني»" : "رتّب من الأقرب إلي"}
       </button>
       {msg && <span role="status" aria-live="polite" className="text-sm text-muted">{msg}</span>}
     </div>
