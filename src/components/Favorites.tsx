@@ -61,9 +61,9 @@ export function FavButton({ slug, className = "" }: { slug: string; className?: 
       aria-pressed={on}
       title={on ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}
       onClick={() => { const saved = toggleFav(slug); setAccountFavorite(slug, saved).catch(() => { /* Local favorites remain saved if sync is unavailable. */ }); }}
-      className={`absolute left-2 top-2 z-10 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-white/15 bg-black/60 text-lg leading-none shadow-lg shadow-black/20 backdrop-blur transition-transform hover:scale-105 hover:bg-black/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-95 motion-reduce:transform-none motion-reduce:transition-none ${className}`}
+      className={`absolute left-2 top-2 z-10 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-surface/90 text-lg leading-none ring-1 ring-line backdrop-blur transition-transform active:scale-95 motion-reduce:transform-none motion-reduce:transition-none ${className}`}
     >
-      <span aria-hidden="true">{on ? "❤️" : "🤍"}</span>
+      <svg aria-hidden="true" viewBox="0 0 24 24" className={`size-5 ${on ? "text-[#ce1126]" : "text-muted"}`} fill={on ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7a4.3 4.3 0 0 1 7.500 2.8C19.500 15.400 12 20 12 20Z" /></svg>
     </button>
   );
 }

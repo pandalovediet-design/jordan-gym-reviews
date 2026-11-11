@@ -1,21 +1,43 @@
 @import "tailwindcss";
 
-/* GYM (GYMJO) — "Forest Night" identity, taken from the panda mark: deep forest black, lime, chalk white. */
+/*
+ * GYM (GYMJO) — "Panda Ink" identity, 2026-11.
+ * The page is black and white like the panda. Lime is the rim light from the mascot's outline,
+ * so it only ever sits on ink (buttons, the country tag, dark blocks). Green carries links and prices on paper.
+ * Light is the default; dark is the visitor's choice (html[data-theme="dark"]).
+ */
 :root {
-  --background: #04130c;
-  --surface: #0c2016;
-  --foreground: #f3f8f2;
-  --muted: #9db3a4;
+  --ink: #0b120e;
+  --lime: #c8f53a;
   --flag-red: #ce1126;
   --flag-green: #007a3d;
-  --accent: #c8f53a;
-  --accent-foreground: #0b1a08;
-  --brand-blue: #9fd41f;
-  --brand-cyan: #c8f53a;
-  --brand-border: #1d3626;
-  --brand-lime: #c8f53a;
-  --brand-lime-soft: #9fd41f;
+
+  --background: #f3f4f0;
+  --surface: #ffffff;
+  --foreground: #121613;
+  --muted: #5b655e;
+  --line: rgb(18 22 19 / 12%);
+  /* Text accent: links, prices, active states. */
+  --accent: #0b7a3e;
+  /* Solid call to action: ink with the lime rim colour as its text. */
+  --cta: #121613;
+  --cta-foreground: #c8f53a;
+  --accent-foreground: var(--cta-foreground);
 }
+
+/* Dark surfaces: the visitor's dark mode, and "ink" blocks (hero, footer, place header) on light pages. */
+html[data-theme="dark"], .ink {
+  --background: #0b120e;
+  --surface: #151c17;
+  --foreground: #f2f5f0;
+  --muted: #9aa59d;
+  --line: rgb(255 255 255 / 12%);
+  --accent: #c8f53a;
+  --cta: #c8f53a;
+  --cta-foreground: #0b120e;
+  --accent-foreground: #0b120e;
+}
+.ink { background: var(--background); color: var(--foreground); }
 
 @theme inline {
   --color-background: var(--background);
@@ -24,77 +46,78 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  --font-sans: "Cairo Variable", "Alexandria Variable", system-ui, sans-serif;
-  --font-display: "Alexandria Variable", system-ui, sans-serif;
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-lime: var(--lime);
+  --font-sans: "Readex Pro Variable", system-ui, sans-serif;
+  --font-display: "Changa Variable", "Readex Pro Variable", system-ui, sans-serif;
+  /* Tighter corners than the old identity: plates and tiles, not bubbles. */
+  --radius-xl: 0.625rem;
+  --radius-2xl: 0.875rem;
+  --radius-3xl: 1.125rem;
 }
 
-html { color-scheme: dark; scroll-behavior: smooth; }
-
-/* User-selectable light mode; dark remains the default. */
-html[data-theme="light"] {
-  color-scheme: light;
-  --background: #f5f7f2;
-  --surface: #ffffff;
-  --foreground: #172016;
-  --muted: #64705f;
-  --accent: #4d7200;
-  --accent-foreground: #ffffff;
-  --brand-blue: #4d7200;
-  --brand-cyan: #4d7200;
-  --brand-border: #dbe3d3;
-  --brand-lime: #4d7200;
-  --brand-lime-soft: #709a1b;
-}
-html[data-theme="light"] body { background: var(--background); color: var(--foreground); }
-html[data-theme="light"] .border-white\/10 { border-color: rgb(23 32 22 / 12%) !important; }
-html[data-theme="light"] .border-white\/15 { border-color: rgb(23 32 22 / 18%) !important; }
-html[data-theme="light"] .bg-white\/5 { background-color: rgb(23 32 22 / 4%) !important; }
-html[data-theme="light"] .hover\:bg-white\/10:hover { background-color: rgb(23 32 22 / 7%) !important; }
-html[data-theme="light"] .bg-black\/\[0\.025\] { background-color: rgb(23 32 22 / 2%) !important; }
-html[data-theme="light"] .text-cyan-200, html[data-theme="light"] .text-cyan-100 { color: #4d7200 !important; }
-html[data-theme="light"] .text-blue-100, html[data-theme="light"] .text-blue-200, html[data-theme="light"] .text-blue-300 { color: #38551a !important; }
-html[data-theme="light"] .bg-cyan-300\/10, html[data-theme="light"] .bg-cyan-200\/10 { background-color: rgb(77 114 0 / 8%) !important; }
-html[data-theme="light"] .border-cyan-300\/20, html[data-theme="light"] .border-cyan-200\/20 { border-color: rgb(77 114 0 / 20%) !important; }
-html[data-theme="light"] .shadow-black\/5 { --tw-shadow-color: rgb(23 32 22 / 5%) !important; }
-/* Card edges, soft buttons and status text written for the dark theme stay visible in light mode. */
-html[data-theme="light"] .ring-white\/10 { --tw-ring-color: rgb(23 32 22 / 12%) !important; }
-html[data-theme="light"] .ring-white\/15, html[data-theme="light"] .ring-white\/20 { --tw-ring-color: rgb(23 32 22 / 18%) !important; }
-html[data-theme="light"] .bg-white\/10, html[data-theme="light"] .bg-white\/15 { background-color: rgb(23 32 22 / 7%) !important; }
-html[data-theme="light"] .hover\:bg-white\/5:hover { background-color: rgb(23 32 22 / 5%) !important; }
-html[data-theme="light"] .hover\:bg-white\/20:hover, html[data-theme="light"] .hover\:bg-white\/25:hover { background-color: rgb(23 32 22 / 11%) !important; }
-html[data-theme="light"] .text-red-300 { color: #b42318 !important; }
-html[data-theme="light"] .text-emerald-300, html[data-theme="light"] .text-emerald-200 { color: #067647 !important; }
-html[data-theme="light"] .text-amber-300, html[data-theme="light"] .text-amber-200 { color: #93370d !important; }
-
+html { color-scheme: light; scroll-behavior: smooth; }
+html[data-theme="dark"] { color-scheme: dark; }
 html, body { overflow-x: clip; }
-body { background: var(--background); color: var(--foreground); font-family: "Cairo Variable", "Alexandria Variable", system-ui, sans-serif; }
-/* Headlines in Alexandria (Arabic and Latin), reading text in Cairo. */
-h1, h2 { font-family: "Alexandria Variable", "Cairo Variable", system-ui, sans-serif; letter-spacing: -0.01em; }
+body { background: var(--background); color: var(--foreground); font-family: "Readex Pro Variable", system-ui, sans-serif; }
+/* Headlines in Changa (Arabic and Latin), reading text in Readex Pro. */
+h1, h2, h3, .font-display { font-family: "Changa Variable", "Readex Pro Variable", system-ui, sans-serif; }
+h1, h2 { letter-spacing: 0; line-height: 1.2; }
 h1, h2, h3 { text-wrap: balance; }
 
 /* Brand pieces */
-.wordmark { font-family: "Alexandria Variable", system-ui, sans-serif; font-weight: 800; letter-spacing: -0.02em; line-height: 1; direction: ltr; unicode-bidi: isolate; }
-.wordmark b { font-weight: 800; color: var(--brand-lime); }
+/* Wordmark: GYM in the text colour, the country code in an ink tag with lime letters (GYM[JO], GYM[SA]...). */
+.wordmark { font-family: "Changa Variable", system-ui, sans-serif; font-weight: 800; line-height: 1; direction: ltr; unicode-bidi: isolate; display: inline-flex; align-items: center; gap: 0.14em; color: var(--foreground); }
+.wordmark b { font-weight: 800; background: var(--cta); color: var(--cta-foreground); padding: 0.1em 0.2em 0.06em; border-radius: 0.18em; }
+/* The rim light: a hard lime edge under ink elements, like the outline around the panda. One per screen. */
+.rim { box-shadow: -4px 4px 0 0 var(--lime); }
 /* The flag stripe: a thin Jordan-flag rule used once per surface as the brand signature. */
-.flag-rule { height: 3px; border-radius: 3px; background: linear-gradient(90deg, #0b0b0b 0 30%, #f3f8f2 30% 60%, var(--flag-green) 60% 88%, var(--flag-red) 88% 100%); }
-.brand-glow { background: radial-gradient(closest-side, rgb(200 245 58 / 22%), transparent 70%); }
-::selection { background: rgb(200 245 58 / 28%); color: var(--foreground); }
-:where(a, button, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid var(--brand-lime); outline-offset: 3px; }
+.flag-rule { height: 3px; border-radius: 3px; background: linear-gradient(90deg, #000 0 30%, #fff 30% 60%, var(--flag-green) 60% 88%, var(--flag-red) 88% 100%); }
+::selection { background: rgb(200 245 58 / 45%); color: #0b120e; }
+:where(a, button, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 :where(button, a, input, select, textarea) { -webkit-tap-highlight-color: transparent; }
 
-/* Keep the existing pages consistent with the new brand without changing their behavior. */
-.text-accent { color: var(--brand-lime) !important; }
-.bg-accent { background-color: var(--brand-lime) !important; color: var(--accent-foreground) !important; }
-.border-accent { border-color: var(--brand-lime) !important; }
-.text-cyan-200, .text-cyan-100 { color: #c8f53a !important; }
-.bg-cyan-300\/10, .bg-cyan-200\/10 { background-color: rgb(200 245 58 / 9%) !important; }
-.border-cyan-300\/20, .border-cyan-200\/20 { border-color: rgb(200 245 58 / 24%) !important; }
-.text-blue-100, .text-blue-200, .text-blue-300 { color: #dce9b4 !important; }
-.bg-blue-500 { background-color: #9fd41f !important; }
-.from-blue-500 { --tw-gradient-from: #c8f53a var(--tw-gradient-from-position) !important; --tw-gradient-to: rgb(200 245 58 / 0%) var(--tw-gradient-to-position) !important; }
-.to-blue-600 { --tw-gradient-to: #9fd41f var(--tw-gradient-to-position) !important; }
-.ring-cyan-300:focus { --tw-ring-color: #c8f53a !important; }
+/* Solid accent buttons are ink + lime on paper and lime + ink on dark surfaces. */
+.bg-accent { background-color: var(--cta) !important; color: var(--cta-foreground) !important; }
+.hover\:bg-accent:hover, .group:hover .group-hover\:bg-accent { background-color: var(--cta) !important; color: var(--cta-foreground) !important; }
+
+/* Older pages still use cyan/blue utility names; map them onto the accent. */
+.text-cyan-200, .text-cyan-100 { color: var(--accent) !important; }
+.bg-cyan-300\/10, .bg-cyan-200\/10 { background-color: color-mix(in oklab, var(--accent) 9%, transparent) !important; }
+.border-cyan-300\/20, .border-cyan-200\/20 { border-color: color-mix(in oklab, var(--accent) 24%, transparent) !important; }
+.text-blue-100, .text-blue-200, .text-blue-300 { color: var(--muted) !important; }
+.bg-blue-500 { background-color: var(--cta) !important; }
+.from-blue-500 { --tw-gradient-from: var(--cta) var(--tw-gradient-from-position) !important; }
+.to-blue-600 { --tw-gradient-to: var(--cta) var(--tw-gradient-to-position) !important; }
+.ring-cyan-300:focus { --tw-ring-color: var(--accent) !important; }
 .shadow-blue-950\/30 { --tw-shadow-color: rgb(0 0 0 / .3) !important; }
+
+/*
+ * Many components were written against a dark page (white hairlines, pale status text).
+ * On paper they are remapped here — except inside ink blocks and places that picked a dark theme.
+ */
+html:not([data-theme="dark"]) :not(:is(.ink, .themed) *) {
+  &.border-white\/10 { border-color: rgb(18 22 19 / 12%) !important; }
+  &.border-white\/15, &.border-white\/20 { border-color: rgb(18 22 19 / 18%) !important; }
+  &.divide-white\/10 > * { border-color: rgb(18 22 19 / 12%) !important; }
+  &.ring-white\/5, &.ring-white\/10 { --tw-ring-color: rgb(18 22 19 / 12%) !important; }
+  &.ring-white\/15, &.ring-white\/20 { --tw-ring-color: rgb(18 22 19 / 18%) !important; }
+  &.bg-white\/5 { background-color: rgb(18 22 19 / 4%) !important; }
+  &.bg-white\/10, &.bg-white\/15 { background-color: rgb(18 22 19 / 7%) !important; }
+  &.bg-white\/20, &.bg-white\/25 { background-color: rgb(18 22 19 / 11%) !important; }
+  &.bg-black\/\[0\.025\] { background-color: rgb(18 22 19 / 2%) !important; }
+  &.hover\:bg-white\/5:hover { background-color: rgb(18 22 19 / 5%) !important; }
+  &.hover\:bg-white\/10:hover { background-color: rgb(18 22 19 / 7%) !important; }
+  &.hover\:bg-white\/20:hover, &.hover\:bg-white\/25:hover { background-color: rgb(18 22 19 / 11%) !important; }
+  &.shadow-black\/5, &.shadow-black\/10, &.shadow-black\/15, &.shadow-black\/20 { --tw-shadow-color: rgb(18 22 19 / 7%) !important; }
+  &.text-red-200, &.text-red-300, &.text-red-400 { color: #b42318 !important; }
+  &.text-emerald-200, &.text-emerald-300 { color: #067647 !important; }
+  &.text-amber-200, &.text-amber-300, &.text-yellow-100, &.text-yellow-200, &.text-yellow-300, &.text-orange-100, &.text-orange-200 { color: #8a4b08 !important; }
+  &.text-pink-100, &.text-pink-100\/80, &.text-pink-200, &.text-pink-300 { color: #b0185a !important; }
+  &.text-sky-300 { color: #075985 !important; }
+  &.text-violet-200, &.text-violet-300 { color: #5b21b6 !important; }
+}
 
 /* Per-activity themes remain available to organizations. */
 .theme-night { --background: #0a0d24; --surface: #151a3f; --foreground: #eef0ff; --muted: #a3a9d6; --accent: #7c6cff; --accent-foreground: #ffffff; }
@@ -102,7 +125,7 @@ h1, h2, h3 { text-wrap: balance; }
 .theme-ocean { --background: #04182a; --surface: #0a2840; --foreground: #e8f4ff; --muted: #9cbcd6; --accent: #38bdf8; --accent-foreground: #04182a; }
 .theme-rose { --background: #1f0a19; --surface: #311128; --foreground: #fff0f7; --muted: #d6a3bf; --accent: #f472b6; --accent-foreground: #1f0a19; }
 .theme-ember { --background: #1a0d06; --surface: #2a160b; --foreground: #fff3ea; --muted: #d4ab90; --accent: #fb923c; --accent-foreground: #1a0d06; }
-.themed { background: var(--background); color: var(--foreground); }
+.themed { --cta: var(--accent); --cta-foreground: var(--accent-foreground); --line: rgb(255 255 255 / 12%); background: var(--background); color: var(--foreground); }
 .theme-night.themed {
   background: radial-gradient(60rem 30rem at 85% -10%, rgba(91,140,255,.22), transparent 60%), radial-gradient(40rem 25rem at 0% 30%, rgba(139,92,246,.16), transparent 60%), linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 32px 32px, var(--background);
 }

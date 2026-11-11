@@ -64,39 +64,21 @@ const GROUPS = [
 ];
 
 const ALL_LINKS = [...NAV_CATALOG, ...MORE];
-const CARD_STYLE =
-  "group flex h-full min-h-32 flex-col rounded-2xl border border-white/10 bg-surface p-4 transition duration-200 hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-lg hover:shadow-black/10 focus-visible:border-accent";
+// Labels in the catalog carry a leading emoji; the index is plain text.
+const plain = (label: string) => label.replace(/^[^\p{L}]+/u, "").trim();
 
 export default function Sections() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6 sm:py-10">
-      <header className="relative mb-9 overflow-hidden rounded-3xl border border-white/10 bg-surface p-6 sm:p-9">
-        <div aria-hidden="true" className="pointer-events-none absolute -left-12 -top-16 h-48 w-48 rounded-full bg-accent/10 blur-3xl" />
-        <div className="relative">
-          <h1 className="max-w-2xl text-3xl font-black leading-tight sm:text-4xl">كل رحلتك الرياضية، <span className="text-accent">بمكان واحد.</span></h1>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-muted sm:text-base">
-            دليل النوادي والأنشطة الرياضية في الأردن، بالإضافة إلى أدوات ومحتوى وعروض تساعدك تلاقي اللي بناسبك.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/search" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-extrabold text-accent-foreground transition hover:brightness-95">
-              اكتشف الأنشطة <span aria-hidden="true" className="ms-2">←</span>
-            </Link>
-            <Link href="/join" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/15 px-5 py-3 text-sm font-bold transition hover:border-accent/50">
-              أضف نشاطك مجاناً
-            </Link>
-          </div>
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+      <header className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-4xl font-extrabold sm:text-5xl">كل الأقسام</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-muted sm:text-base">الدليل، وكل الأدوات والمحتوى والعروض اللي حواليه، بصفحة وحدة.</p>
         </div>
+        <Link href="/search" className="inline-flex min-h-12 w-fit items-center justify-center rounded-full bg-accent px-6 font-semibold text-accent-foreground">دوّر بالدليل</Link>
       </header>
 
-      <div className="mb-7 flex items-end justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-black sm:text-2xl">استكشف أقسام GYMJO</h2>
-          <p className="mt-1 text-sm text-muted">رتّبناها حسب احتياجك، وكل قسم ظاهر مباشرة بدون قوائم مخفية.</p>
-        </div>
-        <span className="shrink-0 rounded-full border border-white/10 px-3 py-1 text-xs font-bold text-muted">{ALL_LINKS.length} قسم وأداة</span>
-      </div>
-
-      <div className="space-y-9">
+      <div className="grid gap-x-12 gap-y-10 md:grid-cols-2">
         {GROUPS.map((group, index) => {
           const links = group.hrefs
             .map((href) => ALL_LINKS.find((item) => item.href === href))
@@ -104,24 +86,13 @@ export default function Sections() {
 
           return (
             <section key={group.title} aria-labelledby={`section-group-${index}`}>
-              <div className="mb-4 flex items-start gap-3">
-                <span aria-hidden="true" className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-sm font-black text-accent">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <div>
-                  <h3 id={`section-group-${index}`} className="text-lg font-extrabold">{group.title}</h3>
-                  <p className="mt-0.5 text-sm text-muted">{group.description}</p>
-                </div>
-              </div>
-              <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <h2 id={`section-group-${index}`} className="border-b-2 border-foreground pb-2 text-2xl font-bold">{group.title}</h2>
+              <ul className="divide-y divide-line">
                 {links.map((item) => (
                   <li key={item.href}>
-                    <Link href={item.href} className={CARD_STYLE}>
-                      <span className="flex items-start justify-between gap-3">
-                        <span className="font-extrabold leading-7">{item.label}</span>
-                        <span aria-hidden="true" className="mt-1 text-lg text-accent transition-transform group-hover:-translate-x-1">←</span>
-                      </span>
-                      <span className="mt-2 text-sm leading-6 text-muted">
+                    <Link href={item.href} className="group block py-3.5">
+                      <span className="block font-semibold underline-offset-4 group-hover:text-accent group-hover:underline">{plain(item.label)}</span>
+                      <span className="mt-0.5 block text-sm leading-6 text-muted">
                         {("description" in item && item.description) || DESCRIPTIONS[item.href] || "اكتشف المزيد من خدمات GYMJO."}
                       </span>
                     </Link>
