@@ -1,7 +1,7 @@
 import { baseUrl } from "@/lib/base-url";
 import type { Metadata, Viewport } from "next";
-import "@fontsource-variable/cairo";
-import "@fontsource-variable/alexandria";
+import "@fontsource-variable/readex-pro";
+import "@fontsource-variable/changa";
 import "./globals.css";
 import { SiteHeader, SiteFooter } from "@/components/SiteHeader";
 import { JsonLd } from "@/lib/jsonld";
@@ -10,11 +10,14 @@ import { Analytics } from "@vercel/analytics/next";
 import { BottomBar } from "@/components/SiteTabs";
 import { QuranAudioProvider, QuranMiniBar } from "@/components/QuranAudio";
 
-export const viewport: Viewport = { themeColor: "#04130c" };
+export const viewport: Viewport = { themeColor: [{ media: "(prefers-color-scheme: light)", color: "#f3f4f0" }, { media: "(prefers-color-scheme: dark)", color: "#0b120e" }] };
+
+// Runs before paint so a visitor who chose dark mode never sees a light flash. Light is the default.
+const THEME_SCRIPT = `try{if(localStorage.getItem("gymjo-theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}`;
 
 export const metadata: Metadata = {
   applicationName: "GYMJO",
-  appleWebApp: { capable: true, title: "GYMJO", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "GYMJO", statusBarStyle: "default" },
   icons: {
     icon: [{ url: "/brand/icon-192.png", type: "image/png", sizes: "192x192" }],
     shortcut: "/brand/icon-192.png",
@@ -29,7 +32,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ar" dir="rtl" className="h-full antialiased">
+    <html lang="ar" dir="rtl" className="h-full antialiased" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} /></head>
       <body className="min-h-full flex flex-col">
         <JsonLd data={{ "@context": "https://schema.org", "@graph": [
           { "@type": "Organization", "@id": `${baseUrl()}/#org`, name: "GYMJO", url: baseUrl(), logo: `${baseUrl()}/brand/icon-512.png`, areaServed: { "@type": "Country", name: "Jordan" }, knowsLanguage: "ar" },

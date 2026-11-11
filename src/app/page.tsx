@@ -10,34 +10,57 @@ import { listExercises } from "@/lib/exercises";
 import { createPublicClient } from "@/lib/supabase/public";
 import { RevealCode } from "@/components/RevealCode";
 
+// The eight kinds of place in the directory. Text only: the label is the icon.
 const TYPE_TILES = [
-  { href: "/search?type=gym", icon: "🏋️", label: "نوادي", description: "قارن النوادي والأسعار والمرافق." },
-  { href: "/search?type=independent_coach", icon: "🧑‍🏫", label: "مدربين", description: "اعثر على مدرب يناسب هدفك." },
-  { href: "/search?type=sports_facility", icon: "⚽", label: "ملاعب", description: "اكتشف الملاعب والمنشآت الرياضية." },
-  { href: "/pink", icon: "💗", label: "للنساء", description: "مساحة رياضية مخصصة للسيدات." },
-  { href: "/search?type=nutritionist", icon: "🥗", label: "تغذية", description: "مختصون يساعدونك بخطتك الغذائية." },
-  { href: "/search?type=healthy_food", icon: "🍱", label: "أكل صحي", description: "خيارات أكل تدعم أسلوب حياة صحي." },
-  { href: "/search?type=store", icon: "🛍️", label: "متاجر", description: "معدات ومنتجات رياضية." },
-  { href: "/search?type=sports_health", icon: "🩺", label: "علاج رياضي", description: "خدمات العلاج والتأهيل الرياضي." },
+  { href: "/search?type=gym", label: "نوادي", description: "حديد، لياقة، فنون قتالية" },
+  { href: "/search?type=sports_facility", label: "ملاعب ومسابح", description: "خماسي، بادل، سباحة، حدائق" },
+  { href: "/search?type=independent_coach", label: "مدربين", description: "شخصي أو أونلاين" },
+  { href: "/pink", label: "للنساء", description: "أماكن وأوقات خاصة بالسيدات", pink: true },
+  { href: "/search?type=nutritionist", label: "تغذية", description: "أخصائيين مرخّصين" },
+  { href: "/search?type=healthy_food", label: "أكل صحي", description: "مطاعم ومطابخ ووجبات اشتراك" },
+  { href: "/search?type=store", label: "متاجر", description: "مكملات، ملابس، أجهزة" },
+  { href: "/search?type=sports_health", label: "علاج رياضي", description: "علاج طبيعي وتأهيل إصابات" },
 ];
 
-const FEATURE_TILES = [
-  { href: "/now", icon: "⏱️", label: "هسا", description: "اكتشف خيارات رياضية تناسب خطتك اليوم." },
-  { href: "/awards", icon: "🏆", label: "نادي الشهر", description: "تابع الترشيحات واكتشف الأندية المميزة." },
-  { href: "/exercises", icon: "💪", label: "مكتبة التمارين", description: "تعلّم التمارين وطريقة أدائها." },
-  { href: "/log", icon: "🔥", label: "سجل تمريني", description: "سجّل نشاطك وتابع استمراريتك." },
-  { href: "/food", icon: "🍽️", label: "سجل أكلي", description: "سجّل وجباتك بضغطة بدون عدّ سعرات." },
-  { href: "/challenges", icon: "🏆", label: "التحديات", description: "شارك بتحديات أسبوعية وتابع إنجازاتك." },
-  { href: "/deals", icon: "🎟️", label: "أكواد الخصم", description: "وفّر مع عروض الأنشطة الرياضية." },
-  { href: "/no-gym", icon: "🏠", label: "من غير جيم", description: "تمارين وأفكار بدون اشتراك نادي." },
-  { href: "/no-deprivation", icon: "🥗", label: "من غير حرمان", description: "محتوى غذائي متوازن وواقعي." },
-  { href: "/rooh-w-jasad", icon: "🕌", label: "روح وجسد", description: "اهتم بصحتك الجسدية والروحية." },
-  { href: "/reels", icon: "🎬", label: "ريلز رياضية", description: "مقاطع قصيرة وملهمة من عالم الرياضة." },
-  { href: "/market", icon: "🔄", label: "سوق المعدات", description: "اكتشف معدات رياضية للبيع والتبديل." },
-  { href: "/trails", icon: "🥾", label: "المسارات", description: "اكتشف مسارات المشي والأنشطة الخارجية." },
-  { href: "/tools", icon: "🧮", label: "الحاسبات والأدوات", description: "أدوات عملية تساعدك في رحلتك." },
-  { href: "/favorites", icon: "❤️", label: "المفضلة", description: "احفظ الأنشطة وارجع لها بسهولة." },
+// Everything else the site offers, grouped by what the visitor wants to do.
+const MORE_GROUPS = [
+  { title: "تمرّن", links: [
+    { href: "/exercises", label: "مكتبة التمارين", description: "كل تمرين وطريقة أدائه" },
+    { href: "/log", label: "سجل تمريني", description: "سجّل تمرينك وتابع استمراريتك" },
+    { href: "/challenges", label: "التحديات", description: "تحدي جديد كل أسبوع" },
+    { href: "/no-gym", label: "من غير جيم", description: "تمارين بالبيت بأدوات بسيطة" },
+    { href: "/tools", label: "الحاسبات", description: "سعرات، بروتين، كتلة عضلية" },
+  ] },
+  { title: "كُل صح", links: [
+    { href: "/no-deprivation", label: "من غير حرمان", description: "أكل متوازن بدون تعقيد" },
+    { href: "/food", label: "سجل أكلي", description: "وجباتك بضغطة، بدون عدّ سعرات" },
+    { href: "/rooh-w-jasad", label: "روح وجسد", description: "مواقيت الصلاة، قرآن، وتسبيح" },
+  ] },
+  { title: "اكتشف", links: [
+    { href: "/now", label: "فاتح هسا", description: "الأماكن المفتوحة بهاللحظة" },
+    { href: "/deals", label: "أكواد الخصم", description: "خصومات من نوادي ومتاجر" },
+    { href: "/awards", label: "نادي الشهر", description: "الترشيحات والفائزين" },
+    { href: "/trails", label: "المسارات", description: "مشي وهايكنق بالأردن" },
+    { href: "/reels", label: "ريلز رياضية", description: "مقاطع من مدربين ونوادي" },
+    { href: "/market", label: "سوق المعدات", description: "بيع وبدّل معداتك" },
+    { href: "/favorites", label: "المفضلة", description: "الأماكن اللي حفظتها" },
+  ] },
 ];
+
+/** Section heading with an optional "see all" link on the far side. */
+function Head({ title, note, href, more }: { title: string; note?: string; href?: string; more?: string }) {
+  return (
+    <div className="mb-5 flex items-end justify-between gap-4">
+      <div className="min-w-0">
+        <h2 className="text-2xl font-bold sm:text-3xl">{title}</h2>
+        {note && <p className="mt-1 text-sm leading-6 text-muted">{note}</p>}
+      </div>
+      {href && <Link href={href} className="inline-flex min-h-11 shrink-0 items-center text-sm font-semibold text-accent underline-offset-4 hover:underline">{more ?? "عرض الكل"}</Link>}
+    </div>
+  );
+}
+
+const AD_TAG = "absolute start-3 top-3 rounded-full bg-black/70 px-2.5 py-1 text-xs font-semibold text-white";
 
 async function listHomepageCodes() {
   try {
@@ -72,228 +95,227 @@ export default async function Home() {
   const tiles = home.sections.filter((s) => !new Set(full.map((item) => item.key)).has(s.key));
   const banner = ads.find((a) => a.placement === "banner");
   const sponsored = ads.filter((a) => a.placement === "sponsored").slice(0, 3);
+  const placeCount = home.sections.reduce((n, sec) => n + sec.total, 0);
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6">
-      <section className="relative isolate -mx-4 overflow-hidden border-b border-white/10 px-4 pb-10 pt-2 sm:px-8 sm:pb-14 sm:pt-10">
-        <div className="mx-auto grid max-w-7xl items-center gap-6 lg:grid-cols-[1.15fr_.85fr] lg:gap-10">
-          {/* The mascot: the one loud element on the page. */}
-          <div aria-hidden className="relative mx-auto -mb-2 w-44 sm:w-72 lg:order-2 lg:mb-0 lg:w-full lg:max-w-md">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/panda.webp" alt="" width={900} height={900} fetchPriority="high" className="relative h-auto w-full [mask-image:radial-gradient(closest-side,black_80%,transparent)]" />
-          </div>
-          <div className="lg:order-1">
-            <h1 className="font-display text-[2.6rem] font-black leading-[1.15] tracking-tight sm:text-6xl lg:text-7xl">لاقي ناديك<br />قبل ما تدفع</h1>
-            <p className="mt-4 max-w-xl text-base leading-8 text-muted sm:text-lg">الأسعار والدوام والصور لنوادي ومدربين وملاعب الأردن، وزر واتساب بيوصلك لصاحب المكان مباشرة.</p>
-            <form action="/search" className="mt-6 flex flex-col gap-2 rounded-3xl bg-surface p-2 ring-1 ring-white/10 sm:flex-row sm:items-center sm:rounded-full sm:ps-6">
-              <label className="flex min-w-0 flex-1 items-center gap-3 px-3 sm:px-0">
-                <svg aria-hidden viewBox="0 0 24 24" className="size-5 shrink-0 text-accent" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-                <input name="q" aria-label="بحث" placeholder="اسم نادي، منطقة، أو رياضة" className="min-w-0 flex-1 bg-transparent py-3.5 outline-none placeholder:text-muted/80 focus:ring-0" />
+    <div>
+      {/* Hero: the one ink block on the page. The panda is the only loud element. */}
+      <section className="ink relative isolate overflow-hidden">
+        <div className="mx-auto grid max-w-7xl items-end gap-x-10 px-4 pt-6 sm:px-6 lg:grid-cols-[1.1fr_.9fr] lg:pt-12">
+          <div className="pb-9 lg:pb-16">
+            <h1 className="text-[2.75rem] font-extrabold leading-[1.12] sm:text-6xl lg:text-7xl">لاقي ناديك<br />قبل ما تدفع</h1>
+            <p className="mt-4 max-w-xl text-base leading-8 text-muted sm:text-lg">
+              الأسعار والدوام والصور لنوادي ومدربين وملاعب الأردن، وزر واتساب بيوصلك لصاحب المكان مباشرة.
+            </p>
+            <form action="/search" className="rim mt-7 flex flex-col gap-2 rounded-2xl bg-white p-2 text-[#121613] sm:flex-row sm:items-center">
+              <label className="flex min-w-0 flex-1 items-center gap-3 px-3">
+                <svg aria-hidden viewBox="0 0 24 24" className="size-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+                <input name="q" aria-label="بحث" placeholder="اسم نادي، منطقة، أو رياضة" className="min-w-0 flex-1 bg-transparent py-3 outline-none placeholder:text-[#5b655e]" />
               </label>
               <div className="flex gap-2">
-                <select name="city" aria-label="المدينة" defaultValue="" className="min-h-12 min-w-0 flex-1 rounded-full bg-background px-4 text-sm ring-1 ring-white/10 focus:ring-accent sm:flex-none">
+                <select name="city" aria-label="المدينة" defaultValue="" className="min-h-12 min-w-0 flex-1 rounded-xl bg-[#f3f4f0] px-3 text-sm sm:flex-none">
                   <option value="">كل المدن</option>
                   {cities.map((c) => <option key={c.city} value={c.city}>{c.city}</option>)}
                 </select>
-                <button className="min-h-12 rounded-full bg-accent px-7 font-display font-extrabold text-accent-foreground transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">دوّر</button>
+                <button className="min-h-12 rounded-xl bg-[#121613] px-7 font-display text-lg font-bold text-lime transition-colors hover:bg-black">دوّر</button>
               </div>
             </form>
-            <ul className="mt-4 flex flex-wrap gap-2 text-sm">
-              {[["/directory/gym", "نوادي"], ["/directory/independent_coach", "مدربين"], ["/directory/sports_facility", "ملاعب ومسابح"], ["/pink", "للنساء"], ["/now", "فاتح هسا"]].map(([href, label]) => (
-                <li key={href}><Link href={href} className="inline-flex min-h-10 items-center rounded-full px-4 font-bold text-muted ring-1 ring-white/10 transition-colors hover:text-foreground hover:ring-accent">{label}</Link></li>
+            <ul className="mt-5 flex flex-wrap gap-2 text-sm">
+              {[["/now", "فاتح هسا"], ["/search?trial=1", "فيه يوم تجريبي"], ["/pink", "للنساء"], ["/directory", "حسب المدينة"]].map(([href, label]) => (
+                <li key={href}><Link href={href} className="inline-flex min-h-10 items-center rounded-full px-4 font-semibold ring-1 ring-line transition-colors hover:bg-lime hover:text-ink hover:ring-lime">{label}</Link></li>
               ))}
             </ul>
+            {placeCount > 0 && <p className="mt-6 text-sm text-muted"><span className="font-display text-xl font-bold text-accent tabular-nums">{placeCount}</span> مكان رياضي بالدليل لحد اليوم</p>}
+          </div>
+          <div aria-hidden className="relative -order-1 mx-auto w-52 sm:w-72 lg:order-none lg:w-full lg:max-w-lg lg:self-end">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/panda.webp" alt="" width={900} height={900} fetchPriority="high" className="h-auto w-full [mask-image:radial-gradient(closest-side,black_78%,transparent)]" />
           </div>
         </div>
+      </section>
+
+      <div className="mx-auto max-w-7xl space-y-14 px-4 pt-10 sm:px-6 sm:space-y-16 sm:pt-14">
         {show.tiles && (
-          <section className="mx-auto mt-10 max-w-7xl sm:mt-14">
-            <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-              <div><h2 className="mt-1 text-xl font-black sm:text-2xl">دليل الأنشطة الرياضية</h2><p className="mt-1 text-sm text-muted">اختار نوع النشاط اللي بتدور عليه.</p></div>
-              <Link href="/directory" className="text-sm font-bold text-accent">كل الدليل</Link>
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+          <section>
+            <Head title="شو بتدوّر؟" href="/directory" more="كل الدليل" />
+            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {TYPE_TILES.map((tile) => (
-                <Link key={tile.href} href={tile.href} className="flex flex-col rounded-2xl bg-surface p-3 ring-1 ring-white/10 transition-colors hover:ring-accent sm:p-4">
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-accent/10 text-xl">{tile.icon}</span>
-                  <span className="mt-3 font-extrabold">{tile.label}</span>
-                  <span className="mt-1 text-xs leading-5 text-muted">{tile.description}</span>
-                  
+                <li key={tile.href}>
+                  <Link href={tile.href} className={`flex h-full flex-col justify-between gap-3 rounded-2xl bg-surface p-4 ring-1 transition-colors sm:p-5 ${tile.pink ? "ring-pink-500/40 hover:bg-pink-600 hover:text-white" : "ring-line hover:bg-ink hover:text-white"}`}>
+                    <span className={`font-display text-xl font-bold sm:text-2xl ${tile.pink ? "text-pink-600 [a:hover_&]:text-white" : ""}`}>{tile.label}</span>
+                    <span className="text-xs leading-5 opacity-70">{tile.description}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <AdImpressions ids={[...(show.banner && banner ? [banner.id] : []), ...(show.sponsored ? sponsored.map((a) => a.id) : [])]} />
+        {show.banner && banner && (
+          <a href={`/a/${banner.id}`} rel="sponsored noopener" className="relative block overflow-hidden rounded-2xl bg-surface ring-1 ring-line">
+            {banner.image_path && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={adImageUrl(banner.image_path)!} alt={banner.title} className="aspect-[16/6] w-full object-cover" />
+            )}
+            <span className={AD_TAG}>إعلان</span>
+            <div className="p-4"><p className="font-bold">{banner.title}</p>{banner.subtitle && <p className="text-sm text-muted">{banner.subtitle}</p>}</div>
+          </a>
+        )}
+
+        {show.flash && <FlashStrip items={flash} />}
+
+        {show.sections && (home.sections.length === 0 ? (
+          <div className="rounded-2xl bg-surface p-8 text-center ring-1 ring-line">
+            <p className="font-display text-xl font-bold">ما في أماكن منشورة لسا</p>
+            <p className="mt-2 text-sm text-muted">عندك نادي أو ملعب؟ ضيفه وخلّيه أول واحد بالدليل.</p>
+            <Link href="/join" className="mt-5 inline-flex min-h-11 items-center rounded-full bg-accent px-6 font-semibold text-accent-foreground">أضف ناديك</Link>
+          </div>
+        ) : full.map((sec) => (
+          <section key={sec.key}>
+            <Head title={sec.title} href={sec.href} more={`عرض الكل (${sec.total})`} />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{sec.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>
+          </section>
+        )))}
+
+        {show.sections && tiles.length > 0 && (
+          <section>
+            <Head title="أقسام ثانية" />
+            <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+              {tiles.map((sec) => (
+                <li key={sec.key}>
+                  <Link href={sec.href} className="flex min-h-12 items-center justify-between gap-2 rounded-xl bg-surface px-4 py-2 text-sm ring-1 ring-line transition-colors hover:ring-foreground">
+                    <span className="font-semibold">{sec.title}</span><span className="text-xs text-muted tabular-nums">{sec.total}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {show.pink && home.pink.items.length > 0 && (
+          <section className="rounded-3xl bg-pink-500/10 p-4 ring-1 ring-pink-500/30 sm:p-6">
+            <Head title="Pink Zone" note="أماكن خاصة بالنساء فقط." href="/search?women=only" more={`عرض الكل (${home.pink.total})`} />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{home.pink.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>
+          </section>
+        )}
+
+        {show.sponsored && sponsored.length > 0 && (
+          <section>
+            <Head title="مموّل" />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {sponsored.map((a) => (
+                <a key={a.id} href={`/a/${a.id}`} rel="sponsored noopener" className="relative block overflow-hidden rounded-2xl bg-surface ring-1 ring-line transition-colors hover:ring-foreground">
+                  {a.image_path && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={adImageUrl(a.image_path)!} alt={a.title} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                  )}
+                  <span className={AD_TAG}>إعلان</span>
+                  <div className="p-5"><h3 className="font-bold">{a.title}</h3>{a.subtitle && <p className="mt-1 text-sm text-muted">{a.subtitle}</p>}</div>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {show.offers && offers.length > 0 && (
+          <section>
+            <Head title="عروض ودورات" />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {offers.map((o) => (
+                <Link key={o.id} href={`/g/${o.organizations!.slug}`} className="rounded-2xl bg-surface p-5 ring-1 ring-line transition-colors hover:ring-foreground">
+                  <p className="text-xs font-semibold text-accent">{o.kind === "course" ? "دورة" : o.discount_percent ? `خصم ${o.discount_percent}%` : "عرض"}</p>
+                  <h3 className="mt-1 text-lg font-bold">{o.title_ar}</h3>
+                  <p className="mt-1 text-sm text-muted">{o.organizations!.name_ar}، {o.organizations!.city}</p>
                 </Link>
               ))}
             </div>
           </section>
         )}
-      </section>
 
-      <section className="py-12 sm:py-16">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-          <div><h2 className="mt-1 text-2xl font-black sm:text-3xl">كل ميزات GYMJO قدامك</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">مش بس دليل نوادي؛ أدوات ومحتوى وعروض تساعدك تتمرّن وتتابع تقدمك وتكتشف أشياء جديدة — كل قسم ظاهر هون بدون قوائم مخفية.</p></div>
-          <span className="rounded-full border border-white/10 bg-surface px-3 py-1.5 text-xs font-bold text-muted">{FEATURE_TILES.length} ميزة</span>
-        </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {FEATURE_TILES.map((tile) => (
-            <Link key={tile.href} href={tile.href} className="group relative flex min-h-36 flex-col overflow-hidden rounded-2xl border border-white/10 bg-surface p-4 transition duration-200 hover:-translate-y-1 hover:border-accent/50 hover:shadow-xl hover:shadow-black/10 sm:min-h-40 sm:p-5">
-              <span aria-hidden className="absolute -left-3 -top-4 text-7xl opacity-[0.06] transition group-hover:scale-110">{tile.icon}</span>
-              <span className="relative flex size-11 items-center justify-center rounded-xl bg-accent/10 text-2xl">{tile.icon}</span>
-              <span className="relative mt-3 font-extrabold">{tile.label}</span>
-              <span className="relative mt-1 text-xs leading-5 text-muted">{tile.description}</span>
-              <span className="relative mt-auto pt-3 text-xs font-bold text-accent">افتح القسم ←</span>
-              <span className="absolute bottom-0 right-0 h-1 w-0 bg-accent transition-all duration-300 group-hover:w-full" />
-            </Link>
-          ))}
-        </div>
-      </section>
+        {codes.length > 0 && (
+          <section>
+            <Head title="أكواد خصم" note="اكشف الكود واستعمله عند صاحب المكان." href="/deals" more="كل الأكواد" />
+            <div className="grid gap-3 sm:grid-cols-3">
+              {codes.map((code) => (
+                <article key={code.id} className="flex flex-col justify-between gap-4 rounded-2xl bg-surface p-4 ring-1 ring-line">
+                  <div><h3 className="text-lg font-bold">{code.title_ar}</h3>{code.details_ar && <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{code.details_ar}</p>}<p className="mt-2 text-xs text-muted">{code.org_name}، {code.org_city}</p></div>
+                  <RevealCode id={code.id} />
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
-      {exercises.length > 0 && (
-        <section className="mb-12">
-          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-            <div><h2 className="mt-1 text-2xl font-black">جرّب مكتبة التمارين</h2><p className="mt-1 text-sm text-muted">شوف أسماء التمارين والعضلات المستهدفة قبل ما تدخل للقسم.</p></div>
-            <Link href="/exercises" className="text-sm font-bold text-accent">كل التمارين ←</Link>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {exercises.slice(0, 4).map((exercise) => (
-              <Link key={exercise.id} href={`/exercises/${exercise.slug}`} className="rounded-2xl border border-white/10 bg-surface p-4 transition hover:border-accent/50 hover:bg-accent/5">
-                <span className="inline-flex rounded-lg bg-accent/10 px-2.5 py-1 text-xs font-bold text-accent">{exercise.muscle_group}</span>
-                <h3 className="mt-3 font-extrabold">{exercise.name_ar}</h3>
-                {exercise.summary_ar && <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{exercise.summary_ar}</p>}
-                <p className="mt-3 text-xs font-bold text-accent">{exercise.count > 0 ? `${exercise.count} شرح من مدربين` : "شوف تفاصيل التمرين"} ←</p>
-              </Link>
+        {show.trails && trails.length > 0 && (
+          <section>
+            <Head title="مسارات المشي والهايكنق" href="/trails" more="كل المسارات" />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{trails.slice(0, 6).map((t) => <TrailCard key={t.id} t={t} />)}</div>
+          </section>
+        )}
+
+        {exercises.length > 0 && (
+          <section>
+            <Head title="من مكتبة التمارين" href="/exercises" more="كل التمارين" />
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {exercises.slice(0, 4).map((exercise) => (
+                <Link key={exercise.id} href={`/exercises/${exercise.slug}`} className="rounded-2xl bg-surface p-4 ring-1 ring-line transition-colors hover:ring-foreground">
+                  <span className="text-xs font-semibold text-accent">{exercise.muscle_group}</span>
+                  <h3 className="mt-1 text-lg font-bold">{exercise.name_ar}</h3>
+                  {exercise.summary_ar && <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{exercise.summary_ar}</p>}
+                  {exercise.count > 0 && <p className="mt-3 text-xs text-muted">{exercise.count} شرح من مدربين</p>}
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Everything else on the site, as a plain index instead of a wall of cards. */}
+        <section>
+          <Head title="مش بس دليل" note="أدوات ومحتوى مجاني بيمشي معك بعد ما تلاقي ناديك." href="/sections" more="كل الأقسام" />
+          <div className="grid gap-x-10 gap-y-8 md:grid-cols-3">
+            {MORE_GROUPS.map((group) => (
+              <div key={group.title}>
+                <h3 className="border-b-2 border-foreground pb-2 text-xl font-bold">{group.title}</h3>
+                <ul className="divide-y divide-line">
+                  {group.links.map((l) => (
+                    <li key={l.href}>
+                      <Link href={l.href} className="group flex min-h-14 items-baseline justify-between gap-4 py-3">
+                        <span className="font-semibold underline-offset-4 group-hover:text-accent group-hover:underline">{l.label}</span>
+                        <span className="text-end text-xs leading-5 text-muted">{l.description}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
           </div>
         </section>
-      )}
-      {codes.length > 0 && (
-        <section className="mb-12 rounded-3xl border border-[#c8f53a]/20 bg-gradient-to-l from-[#c8f53a]/[0.08] to-surface p-5 sm:p-7">
-          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-            <div><h2 className="mt-1 text-2xl font-black">وفّر مع أكواد GYMJO</h2><p className="mt-1 text-sm text-muted">خصومات حقيقية من أنشطة ومتاجر مشاركة — اكشف الكود واستخدمه مباشرة.</p></div>
-            <Link href="/deals" className="text-sm font-bold text-accent">كل أكواد الخصم ←</Link>
+
+        {/* For owners: the directory grows when they claim their page. */}
+        <section className="ink rim flex flex-col gap-5 rounded-3xl p-6 sm:flex-row sm:items-center sm:justify-between sm:p-9">
+          <div>
+            <h2 className="text-2xl font-bold sm:text-3xl">عندك نادي أو ملعب أو متجر؟</h2>
+            <p className="mt-2 max-w-xl text-sm leading-7 text-muted">صفحتك مجانية: حط أسعارك وصورك ودوامك، والزبون بيحكي معك واتساب مباشرة.</p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {codes.map((code) => (
-              <article key={code.id} className="flex flex-col justify-between gap-4 rounded-2xl border border-white/10 bg-surface p-4">
-                <div><h3 className="font-extrabold">{code.title_ar}</h3>{code.details_ar && <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{code.details_ar}</p>}<p className="mt-2 text-xs text-muted">{code.org_name} · {code.org_city}</p></div>
-                <RevealCode id={code.id} />
-              </article>
-            ))}
-          </div>
+          <Link href="/join" className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-accent px-7 font-display text-lg font-bold text-accent-foreground">أضف ناديك</Link>
         </section>
-      )}
-      {show.offers && offers.length > 0 && (
-        <section className="mb-12">
-          <h2 className="mb-4 text-xl font-bold">عروض ودورات حالية</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {offers.map((o) => (
-              <Link key={o.id} href={`/g/${o.organizations!.slug}`} className="rounded-2xl bg-surface p-5 ring-1 ring-white/10 hover:ring-accent/60">
-                <p className="text-xs text-accent">{o.kind === "course" ? "دورة" : o.discount_percent ? `خصم ${o.discount_percent}%` : "عرض"}</p>
-                <h3 className="mt-1 font-bold">{o.title_ar}</h3>
-                <p className="mt-1 text-sm text-muted">{o.organizations!.name_ar} · {o.organizations!.city}</p>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-      {show.trails && trails.length > 0 && (
-        <section className="mb-12">
-          <div className="mb-4 flex items-baseline justify-between"><h2 className="text-xl font-bold">🥾 مسارات المشي والهايكنق</h2><Link href="/trails" className="text-sm text-accent underline">كل المسارات</Link></div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{trails.slice(0, 6).map((t) => <TrailCard key={t.id} t={t} />)}</div>
-        </section>
-      )}
-      <AdImpressions ids={[...(show.banner && banner ? [banner.id] : []), ...(show.sponsored ? sponsored.map((a) => a.id) : [])]} />
-      {show.banner && banner && (
-        <a href={`/a/${banner.id}`} rel="sponsored noopener" className="relative mb-10 block overflow-hidden rounded-2xl bg-surface ring-1 ring-white/10">
-          {banner.image_path && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={adImageUrl(banner.image_path)!} alt={banner.title} className="aspect-[16/6] w-full object-cover" />
-          )}
-          <span className="absolute right-3 top-3 rounded-full bg-black/60 px-2 py-0.5 text-xs">إعلان</span>
-          <div className="p-4"><p className="font-bold">{banner.title}</p>{banner.subtitle && <p className="text-sm text-muted">{banner.subtitle}</p>}</div>
-        </a>
-      )}
-      {show.sponsored && sponsored.length > 0 && (
-        <section className="mb-12">
-          <h2 className="mb-4 text-xl font-bold">ممول</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {sponsored.map((a) => (
-              <a key={a.id} href={`/a/${a.id}`} rel="sponsored noopener" className="relative block overflow-hidden rounded-2xl bg-surface ring-1 ring-white/10 hover:ring-accent/60">
-                {a.image_path && (
+
+        {show.partners && partners.length > 0 && (
+          <section>
+            <h2 className="mb-4 text-center text-sm font-semibold text-muted">شركاء المنصة</h2>
+            <div className="flex flex-wrap items-center justify-center gap-6">
+              {partners.map((p) => {
+                const img = (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={adImageUrl(a.image_path)!} alt={a.title} loading="lazy" className="aspect-[4/3] w-full object-cover" />
-                )}
-                <span className="absolute right-3 top-3 rounded-full bg-black/60 px-2 py-0.5 text-xs">إعلان</span>
-                <div className="p-5"><h3 className="font-bold">{a.title}</h3>{a.subtitle && <p className="mt-1 text-sm text-muted">{a.subtitle}</p>}</div>
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
-      {show.flash && <FlashStrip items={flash} />}
-      {show.offers && offers.length > 0 && (
-        <section className="mb-12">
-          <h2 className="mb-4 text-xl font-bold">عروض ودورات حالية</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {offers.map((o) => (
-              <Link key={o.id} href={`/g/${o.organizations!.slug}`} className="rounded-2xl bg-surface p-5 ring-1 ring-white/10 hover:ring-accent/60">
-                <p className="text-xs text-accent">{o.kind === "course" ? "دورة" : o.discount_percent ? `خصم ${o.discount_percent}%` : "عرض"}</p>
-                <h3 className="mt-1 font-bold">{o.title_ar}</h3>
-                <p className="mt-1 text-sm text-muted">{o.organizations!.name_ar} · {o.organizations!.city}</p>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-      {show.pink && home.pink.items.length > 0 && (
-        <section className="mb-12 rounded-3xl bg-pink-500/10 p-5 ring-1 ring-pink-400/30">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-pink-200">💗 Pink Zone — خاص بالنساء</h2>
-            <Link href="/search?women=only" className="text-sm text-pink-200 underline">عرض الكل ({home.pink.total})</Link>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{home.pink.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>
-        </section>
-      )}
-      {!show.sections ? null : home.sections.length === 0 ? (
-        <p className="rounded-2xl bg-surface p-8 text-center text-muted">لا توجد أنشطة منشورة بعد. كن أول من يضيف نشاطه!</p>
-      ) : (
-        <>
-          {full.map((s) => (
-            <section key={s.key} className="mb-12">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-bold">{s.title}</h2>
-                <Link href={s.href} className="text-sm text-accent underline">عرض الكل ({s.total})</Link>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{s.items.map((o) => <OrgCard key={o.id} org={o} />)}</div>
-              {s.total > s.items.length && (
-                <Link href={s.href} className="mt-4 inline-block rounded-xl bg-surface px-4 py-2 text-sm font-bold text-accent ring-1 ring-white/10 hover:ring-accent">عرض كل {s.title} ({s.total})</Link>
-              )}
-            </section>
-          ))}
-          {tiles.length > 0 && (
-            <section className="mb-12">
-              <h2 className="mb-4 text-xl font-bold">تصفّح حسب القسم</h2>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-                {tiles.map((s) => (
-                  <Link key={s.key} href={s.href} className="flex items-center justify-between gap-2 rounded-xl bg-surface px-4 py-3 text-sm ring-1 ring-white/10 hover:ring-accent">
-                    <span className="font-semibold">{s.title}</span><span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-muted">{s.total}</span>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
-        </>
-      )}
-      {show.partners && partners.length > 0 && (
-        <section className="mb-12">
-          <h2 className="mb-4 text-center text-sm font-bold text-muted">شركاء المنصة</h2>
-          <div className="flex flex-wrap items-center justify-center gap-6">
-            {partners.map((p) => {
-              const img = (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={adImageUrl(p.logo_path)!} alt={p.name_ar} loading="lazy" className="h-14 w-auto max-w-40 object-contain opacity-80 transition hover:opacity-100" />
-              );
-              const href = p.link_url ?? (p.organizations ? `/g/${p.organizations.slug}` : null);
-              return href ? <a key={p.id} href={href} rel="sponsored noopener" title={p.name_ar}>{img}</a> : <span key={p.id} title={p.name_ar}>{img}</span>;
-            })}
-          </div>
-        </section>
-      )}
+                  <img src={adImageUrl(p.logo_path)!} alt={p.name_ar} loading="lazy" className="h-14 w-auto max-w-40 object-contain opacity-80 transition hover:opacity-100" />
+                );
+                const href = p.link_url ?? (p.organizations ? `/g/${p.organizations.slug}` : null);
+                return href ? <a key={p.id} href={href} rel="sponsored noopener" title={p.name_ar}>{img}</a> : <span key={p.id} title={p.name_ar}>{img}</span>;
+              })}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }

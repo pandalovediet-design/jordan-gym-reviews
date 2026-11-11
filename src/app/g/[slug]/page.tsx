@@ -17,6 +17,7 @@ import type { Tables } from "@/lib/database.types";
 import { themeClass } from "@/lib/themes";
 import { Gallery } from "@/components/Gallery";
 import { OrgSectionNav } from "@/components/OrgSectionNav";
+import { ammanNow, isOpenAt } from "@/lib/open-hours";
 
 export const revalidate = 120;
 const load = cache(getOrgBySlug);
@@ -51,15 +52,14 @@ function Services({ items }: { items: Tables<"organization_services">[] }) {
   if (!items.length) return null;
   return (
     <ul className="grid gap-3 sm:grid-cols-2">{items.map((s) => (
-      <li key={s.id} className="group relative overflow-hidden rounded-2xl bg-surface p-5 ring-1 ring-white/10 transition duration-200 hover:-translate-y-0.5 hover:ring-accent/60">
-        <div className="absolute inset-y-0 start-0 w-1 bg-accent/70" />
+      <li key={s.id} className="rounded-2xl bg-surface p-5 ring-1 ring-white/10">
         <div className="flex h-full items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="font-bold leading-6">{s.name_ar}</p>
             {s.description_ar && <p className="mt-1.5 text-sm leading-6 text-muted">{s.description_ar}</p>}
           </div>
-          <div className="shrink-0 rounded-xl bg-accent/10 px-3 py-2 text-end ring-1 ring-accent/20">
-            <p className="font-black text-accent">{jod(s.price_jod)}</p>
+          <div className="shrink-0 text-end">
+            <p className="font-display text-2xl font-bold tabular-nums">{jod(s.price_jod)}</p>
             {s.billing_period && <p className="mt-0.5 text-[11px] text-muted">{BILLING_LABEL[s.billing_period]}</p>}
           </div>
         </div>
@@ -74,7 +74,7 @@ function Hours({ items }: { items: Tables<"organization_hours">[] }) {
         <span className="font-semibold">{WEEKDAYS[h.weekday]}</span>
         {h.is_closed
           ? <span className="rounded-full bg-red-500/10 px-3 py-1 text-xs font-bold text-red-300">مغلق</span>
-          : <span className="rounded-full bg-accent/10 px-3 py-1 font-semibold text-accent" dir="ltr">{hhmm(h.opens_at)} – {hhmm(h.closes_at)}</span>}
+          : <span className="font-display text-base font-semibold tabular-nums" dir="ltr">{hhmm(h.opens_at)} – {hhmm(h.closes_at)}</span>}
       </li>))}</ul>
   );
 }
@@ -82,7 +82,7 @@ function Offers({ items }: { items: Tables<"offers">[] }) {
   if (!items.length) return null;
   return (
     <div className="grid gap-3 sm:grid-cols-2">{items.map((o) => (
-      <article key={o.id} className="relative overflow-hidden rounded-2xl bg-[linear-gradient(125deg,rgba(200,245,58,.13),transparent_65%)] bg-surface p-5 ring-1 ring-accent/25">
+      <article key={o.id} className="relative overflow-hidden rounded-2xl border-t-4 border-accent bg-surface p-5 ring-1 ring-white/10">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <span className="mb-2 inline-flex rounded-full bg-accent/15 px-3 py-1 text-[11px] font-bold text-accent">{o.kind === "course" ? "دورة تدريبية" : "عرض خاص"}</span>
@@ -120,12 +120,12 @@ function Trainers({ items }: { items: TrainerCard[] }) {
   if (!items.length) return null;
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{items.map((t) => (
-      <article key={t.key} className="group flex flex-col overflow-hidden rounded-3xl bg-surface ring-1 ring-white/10 transition duration-200 hover:-translate-y-1 hover:ring-accent/50 hover:shadow-xl hover:shadow-black/15">
+      <article key={t.key} className="flex flex-col overflow-hidden rounded-2xl bg-surface ring-1 ring-white/10">
         <div className="relative aspect-[5/4] w-full overflow-hidden bg-background/40">
           {t.photo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={publicMediaUrl(t.photo)} alt={t.name} loading="lazy" decoding="async" className="size-full object-cover transition duration-500 group-hover:scale-105" />
-          ) : <div className="flex size-full items-center justify-center bg-[radial-gradient(ellipse_at_75%_20%,rgba(200,245,58,.22),transparent_48%),linear-gradient(135deg,#0b1a08,#283313)] text-5xl">🏋️</div>}
+            <img src={publicMediaUrl(t.photo)} alt={t.name} loading="lazy" decoding="async" className="size-full object-cover" />
+          ) : <div className="flex size-full items-center justify-center bg-foreground/5 font-display text-6xl font-bold text-muted">{t.name.trim().charAt(0)}</div>}
           {(t.head || t.licensed) && (
             <div className="absolute start-3 top-3 flex flex-col items-start gap-2">
               {t.head && <span className="rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">⭐ المدرب الرئيسي</span>}
@@ -136,8 +136,8 @@ function Trainers({ items }: { items: TrainerCard[] }) {
         <div className="flex flex-1 flex-col gap-2.5 p-5">
           {t.role && <span className="w-fit rounded-full bg-accent/15 px-3 py-0.5 text-xs font-bold text-accent">{t.role}</span>}
           <h3 className="text-xl font-black tracking-tight">{t.name}</h3>
-          {t.years != null && <p className="text-sm text-muted">🏅 {t.years} سنة خبرة</p>}
-          {(t.education || t.place) && <p className="text-sm text-muted">🎓 {[t.education, t.place].filter(Boolean).join(" — ")}</p>}
+          {t.years != null && <p className="text-sm text-muted">{t.years} سنة خبرة</p>}
+          {(t.education || t.place) && <p className="text-sm text-muted">{[t.education, t.place].filter(Boolean).join("، ")}</p>}
           {splitTags(t.specialties).length > 0 && (
             <div className="flex flex-wrap gap-1.5">{splitTags(t.specialties).map((x) => <span key={x} className="rounded-full bg-background/50 px-2.5 py-0.5 text-xs ring-1 ring-white/10">{x}</span>)}</div>)}
           {t.bio && <p className="line-clamp-4 whitespace-pre-line text-sm leading-6">{t.bio}</p>}
@@ -171,7 +171,7 @@ function Menu({ items }: { items: Tables<"menu_items">[] }) {
   );
 }
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return <section className="mt-8"><h2 className="mb-3 text-xl font-bold">{title}</h2>{children}</section>;
+  return <section className="mt-10"><h2 className="mb-4 text-2xl font-bold">{title}</h2>{children}</section>;
 }
 function Products({ items }: { items: Data["products"] }) {
   if (!items.length) return <p className="text-muted">لا توجد منتجات منشورة.</p>;
@@ -260,15 +260,22 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
   );
   const contactButtons = (v: BV) => {
     const n = waNumber(v.whatsapp);
-    const actionClass = "inline-flex min-h-11 items-center justify-center rounded-xl px-5 py-2.5 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 motion-reduce:transition-none";
+    const actionClass = "inline-flex min-h-12 items-center justify-center rounded-full px-6 text-center font-semibold transition-colors motion-reduce:transition-none";
     return (
       <>
-        {n && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${n}?text=${msg(multi ? ` (${v.name})` : "")}`} className={`${actionClass} bg-accent font-bold text-accent-foreground`}>واتساب</TrackedLink>}
-        {v.phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${v.phone}`} className={`${actionClass} bg-surface ring-1 ring-white/10`}>اتصال</TrackedLink>}
-        {v.mapsHref && <a href={v.mapsHref} target="_blank" rel="noopener noreferrer" className={`${actionClass} bg-surface ring-1 ring-white/10`}>الموقع على الخريطة</a>}
+        {n && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${n}?text=${msg(multi ? ` (${v.name})` : "")}`} className={`${actionClass} bg-accent text-accent-foreground`}>واتساب</TrackedLink>}
+        {v.phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${v.phone}`} className={`${actionClass} ring-1 ring-white/25 hover:ring-accent`}>اتصال</TrackedLink>}
+        {v.mapsHref && <a href={v.mapsHref} target="_blank" rel="noopener noreferrer" className={`${actionClass} ring-1 ring-white/25 hover:ring-accent`}>الموقع على الخريطة</a>}
       </>
     );
   };
+  const themed = themeClass(org.theme) !== "";
+  // Imported places carry a stock sentence that says the same thing as the claim notice below it.
+  const boilerplate = org.is_claimed === false && /بيانات أولية/.test(org.description_ar ?? "");
+  const factChip = "rounded-full px-3 py-1 font-semibold ring-1 ring-white/20";
+  // Only a single-branch place has one answer to "is it open now".
+  const now = ammanNow();
+  const openNow = !multi && hours.length ? isOpenAt(hours, now.weekday, now.minutes) : null;
   const contact = (v: BV) => <div className="mt-3 flex flex-wrap gap-2 sm:gap-3">{contactButtons(v)}</div>;
 
   return (
@@ -278,73 +285,60 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs).replace(/</g, "\\u003c") }} />
       {!multi && womenBanner(views[0])}
-      <div className="relative mb-7">
-      <figure className="mb-0 overflow-hidden rounded-[1.75rem] border border-white/10 bg-surface shadow-2xl shadow-black/20">
-        {media[0] ? (
+      {/* Place header: an ink block that works with or without a photo (most places have none yet). */}
+      <header className={`overflow-hidden rounded-3xl ${themed ? "bg-surface ring-1 ring-white/10" : "ink"} ${glow ? `glow glow-${glow}` : ""}`}>
+        {media[0] && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} fetchPriority="high" decoding="async" className="aspect-[16/9] w-full object-cover sm:aspect-[2.6/1]" />
-        ) : (
-          <div className="relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_80%_15%,rgba(200,245,58,.28),transparent_48%),linear-gradient(125deg,#10140a,#26320b_55%,#10140a)] sm:aspect-[2.6/1]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/icon-512.png" alt="" aria-hidden="true" className="size-28 rounded-3xl opacity-90 shadow-2xl sm:size-36" />
-            <span className="absolute bottom-4 start-5 text-sm font-black tracking-[.2em] text-white/70 sm:bottom-6 sm:start-8 sm:text-base">GYMJO</span>
-          </div>
+          <img src={publicMediaUrl(media[0].storage_path)} alt={media[0].alt_text ?? org.name_ar} fetchPriority="high" decoding="async" className="aspect-[16/9] w-full object-cover sm:aspect-[2.8/1]" />
         )}
-      </figure>
-      <div className={`relative z-10 mx-2 -mt-12 rounded-3xl border border-white/10 bg-surface p-5 shadow-2xl shadow-black/20 sm:mx-6 sm:-mt-16 sm:p-7 ${glow ? `glow glow-${glow}` : ""}`}>
-      {glow && <p className="mb-1 text-sm font-bold">{GLOW_LABEL[glow]}</p>}
-      <p className="text-sm text-muted">{category ?? ORG_TYPE_LABEL[org.type]}{isVerified(org) && <span className="text-accent"> · ✓ موثّق</span>}{multi && <span> · {views.length} فروع</span>}</p>
-      {coachProfile && (coachProfile.education || coachProfile.experience_years != null) && (
-        <p className="mt-1 text-sm text-muted">{[coachProfile.experience_years != null ? `🏅 ${coachProfile.experience_years} سنة خبرة` : null, coachProfile.education ? `🎓 ${[coachProfile.education, coachProfile.education_place].filter(Boolean).join(" — ")}` : null, coachProfile.session_mode ? { onsite: "حضوري", online: "أونلاين", both: "حضوري وأونلاين" }[coachProfile.session_mode] ?? null : null].filter(Boolean).join("  ·  ")}</p>)}
-      {coachProfile?.certificates && <p className="mt-1 text-sm text-muted">📜 {coachProfile.certificates}</p>}
-      {coachGyms.length > 0 && (
-        <p className="mt-1 text-sm">{org.type === "nutritionist" ? "يتعاون مع: " : "يتدرب في: "}{coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
-      <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">{org.name_ar}</h1>
-      {org.description_ar && <p className="mt-3 max-w-4xl whitespace-pre-line text-sm leading-7 text-muted sm:text-base">{org.description_ar}</p>}
-      {!multi && <div className="mt-4 flex flex-wrap gap-2">{contactButtons(views[0])}</div>}
-      {org.is_claimed === false && (
-        <p className="mt-2 rounded-xl bg-white/5 p-3 text-sm text-muted ring-1 ring-white/10">
-          بيانات أولية من مصادر عامة، وصاحب النادي لسا ما استلم صفحته. <Link href={`/claim/${org.slug}`} className="font-bold text-accent underline">هذا ناديي؟ استلم صفحتك مجاناً</Link>
-        </p>
-      )}
-      {(org.has_mosque || org.no_music || org.has_kids_area || org.kids_friendly || org.kids_transport) && (
-        <p className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-          {org.has_kids_area && <span className="rounded-full bg-amber-500/15 px-3 py-1 font-bold text-amber-300 ring-1 ring-amber-400/30">🧒 Kids Area</span>}
-          {org.kids_friendly && <span className="rounded-full bg-amber-500/15 px-3 py-1 font-bold text-amber-300 ring-1 ring-amber-400/30">👶 مهيّأ للأطفال (5–12)</span>}
-          {org.kids_transport && <span className="rounded-full bg-amber-500/15 px-3 py-1 font-bold text-amber-300 ring-1 ring-amber-400/30">🚌 مواصلات للأطفال{org.transport_note ? `: ${org.transport_note}` : ""}</span>}
-          {org.has_mosque && <span className="rounded-full bg-emerald-500/15 px-3 py-1 font-bold text-emerald-300 ring-1 ring-emerald-400/30">🕌 فيه مصلى</span>}
-          {org.no_music && <span className="rounded-full bg-sky-500/15 px-3 py-1 font-bold text-sky-300 ring-1 ring-sky-400/30">🔇 بدون موسيقى</span>}
-          <span className="text-xs text-muted">حسب صاحب النشاط</span>
-        </p>
-      )}
-      {(org.accessibility ?? []).length > 0 && (
-        <div className="mt-3 rounded-2xl bg-violet-500/10 p-4 text-sm ring-1 ring-violet-400/30">
-          <p className="font-bold text-violet-200">♿ تهيئة لذوي الاحتياجات الخاصة <span className="text-xs font-normal text-muted">(حسب صاحب النشاط)</span></p>
-          <ul className="mt-2 list-disc space-y-1 pr-5">{(org.accessibility ?? []).map((k: string) => <li key={k}>{accessLabel(k)}</li>)}</ul>
+        <div className="p-5 sm:p-8">
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+            <span>{category ?? ORG_TYPE_LABEL[org.type]}</span>
+            {isVerified(org) && <span className="font-semibold text-accent">✓ موثّق</span>}
+            {glow && <span className="font-semibold text-foreground">{GLOW_LABEL[glow]}</span>}
+            {multi && <span>{views.length} فروع</span>}
+            {openNow === true && <span className="inline-flex items-center gap-1.5 font-semibold text-accent"><span aria-hidden className="size-2 rounded-full bg-current" />مفتوح هسا</span>}
+            {openNow === false && <span>مسكّر هسا</span>}
+          </p>
+          <h1 className="mt-2 text-4xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">{org.name_ar}</h1>
+          {!multi && <p className="mt-2 text-muted">{[org.address, org.area, org.city].filter(Boolean).join("، ")}</p>}
+          {coachProfile && (coachProfile.education || coachProfile.experience_years != null) && (
+            <p className="mt-2 text-sm text-muted">{[coachProfile.experience_years != null ? `${coachProfile.experience_years} سنة خبرة` : null, coachProfile.education ? [coachProfile.education, coachProfile.education_place].filter(Boolean).join("، ") : null, coachProfile.session_mode ? { onsite: "حضوري", online: "أونلاين", both: "حضوري وأونلاين" }[coachProfile.session_mode] ?? null : null].filter(Boolean).join("  ·  ")}</p>)}
+          {coachProfile?.certificates && <p className="mt-1 text-sm text-muted">الشهادات: {coachProfile.certificates}</p>}
+          {coachGyms.length > 0 && (
+            <p className="mt-1 text-sm">{org.type === "nutritionist" ? "يتعاون مع: " : "يتدرب في: "}{coachGyms.map((g, i) => <span key={g.gym_slug}>{i > 0 && "، "}<Link href={`/g/${g.gym_slug}`} className="text-accent underline">{g.gym_name}</Link></span>)}</p>)}
+          {org.description_ar && !boilerplate && <p className="mt-4 max-w-3xl whitespace-pre-line text-sm leading-7 text-muted sm:text-base">{org.description_ar}</p>}
+          {!multi && <div className="mt-5 flex flex-wrap gap-2">{contactButtons(views[0])}</div>}
+          {(org.has_mosque || org.no_music || org.has_kids_area || org.kids_friendly || org.kids_transport) && (
+            <p className="mt-5 flex flex-wrap items-center gap-2 text-sm">
+              {org.has_kids_area && <span className={factChip}>Kids Area</span>}
+              {org.kids_friendly && <span className={factChip}>مهيّأ للأطفال (5–12)</span>}
+              {org.kids_transport && <span className={factChip}>مواصلات للأطفال{org.transport_note ? `: ${org.transport_note}` : ""}</span>}
+              {org.has_mosque && <span className={factChip}>فيه مصلى</span>}
+              {org.no_music && <span className={factChip}>بدون موسيقى</span>}
+              <span className="text-xs text-muted">حسب صاحب النشاط</span>
+            </p>
+          )}
+          {(org.accessibility ?? []).length > 0 && (
+            <div className="mt-4 rounded-2xl p-4 text-sm ring-1 ring-white/15">
+              <p className="font-semibold">تهيئة لذوي الاحتياجات الخاصة <span className="text-xs font-normal text-muted">(حسب صاحب النشاط)</span></p>
+              <ul className="mt-2 list-disc space-y-1 pr-5 text-muted">{(org.accessibility ?? []).map((k: string) => <li key={k}>{accessLabel(k)}</li>)}</ul>
+            </div>
+          )}
+          {(org.instagram || org.website) && <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+            {org.instagram && <a href={"https://instagram.com/" + org.instagram.replace(/^@/, "")} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center font-semibold underline underline-offset-4 hover:text-accent">Instagram</a>}
+            {org.website && <a href={org.website} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center font-semibold underline underline-offset-4 hover:text-accent">الموقع الإلكتروني</a>}
+          </div>}
+          {org.is_claimed === false && (
+            <p className="mt-5 border-t border-white/15 pt-4 text-sm text-muted">
+              بيانات أولية من مصادر عامة، وصاحب المكان لسا ما استلم صفحته. <Link href={`/claim/${org.slug}`} className="font-semibold text-accent underline underline-offset-4">هذا ناديي؟ استلم صفحتك مجاناً</Link>
+            </p>
+          )}
         </div>
-      )}
-      {!multi && <p className="mt-1 text-muted">{[org.address, org.area, org.city].filter(Boolean).join("، ")}</p>}
-      <div className="mt-5 grid gap-2 border-t border-white/10 pt-4 sm:grid-cols-2">
-        <div className="rounded-xl bg-background/55 p-3">
-          <p className="text-[11px] font-bold text-muted">📍 الموقع</p>
-          <p className="mt-1 line-clamp-2 text-sm font-bold">{[org.area, org.city].filter(Boolean).join("، ") || "الموقع غير محدد"}</p>
-          {orgMaps && <a href={orgMaps} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-xs font-bold text-accent underline">افتح الخريطة</a>}
-        </div>
-        <div className="rounded-xl bg-background/55 p-3">
-          <p className="text-[11px] font-bold text-muted">☎ التواصل</p>
-          <p className="mt-1 text-sm font-bold" dir="ltr">{org.phone || "غير متوفر"}</p>
-          {org.phone && <a href={"tel:" + org.phone} className="mt-1 inline-block text-xs font-bold text-accent underline">اتصل بالنادي</a>}
-        </div>
-      </div>
-      {(org.instagram || org.website) && <div className="mt-3 flex flex-wrap gap-2">
-        {org.instagram && <a href={"https://instagram.com/" + org.instagram.replace(/^@/, "")} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center rounded-full bg-background/60 px-4 text-sm font-bold ring-1 ring-white/10 hover:ring-accent">◎ Instagram</a>}
-        {org.website && <a href={org.website} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center rounded-full bg-background/60 px-4 text-sm font-bold ring-1 ring-white/10 hover:ring-accent">↗ الموقع الإلكتروني</a>}
-      </div>}
-      </div>
-      </div>
+      </header>
       {multi && (
         <nav className="mt-3 flex flex-wrap gap-2 text-sm" aria-label="فروع النشاط">
-          {views.map((v) => <a key={v.id} href={`#b-${v.id}`} className="inline-flex min-h-11 items-center rounded-full bg-surface px-4 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none">{v.name} — {v.city}{v.women_access === "women_only" && " 💗"}</a>)}
+          {views.map((v) => <a key={v.id} href={`#b-${v.id}`} className="inline-flex min-h-11 items-center rounded-full bg-surface px-4 ring-1 ring-white/10 transition-colors hover:ring-accent motion-reduce:transition-none">{v.name}، {v.city}{v.women_access === "women_only" && " 💗"}</a>)}
         </nav>
       )}
 
@@ -359,37 +353,12 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         ...(nutriCards.length > 0 ? [{ href: "#nutrition", label: "التغذية" }] : []),
         ...(org.type === "store" && products.length > 0 ? [{ href: "#products", label: "المنتجات" }] : []),
       ]} />}
-      <div className="mt-5 flex flex-wrap gap-2 sm:gap-3 [&>a]:min-h-11 [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center [&>a]:text-center">
-        {wa && org.free_trial_note && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${trialMsg}`} className="rounded-xl bg-accent/15 px-5 py-2.5 font-bold text-accent ring-1 ring-accent/50">🎟 {org.free_trial_note}</TrackedLink>}
-        <a href={shareHref} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-surface px-5 py-2.5 ring-1 ring-white/10">شارك على واتساب</a>
+      {/* Sharing: one WhatsApp link and one ready-made card. QR posters are made from the admin page. */}
+      <div className="mt-5 flex flex-wrap gap-2 text-sm [&>a]:inline-flex [&>a]:min-h-11 [&>a]:items-center [&>a]:justify-center [&>a]:rounded-full [&>a]:px-5 [&>a]:font-semibold">
+        {wa && org.free_trial_note && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${wa}?text=${trialMsg}`} className="bg-accent/10 text-accent ring-1 ring-accent/40">{org.free_trial_note}</TrackedLink>}
+        <a href={shareHref} target="_blank" rel="noopener noreferrer" className="bg-surface ring-1 ring-white/10 hover:ring-accent">شارك على واتساب</a>
+        <a href={`/g/${org.slug}/card`} target="_blank" rel="noopener noreferrer" className="bg-surface ring-1 ring-white/10 hover:ring-accent">كرت المشاركة</a>
       </div>
-      <div className="mt-3 grid max-w-md grid-cols-2 gap-2 sm:gap-3" aria-label="كروت جاهزة للمشاركة">
-        {[
-          { href: `/g/${org.slug}/card`, title: "كرت منشور", hint: "مربّع تقريباً · للفيد", shape: "h-10 w-8" },
-          { href: `/g/${org.slug}/card?s=1`, title: "كرت ستوري", hint: "طولي · للستوري والريلز", shape: "h-12 w-7" },
-        ].map((c) => (
-          <a key={c.href} href={c.href} target="_blank" rel="noopener noreferrer"
-            className="flex min-h-16 items-center gap-3 rounded-xl bg-surface p-3 ring-1 ring-white/10 transition-colors hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-            <span aria-hidden className={`${c.shape} shrink-0 rounded-md border-2 border-accent/70 bg-accent/10`} />
-            <span className="min-w-0">
-              <span className="block text-sm font-bold">{c.title}</span>
-              <span className="block text-xs text-muted">{c.hint}</span>
-            </span>
-          </a>
-        ))}
-      </div>
-      <details className="mt-3 w-fit rounded-xl bg-surface ring-1 ring-white/10 [&[open]]:p-4">
-        <summary className="min-h-11 cursor-pointer list-none rounded-xl px-5 py-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent [&::-webkit-details-marker]:hidden">📲 QR للمشاركة</summary>
-        <div className="mt-3 flex flex-col items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/g/${org.slug}/qr`} alt={`رمز QR لصفحة ${org.name_ar}`} width={208} height={208} loading="lazy" className="size-52 rounded-xl bg-white p-1" />
-          <p className="max-w-52 text-center text-xs text-muted">امسحه بالكاميرا بيفتح صفحة {org.name_ar}.</p>
-          <div className="flex gap-2 text-sm">
-            <a href={`/g/${org.slug}/qr?format=png&download=1`} className="rounded-lg bg-accent px-4 py-2 font-bold text-accent-foreground">تنزيل PNG</a>
-            <a href={`/g/${org.slug}/qr?download=1`} className="rounded-lg bg-white/10 px-4 py-2">SVG</a>
-          </div>
-        </div>
-      </details>
 
       {reviewVideos.length > 0 && (
         <section className="mt-6 rounded-2xl bg-accent/10 p-4 ring-1 ring-accent/30">
@@ -456,8 +425,8 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
         <>
           {offers.length > 0 && <div id="offers" className="scroll-mt-48"><Section title="العروض"><Offers items={offers} /></Section></div>}
           <div className="mt-8 grid gap-6 lg:grid-cols-[2fr_1fr]">
-            {services.length > 0 && <section id="prices" className="scroll-mt-48"><h2 className="mb-3 text-xl font-bold">الأسعار والخدمات</h2><Services items={services} /></section>}
-            {hours.length > 0 && <section id="hours" className="scroll-mt-48"><h2 className="mb-3 text-xl font-bold">ساعات الدوام</h2><Hours items={hours} /></section>}
+            {services.length > 0 && <section id="prices" className="scroll-mt-48"><h2 className="mb-4 text-2xl font-bold">الأسعار والخدمات</h2><Services items={services} /></section>}
+            {hours.length > 0 && <section id="hours" className="scroll-mt-48"><h2 className="mb-4 text-2xl font-bold">ساعات الدوام</h2><Hours items={hours} /></section>}
           </div>
           {org.type === "sports_facility" && slots.length > 0 && (
             <div id="slots" className="scroll-mt-48"><Section title="المواعيد المتاحة">
@@ -521,9 +490,9 @@ export default async function OrgPage({ params }: PageProps<"/g/[slug]">) {
           {/* Phone: contact actions always within thumb reach. */}
           <div className="h-20 md:hidden" aria-hidden />
           <nav aria-label="تواصل سريع" className="fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-white/10 bg-background/95 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur md:hidden">
-            {waNumber(views[0].whatsapp) && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${waNumber(views[0].whatsapp)}?text=${msg("")}`} className="flex-1 rounded-xl bg-accent py-3 text-center font-bold text-accent-foreground">واتساب</TrackedLink>}
-            {views[0].phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${views[0].phone}`} className="flex-1 rounded-xl bg-surface py-3 text-center font-bold ring-1 ring-white/10">اتصال</TrackedLink>}
-            {views[0].mapsHref && <a href={views[0].mapsHref} target="_blank" rel="noopener noreferrer" className="flex-1 rounded-xl bg-surface py-3 text-center font-bold ring-1 ring-white/10">الموقع</a>}
+            {waNumber(views[0].whatsapp) && <TrackedLink orgId={org.id} event="whatsapp_click" external href={`https://wa.me/${waNumber(views[0].whatsapp)}?text=${msg("")}`} className="flex-1 rounded-full bg-accent py-3 text-center font-semibold text-accent-foreground">واتساب</TrackedLink>}
+            {views[0].phone && <TrackedLink orgId={org.id} event="phone_click" href={`tel:${views[0].phone}`} className="flex-1 rounded-full bg-surface py-3 text-center font-semibold ring-1 ring-white/10">اتصال</TrackedLink>}
+            {views[0].mapsHref && <a href={views[0].mapsHref} target="_blank" rel="noopener noreferrer" className="flex-1 rounded-full bg-surface py-3 text-center font-semibold ring-1 ring-white/10">الموقع</a>}
           </nav>
         </>
       )}

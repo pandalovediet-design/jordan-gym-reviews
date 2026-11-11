@@ -30,7 +30,7 @@ export function HeaderAuth() {
     return () => { alive = false; sub.subscription.unsubscribe(); };
   }, []);
 
-  const base = "inline-flex min-h-11 items-center justify-center rounded-xl px-3 py-2 text-sm font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+  const base = "inline-flex min-h-11 items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition-colors motion-reduce:transition-none";
   const hide = state === "checking" ? "invisible" : "";
 
   if (state === "in") {
@@ -40,15 +40,15 @@ export function HeaderAuth() {
           حسابي
         </Link>
         <form action={signout}>
-          <button type="submit" className={`${base} ring-1 ring-white/20 hover:bg-white/5 hover:text-accent`}>خروج</button>
+          <button type="submit" className={`${base} ring-1 ring-line hover:bg-foreground/5`}>خروج</button>
         </form>
       </>
     );
   }
   return (
     <>
-      <Link href="/login" aria-hidden={state === "checking"} tabIndex={state === "checking" ? -1 : undefined} className={`${base} ring-1 ring-white/20 hover:bg-white/5 hover:text-accent ${hide}`}>دخول</Link>
-      <Link href="/join" aria-hidden={state === "checking"} tabIndex={state === "checking" ? -1 : undefined} className={`${base} bg-accent text-accent-foreground hover:brightness-110 ${hide}`}>أضف ناديك</Link>
+      <Link href="/login" aria-hidden={state === "checking"} tabIndex={state === "checking" ? -1 : undefined} className={`${base} ring-1 ring-line hover:bg-foreground/5 ${hide}`}>دخول</Link>
+      <Link href="/join" aria-hidden={state === "checking"} tabIndex={state === "checking" ? -1 : undefined} className={`${base} bg-accent text-accent-foreground max-sm:hidden ${hide}`}>أضف ناديك</Link>
     </>
   );
 }

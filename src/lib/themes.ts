@@ -1,6 +1,6 @@
 /** Color themes an activity can pick for its public page and dashboard (null = platform default green). */
 export const THEMES = [
-  { key: "emerald", label: "أخضر المنصة", swatch: ["#07211c", "#0d2f28", "#b6f23a"] },
+  { key: "emerald", label: "ألوان المنصة", swatch: ["#f3f4f0", "#121613", "#c8f53a"] },
   { key: "night", label: "ليلي بنفسجي", swatch: ["#0a0d24", "#151a3f", "#7c6cff"] },
   { key: "gold", label: "ذهبي فخم", swatch: ["#15110a", "#241c10", "#f5c542"] },
   { key: "ocean", label: "أزرق محيطي", swatch: ["#04182a", "#0a2840", "#38bdf8"] },

@@ -103,7 +103,7 @@ export async function renderCard(o: CardOrg, story: boolean) {
       <img src={o.photo} width={story ? 900 : 940} height={photoH} alt="" style={{ borderRadius: story ? 40 : 30, objectFit: "cover" }} />
     </div>
   ) : (
-    <div style={{ display: "flex", height: story ? 760 : 460, borderRadius: 42, background: "radial-gradient(circle at 20% 20%, #477b52 0%, #174638 48%, #0a2922 100%)", border: "2px solid rgba(182,242,58,.3)", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ display: "flex", height: story ? 760 : 460, borderRadius: 42, background: "radial-gradient(circle at 20% 20%, #477b52 0%, #174638 48%, #0a2922 100%)", border: "2px solid rgba(200,245,58,.3)", alignItems: "center", justifyContent: "center" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={logoSrc} width={story ? 260 : 210} height={story ? 260 : 210} alt="" style={{ opacity: .9 }} />
     </div>
@@ -113,25 +113,25 @@ export async function renderCard(o: CardOrg, story: boolean) {
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logoSrc} width={story ? 76 : 68} height={story ? 76 : 68} alt="" style={{ borderRadius: 50 }} />
-        <div style={{ display: "flex", fontSize: story ? 42 : 38, fontWeight: 800 }}>Gym<span style={{ color: "#b6f23a", marginLeft: 10 }}>Jo</span></div>
+        <div style={{ display: "flex", fontSize: story ? 42 : 38, fontWeight: 800 }}>Gym<span style={{ color: "#c8f53a", marginLeft: 10 }}>Jo</span></div>
       </div>
       <div style={{ display: "flex", flexDirection: "row-reverse", gap: 10 }}>
-        {isVerified(o) && <div style={{ display: "flex", background: "#b6f23a", padding: "7px 22px 11px", borderRadius: 40 }}><R t="موثّق" size={30} weight={800} color="#07211c" nowrap /></div>}
+        {isVerified(o) && <div style={{ display: "flex", background: "#c8f53a", padding: "7px 22px 11px", borderRadius: 40 }}><R t="موثّق" size={30} weight={800} color="#0b120e" nowrap /></div>}
         {gl && <div style={{ display: "flex", background: `linear-gradient(135deg, ${gl.a}, ${gl.b})`, padding: "7px 22px 11px", borderRadius: 40 }}><R t={`عضو ${GLOW_NAME[o.glow as GlowColor]}`} size={28} weight={800} color="#2a1a00" nowrap /></div>}
       </div>
     </div>
   );
   const details = (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: story ? 18 : 14 }}>
-      <div style={{ display: "flex", padding: "7px 28px 12px", borderRadius: 40, background: "rgba(182,242,58,.13)", border: "2px solid #b6f23a" }}>
-        <R t={typeLabel} size={story ? 34 : 30} weight={800} color="#b6f23a" nowrap />
+      <div style={{ display: "flex", padding: "7px 28px 12px", borderRadius: 40, background: "rgba(200,245,58,.13)", border: "2px solid #c8f53a" }}>
+        <R t={typeLabel} size={story ? 34 : 30} weight={800} color="#c8f53a" nowrap />
       </div>
       <R t={title} size={story ? (title.length > 32 ? 66 : 82) : (title.length > 32 ? 58 : 70)} weight={800} lh={1.2} maxW={story ? 900 : 920} />
       {location && <R t={location} size={story ? 38 : 34} color="#c9ddd4" maxW={900} />}
       {o.min_price_jod != null && (
-        <div style={{ display: "flex", flexDirection: "row-reverse", alignItems: "baseline", gap: 14, padding: "5px 28px 14px", borderRadius: 26, background: "rgba(182,242,58,.12)" }}>
+        <div style={{ display: "flex", flexDirection: "row-reverse", alignItems: "baseline", gap: 14, padding: "5px 28px 14px", borderRadius: 26, background: "rgba(200,245,58,.12)" }}>
           <R t="يبدأ الاشتراك من" size={story ? 30 : 26} color="#c9ddd4" nowrap />
-          <div style={{ display: "flex", fontSize: story ? 76 : 64, fontWeight: 800, color: "#b6f23a" }}>{Number(o.min_price_jod).toFixed(0)}</div>
+          <div style={{ display: "flex", fontSize: story ? 76 : 64, fontWeight: 800, color: "#c8f53a" }}>{Number(o.min_price_jod).toFixed(0)}</div>
           <R t="د.أ" size={story ? 36 : 32} weight={800} nowrap />
         </div>
       )}
@@ -142,8 +142,8 @@ export async function renderCard(o: CardOrg, story: boolean) {
   );
   const cta = (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 12 }}>
-      <div style={{ display: "flex", justifyContent: "center", background: "#b6f23a", color: "#07211c", borderRadius: 24, padding: story ? "20px 24px" : "16px 20px" }}>
-        <R t={story ? "اكتشف النادي على GYMJO" : "اكتشف النادي"} size={story ? 42 : 36} weight={800} color="#07211c" nowrap />
+      <div style={{ display: "flex", justifyContent: "center", background: "#c8f53a", color: "#0b120e", borderRadius: 24, padding: story ? "20px 24px" : "16px 20px" }}>
+        <R t={story ? "اكتشف النادي على GYMJO" : "اكتشف النادي"} size={story ? 42 : 36} weight={800} color="#0b120e" nowrap />
       </div>
       <div style={{ display: "flex", justifyContent: "center", fontSize: story ? 28 : 25, color: "#c9ddd4", fontWeight: 700 }}>{url}</div>
     </div>
@@ -151,7 +151,7 @@ export async function renderCard(o: CardOrg, story: boolean) {
 
   return new ImageResponse(
     story ? (
-      <div style={{ width: W, height: H, display: "flex", flexDirection: "column", padding: "58px 72px 62px", gap: 30, background: "radial-gradient(circle at 85% 12%, #1c5a47 0%, rgba(28,90,71,0) 42%), linear-gradient(160deg,#0d2f28 0%,#07211c 78%)", color: "#eef6f2", fontFamily: "Taj, TajL" }}>
+      <div style={{ width: W, height: H, display: "flex", flexDirection: "column", padding: "58px 72px 62px", gap: 30, background: "radial-gradient(circle at 85% 12%, #1c5a47 0%, rgba(28,90,71,0) 42%), linear-gradient(160deg,#0d2f28 0%,#0b120e 78%)", color: "#eef6f2", fontFamily: "Taj, TajL" }}>
         {brand}
         {photoFrame}
         <div style={{ display: "flex", flex: 1, flexDirection: "column", justifyContent: "center", gap: 20 }}>{details}</div>

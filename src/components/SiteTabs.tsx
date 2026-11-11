@@ -22,9 +22,9 @@ export function SiteTabs({ links }: { links: NavLink[] }) {
             href={l.href}
             aria-current={active ? "page" : undefined}
             className={[
-              "inline-flex min-h-10 items-center whitespace-nowrap rounded-full px-3.5 font-bold transition-colors motion-reduce:transition-none",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
-              active ? "bg-accent/15 text-accent" : "text-muted hover:bg-white/5 hover:text-foreground",
+              // Active tab: ink text with a lime bar under it (the rim light), not a filled pill.
+              "relative inline-flex min-h-11 items-center whitespace-nowrap px-3 font-semibold transition-colors motion-reduce:transition-none",
+              active ? "text-foreground after:absolute after:inset-x-3 after:bottom-1 after:h-[3px] after:rounded-full after:bg-lime" : "text-muted hover:text-foreground",
               l.cls ?? "",
             ].join(" ")}
           >
@@ -58,16 +58,16 @@ export function BottomBar() {
   // A place's page has its own contact bar at the bottom (WhatsApp, call), which matters more there.
   if (path.startsWith("/g/")) return null;
   return (
-    <nav aria-label="التنقل السريع" className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl print:hidden md:hidden">
+    <nav aria-label="التنقل السريع" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl print:hidden md:hidden">
       <ul className="mx-auto grid max-w-md grid-cols-5">
         {BAR.map((b) => {
           const active = on(b.href);
           const main = b.icon === "search";
           return (
             <li key={b.href}>
-              <Link href={b.href} aria-current={active ? "page" : undefined} className={`flex min-h-16 flex-col items-center justify-center gap-1 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${active ? "text-accent" : "text-muted"}`}>
-                <span className={main ? "flex size-10 items-center justify-center rounded-full bg-accent text-accent-foreground" : ""}>
-                  <svg aria-hidden viewBox="0 0 24 24" className={main ? "size-5" : "size-6"} fill="none" stroke="currentColor" strokeWidth={active || main ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">{ICONS[b.icon]}</svg>
+              <Link href={b.href} aria-current={active ? "page" : undefined} className={`flex min-h-16 flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors ${active ? "text-foreground" : "text-muted"}`}>
+                <span className={main ? "flex size-11 items-center justify-center rounded-full bg-accent text-accent-foreground" : active ? "rounded-full bg-lime px-3 py-0.5 text-ink" : "px-3 py-0.5"}>
+                  <svg aria-hidden viewBox="0 0 24 24" className={main ? "size-5" : "size-[22px]"} fill="none" stroke="currentColor" strokeWidth={active || main ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">{ICONS[b.icon]}</svg>
                 </span>
                 {!main && b.label}
                 {main && <span className="sr-only">{b.label}</span>}
