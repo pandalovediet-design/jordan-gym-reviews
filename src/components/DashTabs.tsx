@@ -66,7 +66,7 @@ export function DashTabs({
   return (
     <nav aria-label="أقسام إدارة النشاط" className="mx-auto flex max-w-5xl snap-x snap-mandatory gap-2 overflow-x-auto px-4 pt-6 text-sm [scrollbar-width:none] md:flex-wrap md:snap-none">
       {tabs.map((tab) => {
-        const active = path === tab.href || (tab.href.endsWith("/overview") && path === tab.href.replace("/overview", ""));
+        const active = path === tab.href;
         return (
           <Link
             key={tab.href}
