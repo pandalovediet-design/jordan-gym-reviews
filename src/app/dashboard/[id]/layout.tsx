@@ -5,7 +5,7 @@ import { themeClass } from "@/lib/themes";
 
 export default async function DashLayout({ children, params }: LayoutProps<"/dashboard/[id]">) {
   const { id } = await params;
-  let showMembers = true;
+  let activityType: "gym" | "sports_facility" | "store" | "nutritionist" | "independent_coach" | "healthy_food" | "sports_health" | null = null;
   let newInquiries = 0;
   let adminView: { orgName: string } | null = null;
   let theme: string | null = null;
@@ -18,7 +18,7 @@ export default async function DashLayout({ children, params }: LayoutProps<"/das
     ]);
     const { count } = await supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("organization_id", id).eq("status", "new");
     newInquiries = count ?? 0;
-    theme = org?.theme ?? null;
+    theme = org?.theme ?? null;\n    activityType = org?.type ?? null;
     showMembers = !!org && ["gym", "independent_coach", "sports_facility", "nutritionist"].includes(org.type); // private subscriber tool only for places with subscribers
     if (org && isAdmin && auth.user) {
       const { data: mine } = await supabase.from("organization_members").select("user_id").eq("organization_id", id).eq("user_id", auth.user.id).maybeSingle();
@@ -33,7 +33,7 @@ export default async function DashLayout({ children, params }: LayoutProps<"/das
         </div>
       )}
       <div className={`min-h-[70vh] pb-10 ${themeClass(theme)}`}>
-        <DashTabs id={id} showMembers={showMembers} newInquiries={newInquiries} />
+        <DashTabs id={id} activityType={activityType} newInquiries={newInquiries} />
         {children}
       </div>
     </>
